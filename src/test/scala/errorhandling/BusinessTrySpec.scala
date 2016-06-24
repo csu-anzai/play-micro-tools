@@ -6,7 +6,7 @@ import org.scalamock.scalatest.MockFactory
 import org.scalatest.{MustMatchers, WordSpec}
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Promise
+import scala.concurrent.{Future, Promise}
 import scala.concurrent.duration._
 
 class BusinessTrySpec extends WordSpec with MockFactory with MustMatchers {
@@ -50,7 +50,7 @@ class BusinessTrySpec extends WordSpec with MockFactory with MustMatchers {
 
       condition.expects(aResult).returns(false)
 
-      val BusinessFailure(problem) = successful.withFilter(aCondition).awaitResult
+      val BusinessFailure(problem) = successful.withCondition(aCondition).awaitResult
 
       problem mustBe Problems.BAD_REQUEST
     }
@@ -107,7 +107,7 @@ class BusinessTrySpec extends WordSpec with MockFactory with MustMatchers {
 
       condition.expects(*).never()
 
-      val BusinessFailure(problem) = failure.withFilter(aCondition).awaitResult
+      val BusinessFailure(problem) = failure.withCondition(aCondition).awaitResult
 
       problem mustBe Problems.INTERNAL_SERVER_ERROR
     }
@@ -141,6 +141,36 @@ class BusinessTrySpec extends WordSpec with MockFactory with MustMatchers {
 
       result.isSuccess mustBe true
       result.isFailure mustBe false
+    }
+  }
+
+  "BusinessTry" should {
+    "be compatible with for comprehention" in {
+      val firstTry = BusinessTry.success("first result")
+
+      val map1 = mockFunction[String, BusinessTry[String]]
+      val map2 = mockFunction[String, BusinessTry[String]]
+      val map3 = mockFunction[String, String]
+
+      map1.expects("first result").returns(BusinessTry.success("second result"))
+      map2.expects("second result").returns(BusinessTry.futureSuccess(Future.successful("third result")))
+      map3.expects("third result").returns("fourth result")
+
+      val condition = mockFunction[String, Boolean]
+      val aCondition = BusinessCondition(condition, Problems.BAD_REQUEST)
+
+      condition.expects("third result").returns(true)
+
+      val lastTry = for {
+        first <- firstTry
+        second <- map1(first)
+        third <- map2(second)
+        filtered <- aCondition(third)
+      } yield map3(filtered)
+
+      val BusinessSuccess(result) = lastTry.awaitResult
+
+      result mustEqual "fourth result"
     }
   }
 }

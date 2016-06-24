@@ -1,6 +1,6 @@
 package errorhandling.actions
 
-import errorhandling.BusinessCondition
+import errorhandling.{BusinessCondition, BusinessTry}
 import errorhandling.models.Problem
 import play.api.http.Status
 import play.api.mvc.{ActionBuilder, Request, RequestHeader, Result}

@@ -47,7 +47,7 @@ sealed trait BusinessTry[+R] {
   def flatMap[U](f: R => BusinessTry[U])(
       implicit ec: ExecutionContext): BusinessTry[U]
 
-  def withFilter(condition: BusinessCondition[R])(
+  def withCondition(condition: BusinessCondition[R])(
       implicit ec: ExecutionContext): BusinessTry[R]
 
   def fold[U](
@@ -137,7 +137,7 @@ case class BusinessSuccess[R](result: R) extends DecidedBusinessTry[R] {
   override def flatMap[U](f: (R) => BusinessTry[U])(
       implicit ec: ExecutionContext): BusinessTry[U] = f(result)
 
-  override def withFilter(condition: BusinessCondition[R])(
+  override def withCondition(condition: BusinessCondition[R])(
       implicit ec: ExecutionContext): BusinessTry[R] =
     if (condition.condition(result))
       this
@@ -170,7 +170,7 @@ case class BusinessFailure[R](problem: Problem) extends DecidedBusinessTry[R] {
       implicit ec: ExecutionContext): BusinessTry[U] =
     this.asInstanceOf[BusinessTry[U]]
 
-  override def withFilter(condition: BusinessCondition[R])(
+  override def withCondition(condition: BusinessCondition[R])(
       implicit ec: ExecutionContext): BusinessTry[R] = this
 
   override def fold[U](onSuccess: (R) => BusinessTry[U],
@@ -196,9 +196,9 @@ case class FutureBusinessTry[R](futureTry: Future[BusinessTry[R]])
       implicit ec: ExecutionContext): BusinessTry[U] =
     FutureBusinessTry[U](futureTry.map(_.flatMap(f)))
 
-  override def withFilter(condition: BusinessCondition[R])(
+  override def withCondition(condition: BusinessCondition[R])(
       implicit ec: ExecutionContext): BusinessTry[R] =
-    FutureBusinessTry[R](futureTry.map(_.withFilter(condition)))
+    FutureBusinessTry[R](futureTry.map(_.withCondition(condition)))
 
   override def fold[U](onSuccess: (R) => BusinessTry[U],
                        onFailure: (Problem) => BusinessTry[U])(
