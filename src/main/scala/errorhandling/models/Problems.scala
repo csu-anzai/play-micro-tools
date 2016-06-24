@@ -10,6 +10,10 @@ import play.api.libs.json.{JsPath, Json}
 object Problems {
   val BAD_REQUEST = Problem.forStatus(Status.BAD_REQUEST, "Bad request")
 
+  val FORBIDDEN = Problem.forStatus(Status.FORBIDDEN, "Forbidden")
+
+  val INTERNAL_SERVER_ERROR = Problem.forStatus(Status.INTERNAL_SERVER_ERROR, "Internal server error")
+
   def jsonValidationErrors(
       jsonErrors: Seq[(JsPath, Seq[ValidationError])]): Problem =
     BAD_REQUEST.copy(
