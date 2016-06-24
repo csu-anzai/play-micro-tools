@@ -4,8 +4,7 @@ import play.api.libs.json.{JsString, JsValue, Json}
 import play.api.mvc.{Result, Results}
 
 /**
-  * Some kind of business or technical problem that may be transferred from
-  * one service to another.
+  * Some kind of business problem that may be transferred from one service to another.
   */
 case class Problem(
     code: Int,
@@ -13,6 +12,10 @@ case class Problem(
     message: String,
     details: Option[JsValue]
 ) {
+
+  /**
+    * Convert the `BusinessTry` to an action result.
+    */
   def asResult: Result =
     Results.Status(code)(Json.toJson(this)(Problem.jsonFormat))
 

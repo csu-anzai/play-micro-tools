@@ -11,7 +11,7 @@ scalaVersion := "2.11.8"
 
 val playVersion = "2.5.3"
 
-licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
+licenses +=("MIT", url("http://opensource.org/licenses/MIT"))
 
 resolvers += "21re-bintray" at "http://dl.bintray.com/21re/public"
 
@@ -28,5 +28,6 @@ bintrayCredentialsFile := {
 libraryDependencies ++= Seq(
   "com.typesafe.play" %% "play" % playVersion % "provided",
   "com.typesafe.play" %% "play-ws" % playVersion % "provided",
-  "org.scalatest" %% "scalatest" % "3.0.0-RC2" % "test"
+  "org.scalatest" %% "scalatest" % "2.2.6" % "test",
+  "org.scalamock" %% "scalamock-scalatest-support" % "3.2.2" % "test"
 )

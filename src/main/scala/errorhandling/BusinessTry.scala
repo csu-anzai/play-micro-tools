@@ -10,9 +10,35 @@ import scala.util.{Failure, Success, Try}
 import play.api.mvc.Results._
 import scala.concurrent.ExecutionContext
 
+/**
+  * BusinnesTry is a useful variant of `scala.util.Try` and `scala.concurrent.Future`.
+  * The main idea is, that a `BusinessTry` has three states: Successful, Failure/Problem and Exception.
+  * A `Problem` can be considered as any kind of known or expected exception, i.e. a to be expected business error,
+  * whereas `Exception` may be anything unexpected, i.e. a technical error.
+  *
+  * The other wy round, you may argue that a `Problem` is part of your business logic and thereby reproducable, i.e.
+  * if your system get's the same input the same `Problem` will occure over and over again. Whereas an `Exception` is
+  * generally not reproducable and might ifx itself after some time (e.g. a temporary network outage).
+  *
+  * In general a `BusinessTry` is undecided, i.e. it might be a success or failure in the future.
+  *
+  * @tparam R the result type of the business try
+  */
 sealed trait BusinessTry[+R] {
+
+  /**
+    * Await the outcome of the business try.
+    * The will either create a `DecidedBusinessTry` or throw an `Exception`.
+    * Usfull for testing, should be used with care in production code as the thread will be blocked.
+    *
+    * @param timeout timeout for the await, will throw a TimeoutException is exceeded
+    * @return `DecidedBusinessTry`
+    */
   def awaitResult(implicit timeout: Timeout): DecidedBusinessTry[R]
 
+  /**
+    * Convert the `BusinessTry` to an asynchronous action result.
+    */
   def asResult(
       implicit writes: Writes[R], ec: ExecutionContext): Future[Result]
 
@@ -41,6 +67,13 @@ sealed trait BusinessTry[+R] {
   }
 }
 
+/**
+  * A `DecidedBusinessTry` is a `BusinessTry` with a concrete outcome: Success or Failure.
+  * There is no `Exception` case any more, since any kind of exception has been already thrown at this point and had
+  * to be dealt with in the usual manner (in most cases resulting in a HTTP 500).
+  *
+  * @tparam R the result type of the business try
+  */
 sealed trait DecidedBusinessTry[+R] extends BusinessTry[R] {
   def isSuccess: Boolean
 
