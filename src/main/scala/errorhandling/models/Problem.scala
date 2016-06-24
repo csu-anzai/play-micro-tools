@@ -8,24 +8,25 @@ import play.api.mvc.{Result, Results}
   * one service to another.
   */
 case class Problem(
-                    code: Int,
-                    `type`: String,
-                    message: String,
-                    details: Option[JsValue]
-                  ) {
+    code: Int,
+    `type`: String,
+    message: String,
+    details: Option[JsValue]
+) {
   def asResult: Result =
     Results.Status(code)(Json.toJson(this)(Problem.jsonFormat))
 
-  def withDetails(details: String): Problem = this.copy(details = Some(JsString(details)))
+  def withDetails(details: String): Problem =
+    this.copy(details = Some(JsString(details)))
 }
 
 object Problem {
   implicit val jsonFormat = Json.format[Problem]
 
   def forStatus(code: Int, message: String): Problem = Problem(
-    code = code,
-    `type` = s"https://status.es/$code",
-    message = message,
-    details = None
+      code = code,
+      `type` = s"https://status.es/$code",
+      message = message,
+      details = None
   )
 }

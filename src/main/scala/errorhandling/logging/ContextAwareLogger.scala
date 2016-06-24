@@ -7,7 +7,8 @@ import org.slf4j.{Logger, MDC}
 import scala.util.{Failure, Success, Try}
 
 class ContextAwareLogger(logger: Logger) {
-  def withLoggingContext[T](block: => T)(implicit loggingContext: LoggingContext): T = {
+  def withLoggingContext[T](block: => T)(
+      implicit loggingContext: LoggingContext): T = {
     try {
       loggingContext.contextValues.foreach(kv => MDC.put(kv._1, kv._2))
 
@@ -25,7 +26,8 @@ class ContextAwareLogger(logger: Logger) {
   /**
     * `true` if the logger instance is enabled for the `DEBUG` level.
     */
-  def isDebugEnabled(implicit loggingContext: LoggingContext) = loggingContext.enableBusinessDebug || logger.isDebugEnabled
+  def isDebugEnabled(implicit loggingContext: LoggingContext) =
+    loggingContext.enableBusinessDebug || logger.isDebugEnabled
 
   /**
     * `true` if business debugging is enabled.
@@ -33,31 +35,36 @@ class ContextAwareLogger(logger: Logger) {
     * Business will write business relevant data to the log, that must not be logged in
     * regular operation.
     */
-  def isBusinessDebugEnabled(implicit loggingContext: LoggingContext) = loggingContext.enableBusinessDebug
+  def isBusinessDebugEnabled(implicit loggingContext: LoggingContext) =
+    loggingContext.enableBusinessDebug
 
   /**
     * `true` if the logger instance is enabled for the `INFO` level.
     */
-  def isInfoEnabled(implicit loggingContext: LoggingContext) = loggingContext.enableBusinessDebug || logger.isInfoEnabled
+  def isInfoEnabled(implicit loggingContext: LoggingContext) =
+    loggingContext.enableBusinessDebug || logger.isInfoEnabled
 
   /**
     * `true` if the logger instance is enabled for the `WARN` level.
     */
-  def isWarnEnabled(implicit loggingContext: LoggingContext) = loggingContext.enableBusinessDebug || logger.isWarnEnabled
+  def isWarnEnabled(implicit loggingContext: LoggingContext) =
+    loggingContext.enableBusinessDebug || logger.isWarnEnabled
 
   /**
     * `true` if the logger instance is enabled for the `ERROR` level.
     */
-  def isErrorEnabled(implicit loggingContext: LoggingContext) = loggingContext.enableBusinessDebug || logger.isErrorEnabled
+  def isErrorEnabled(implicit loggingContext: LoggingContext) =
+    loggingContext.enableBusinessDebug || logger.isErrorEnabled
 
   /**
     * Logs a message with the `TRACE` level.
     *
     * @param message the message to log
     */
-  def trace(message: => String)(implicit loggingContext: LoggingContext) = withLoggingContext {
-    if (logger.isTraceEnabled) logger.trace(message)
-  }
+  def trace(message: => String)(implicit loggingContext: LoggingContext) =
+    withLoggingContext {
+      if (logger.isTraceEnabled) logger.trace(message)
+    }
 
   /**
     * Logs a message with the `TRACE` level.
@@ -65,7 +72,8 @@ class ContextAwareLogger(logger: Logger) {
     * @param message the message to log
     * @param error   the associated exception
     */
-  def trace(message: => String, error: => Throwable)(implicit loggingContext: LoggingContext) = withLoggingContext {
+  def trace(message: => String, error: => Throwable)(
+      implicit loggingContext: LoggingContext) = withLoggingContext {
     if (logger.isTraceEnabled) logger.trace(message, error)
   }
 
@@ -74,9 +82,10 @@ class ContextAwareLogger(logger: Logger) {
     *
     * @param message the message to log
     */
-  def debug(message: => String)(implicit loggingContext: LoggingContext) = withLoggingContext {
-    if (logger.isDebugEnabled) logger.debug(message)
-  }
+  def debug(message: => String)(implicit loggingContext: LoggingContext) =
+    withLoggingContext {
+      if (logger.isDebugEnabled) logger.debug(message)
+    }
 
   /**
     * Logs a message with the `DEBUG` level.
@@ -84,7 +93,8 @@ class ContextAwareLogger(logger: Logger) {
     * @param message the message to log
     * @param error   the associated exception
     */
-  def debug(message: => String, error: => Throwable)(implicit loggingContext: LoggingContext) = withLoggingContext {
+  def debug(message: => String, error: => Throwable)(
+      implicit loggingContext: LoggingContext) = withLoggingContext {
     if (logger.isDebugEnabled) logger.debug(message, error)
   }
 
@@ -93,7 +103,8 @@ class ContextAwareLogger(logger: Logger) {
     *
     * @param message the message to log
     */
-  def businessDebug(message: => String)(implicit loggingContext: LoggingContext): Unit = withLoggingContext {
+  def businessDebug(message: => String)(
+      implicit loggingContext: LoggingContext): Unit = withLoggingContext {
     if (isBusinessDebugEnabled) logger.debug(message)
   }
 
@@ -102,16 +113,18 @@ class ContextAwareLogger(logger: Logger) {
     *
     * @param message the message to log
     */
-  def info(message: => String)(implicit loggingContext: LoggingContext) = withLoggingContext {
-    if (logger.isInfoEnabled) logger.info(message)
-  }
+  def info(message: => String)(implicit loggingContext: LoggingContext) =
+    withLoggingContext {
+      if (logger.isInfoEnabled) logger.info(message)
+    }
 
   /**
     * Logs a message with the `INFO` level and context map.
     *
     * @param message the message to log
     */
-  def infoWithContext(message: => String, context: => Map[String, Any])(implicit loggingContext: LoggingContext) = withLoggingContext {
+  def infoWithContext(message: => String, context: => Map[String, Any])(
+      implicit loggingContext: LoggingContext) = withLoggingContext {
     if (logger.isInfoEnabled) logger.info(message)
   }
 
@@ -121,7 +134,8 @@ class ContextAwareLogger(logger: Logger) {
     * @param message the message to log
     * @param error   the associated exception
     */
-  def info(message: => String, error: => Throwable)(implicit loggingContext: LoggingContext) = withLoggingContext {
+  def info(message: => String, error: => Throwable)(
+      implicit loggingContext: LoggingContext) = withLoggingContext {
     if (logger.isInfoEnabled) logger.info(message, error)
   }
 
@@ -130,9 +144,10 @@ class ContextAwareLogger(logger: Logger) {
     *
     * @param message the message to log
     */
-  def warn(message: => String)(implicit loggingContext: LoggingContext) = withLoggingContext {
-    if (logger.isWarnEnabled) logger.warn(message)
-  }
+  def warn(message: => String)(implicit loggingContext: LoggingContext) =
+    withLoggingContext {
+      if (logger.isWarnEnabled) logger.warn(message)
+    }
 
   /**
     * Logs a message with the `WARN` level.
@@ -140,7 +155,8 @@ class ContextAwareLogger(logger: Logger) {
     * @param message the message to log
     * @param error   the associated exception
     */
-  def warn(message: => String, error: => Throwable)(implicit loggingContext: LoggingContext) = withLoggingContext {
+  def warn(message: => String, error: => Throwable)(
+      implicit loggingContext: LoggingContext) = withLoggingContext {
     if (logger.isWarnEnabled) logger.warn(message, error)
   }
 
@@ -149,9 +165,10 @@ class ContextAwareLogger(logger: Logger) {
     *
     * @param message the message to log
     */
-  def error(message: => String)(implicit loggingContext: LoggingContext) = withLoggingContext {
-    if (logger.isErrorEnabled) logger.error(message)
-  }
+  def error(message: => String)(implicit loggingContext: LoggingContext) =
+    withLoggingContext {
+      if (logger.isErrorEnabled) logger.error(message)
+    }
 
   /**
     * Logs a message with the `ERROR` level.
@@ -159,7 +176,8 @@ class ContextAwareLogger(logger: Logger) {
     * @param message the message to log
     * @param error   the associated exception
     */
-  def error(message: => String, error: => Throwable)(implicit loggingContext: LoggingContext) = withLoggingContext {
+  def error(message: => String, error: => Throwable)(
+      implicit loggingContext: LoggingContext) = withLoggingContext {
     if (logger.isErrorEnabled) logger.error(message, error)
   }
 
@@ -169,15 +187,19 @@ class ContextAwareLogger(logger: Logger) {
     * @param prefix  Log message prefix (e.g. business use case)
     * @param outcome the actual outcome
     */
-  def logOutcome[R](prefix: String)(outcome: Try[DecidedBusinessTry[R]])(implicit loggingContext: LoggingContext) = withLoggingContext {
+  def logOutcome[R](prefix: String)(outcome: Try[DecidedBusinessTry[R]])(
+      implicit loggingContext: LoggingContext) = withLoggingContext {
     outcome match {
-      case Success(BusinessSuccess(result)) => businessDebug(s"$prefix : SUCCESS with $result")
-      case Success(BusinessFailure(problem)) => error(s"$prefix : FAILED with $problem")
+      case Success(BusinessSuccess(result)) =>
+        businessDebug(s"$prefix : SUCCESS with $result")
+      case Success(BusinessFailure(problem)) =>
+        error(s"$prefix : FAILED with $problem")
       case Failure(exception) => error(s"$prefix : EXCEPTION", exception)
     }
   }
 
-  def logProblem(message: String, problem: Problem)(implicit loggingContext: LoggingContext) = {
+  def logProblem(message: String, problem: Problem)(
+      implicit loggingContext: LoggingContext) = {
     if (problem.code < 500) {
       warn(s"Business problem $message: $problem")
     } else {
@@ -185,4 +207,3 @@ class ContextAwareLogger(logger: Logger) {
     }
   }
 }
-

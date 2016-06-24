@@ -8,24 +8,31 @@ import play.api.mvc.Result
 import scala.concurrent.{Await, Future}
 import scala.util.{Failure, Success, Try}
 import play.api.mvc.Results._
+import scala.concurrent.ExecutionContext
 
 sealed trait BusinessTry[+R] {
   def awaitResult(implicit timeout: Timeout): DecidedBusinessTry[R]
 
-  def asResult(implicit writes: Writes[R]): Future[Result]
+  def asResult(
+      implicit writes: Writes[R], ec: ExecutionContext): Future[Result]
 
-  def map[U](f: R => U): BusinessTry[U]
+  def map[U](f: R => U)(implicit ec: ExecutionContext): BusinessTry[U]
 
-  def flatMap[U](f: R => BusinessTry[U]): BusinessTry[U]
+  def flatMap[U](f: R => BusinessTry[U])(
+      implicit ec: ExecutionContext): BusinessTry[U]
 
-  def withFilter(condition: BusinessCondition[R]): BusinessTry[R]
+  def withFilter(condition: BusinessCondition[R])(
+      implicit ec: ExecutionContext): BusinessTry[R]
 
-  def fold[U](onSuccess: R => BusinessTry[U],
-              onFailure: Problem => BusinessTry[U]): BusinessTry[U]
+  def fold[U](
+      onSuccess: R => BusinessTry[U], onFailure: Problem => BusinessTry[U])(
+      implicit ec: ExecutionContext): BusinessTry[U]
 
-  def onComplete(callback: Try[DecidedBusinessTry[R]] => Unit): BusinessTry[R]
+  def onComplete(callback: Try[DecidedBusinessTry[R]] => Unit)(
+      implicit ec: ExecutionContext): BusinessTry[R]
 
-  def zip[U](that: BusinessTry[U]): BusinessTry[(R, U)] = {
+  def zip[U](that: BusinessTry[U])(
+      implicit ec: ExecutionContext): BusinessTry[(R, U)] = {
     flatMap { thisResult =>
       that.map { thatResult =>
         (thisResult, thatResult)
@@ -39,8 +46,8 @@ sealed trait DecidedBusinessTry[+R] extends BusinessTry[R] {
 
   def isFailure: Boolean
 
-  override def onComplete(
-      callback: Try[DecidedBusinessTry[R]] => Unit): BusinessTry[R] = {
+  override def onComplete(callback: Try[DecidedBusinessTry[R]] => Unit)(
+      implicit ec: ExecutionContext): BusinessTry[R] = {
     Future {
       callback(Success(this))
     }
@@ -54,13 +61,15 @@ object BusinessTry {
   def failure[R](problem: Problem): DecidedBusinessTry[R] =
     BusinessFailure[R](problem)
 
-  def futureSuccess[R](futureResult: Future[R]): BusinessTry[R] =
+  def futureSuccess[R](futureResult: Future[R])(
+      implicit ec: ExecutionContext): BusinessTry[R] =
     FutureBusinessTry(futureResult.map(success))
 
   def future[R](futureTry: Future[BusinessTry[R]]): BusinessTry[R] =
     FutureBusinessTry(futureTry)
 
-  def forAll[U](tries: TraversableOnce[BusinessTry[U]]): BusinessTry[Seq[U]] =
+  def forAll[U](tries: TraversableOnce[BusinessTry[U]])(
+      implicit ec: ExecutionContext): BusinessTry[Seq[U]] =
     tries.foldLeft[BusinessTry[Seq[U]]](BusinessTry.success(Seq.empty)) {
       (results, aTry) =>
         results.flatMap(rs => aTry.map(result => rs :+ result))
@@ -80,24 +89,31 @@ case class BusinessSuccess[R](result: R) extends DecidedBusinessTry[R] {
 
   override def isFailure: Boolean = false
 
-  override def asResult(implicit writes: Writes[R]): Future[Result] = result match {
-    case businessResult : BusinessResult => Future.successful(businessResult.asResult)
-    case other => Future.successful(Ok(Json.toJson(result)))
-  }
+  override def asResult(
+      implicit writes: Writes[R], ec: ExecutionContext): Future[Result] =
+    result match {
+      case businessResult: BusinessResult =>
+        Future.successful(businessResult.asResult)
+      case other => Future.successful(Ok(Json.toJson(result)))
+    }
 
-  override def map[U](f: (R) => U): BusinessTry[U] = BusinessSuccess(f(result))
+  override def map[U](f: (R) => U)(
+      implicit ec: ExecutionContext): BusinessTry[U] =
+    BusinessSuccess(f(result))
 
-  override def flatMap[U](f: (R) => BusinessTry[U]): BusinessTry[U] = f(result)
+  override def flatMap[U](f: (R) => BusinessTry[U])(
+      implicit ec: ExecutionContext): BusinessTry[U] = f(result)
 
-  override def withFilter(condition: BusinessCondition[R]): BusinessTry[R] =
+  override def withFilter(condition: BusinessCondition[R])(
+      implicit ec: ExecutionContext): BusinessTry[R] =
     if (condition.condition(result))
       this
     else
       BusinessFailure[R](condition.problem)
 
-  override def fold[U](
-      onSuccess: (R) => BusinessTry[U],
-      onFailure: (Problem) => BusinessTry[U]): BusinessTry[U] =
+  override def fold[U](onSuccess: (R) => BusinessTry[U],
+                       onFailure: (Problem) => BusinessTry[U])(
+      implicit ec: ExecutionContext): BusinessTry[U] =
     onSuccess(result)
 
   override def awaitResult(implicit timeout: Timeout): DecidedBusinessTry[R] =
@@ -109,19 +125,24 @@ case class BusinessFailure[R](problem: Problem) extends DecidedBusinessTry[R] {
 
   override def isFailure: Boolean = true
 
-  override def asResult(implicit writes: Writes[R]): Future[Result] = Future.successful(problem.asResult)
+  override def asResult(
+      implicit writes: Writes[R], ec: ExecutionContext): Future[Result] =
+    Future.successful(problem.asResult)
 
-  override def map[U](f: (R) => U): BusinessTry[U] =
+  override def map[U](f: (R) => U)(
+      implicit ec: ExecutionContext): BusinessTry[U] =
     this.asInstanceOf[BusinessTry[U]]
 
-  override def flatMap[U](f: (R) => BusinessTry[U]): BusinessTry[U] =
+  override def flatMap[U](f: (R) => BusinessTry[U])(
+      implicit ec: ExecutionContext): BusinessTry[U] =
     this.asInstanceOf[BusinessTry[U]]
 
-  override def withFilter(condition: BusinessCondition[R]): BusinessTry[R] = this
+  override def withFilter(condition: BusinessCondition[R])(
+      implicit ec: ExecutionContext): BusinessTry[R] = this
 
-  override def fold[U](
-      onSuccess: (R) => BusinessTry[U],
-      onFailure: (Problem) => BusinessTry[U]): BusinessTry[U] =
+  override def fold[U](onSuccess: (R) => BusinessTry[U],
+                       onFailure: (Problem) => BusinessTry[U])(
+      implicit ec: ExecutionContext): BusinessTry[U] =
     onFailure(problem)
 
   override def awaitResult(implicit timeout: Timeout): DecidedBusinessTry[R] =
@@ -130,30 +151,35 @@ case class BusinessFailure[R](problem: Problem) extends DecidedBusinessTry[R] {
 
 case class FutureBusinessTry[R](futureTry: Future[BusinessTry[R]])
     extends BusinessTry[R] {
-  override def asResult(implicit writes: Writes[R]): Future[Result] = futureTry.flatMap(_.asResult)
+  override def asResult(
+      implicit writes: Writes[R], ec: ExecutionContext): Future[Result] =
+    futureTry.flatMap(_.asResult)
 
-  override def map[U](f: (R) => U): BusinessTry[U] =
+  override def map[U](f: (R) => U)(
+      implicit ec: ExecutionContext): BusinessTry[U] =
     FutureBusinessTry[U](futureTry.map(_.map(f)))
 
-  override def flatMap[U](f: (R) => BusinessTry[U]): BusinessTry[U] =
+  override def flatMap[U](f: (R) => BusinessTry[U])(
+      implicit ec: ExecutionContext): BusinessTry[U] =
     FutureBusinessTry[U](futureTry.map(_.flatMap(f)))
 
-  override def withFilter(condition: BusinessCondition[R]): BusinessTry[R] =
+  override def withFilter(condition: BusinessCondition[R])(
+      implicit ec: ExecutionContext): BusinessTry[R] =
     FutureBusinessTry[R](futureTry.map(_.withFilter(condition)))
 
-  override def fold[U](
-      onSuccess: (R) => BusinessTry[U],
-      onFailure: (Problem) => BusinessTry[U]): BusinessTry[U] =
+  override def fold[U](onSuccess: (R) => BusinessTry[U],
+                       onFailure: (Problem) => BusinessTry[U])(
+      implicit ec: ExecutionContext): BusinessTry[U] =
     FutureBusinessTry(futureTry.map(_.fold(onSuccess, onFailure)))
 
   override def awaitResult(implicit timeout: Timeout): DecidedBusinessTry[R] =
     Await.result(futureTry, timeout.duration).awaitResult
 
-  override def onComplete(
-      callback: Try[DecidedBusinessTry[R]] => Unit): BusinessTry[R] = {
+  override def onComplete(callback: Try[DecidedBusinessTry[R]] => Unit)(
+      implicit ec: ExecutionContext): BusinessTry[R] = {
     futureTry.onComplete {
       case Success(businessTry) => businessTry.onComplete(callback)
-      case Failure(exception)   => callback(Failure(exception))
+      case Failure(exception) => callback(Failure(exception))
     }
     this
   }

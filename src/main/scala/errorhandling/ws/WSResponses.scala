@@ -63,7 +63,8 @@ object WSResponseCreated {
 }
 
 object WSResponseAccepted {
-  def unapply(response: WSResponse): Option[(URI, Seq[String], Option[JsValue])] = {
+  def unapply(
+      response: WSResponse): Option[(URI, Seq[String], Option[JsValue])] = {
     if (response.status == Status.ACCEPTED)
       response.header(HeaderNames.LOCATION).map { locationUrl =>
         val json =
@@ -71,7 +72,9 @@ object WSResponseAccepted {
             Some(response.json)
           else
             None
-        (URI.create(locationUrl), response.allHeaders.getOrElse("link", Seq.empty), json)
+        (URI.create(locationUrl),
+         response.allHeaders.getOrElse("link", Seq.empty),
+         json)
       } else
       None
   }
@@ -94,10 +97,15 @@ object WSResponseConflict {
 
 object WSResponseClientError {
   def unapply(response: WSResponse): Option[Problem] = {
-    if (response.status >= Status.BAD_REQUEST && response.status < Status.INTERNAL_SERVER_ERROR)
+    if (response.status >= Status.BAD_REQUEST &&
+        response.status < Status.INTERNAL_SERVER_ERROR)
       Try(response.json).map(_.validate[Problem]) match {
         case Success(JsSuccess(problem, _)) => Some(problem)
-        case _ => Some(Problem.forStatus(response.status, response.statusText).withDetails(response.body))
+        case _ =>
+          Some(
+              Problem
+                .forStatus(response.status, response.statusText)
+                .withDetails(response.body))
       } else
       None
   }
@@ -108,7 +116,11 @@ object WSResponseUnprocesssableEntity {
     if (response.status == Status.UNPROCESSABLE_ENTITY)
       Try(response.json).map(_.validate[Problem]) match {
         case Success(JsSuccess(problem, _)) => Some(problem)
-        case _ => Some(Problem.forStatus(response.status, response.statusText).withDetails(response.body))
+        case _ =>
+          Some(
+              Problem
+                .forStatus(response.status, response.statusText)
+                .withDetails(response.body))
       } else
       None
   }
@@ -119,7 +131,11 @@ object WSResponseServerError {
     if (response.status >= Status.INTERNAL_SERVER_ERROR)
       Try(response.json).map(_.validate[Problem]) match {
         case Success(JsSuccess(problem, _)) => Some(problem)
-        case _ => Some(Problem.forStatus(response.status, response.statusText).withDetails(response.body))
+        case _ =>
+          Some(
+              Problem
+                .forStatus(response.status, response.statusText)
+                .withDetails(response.body))
       } else
       None
   }
