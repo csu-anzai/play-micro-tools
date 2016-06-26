@@ -26,8 +26,10 @@ bintrayCredentialsFile := {
 }
 
 libraryDependencies ++= Seq(
-  "com.typesafe.play" %% "play" % playVersion % "provided",
-  "com.typesafe.play" %% "play-ws" % playVersion % "provided",
-  "org.scalatest" %% "scalatest" % "2.2.6" % "test",
-  "org.scalamock" %% "scalamock-scalatest-support" % "3.2.2" % "test"
+  "com.typesafe.play" %% "play" % playVersion % Provided,
+  "com.typesafe.play" %% "play-ws" % playVersion % Provided,
+  "org.scalatest" %% "scalatest" % "2.2.6" % Test,
+  "org.scalamock" %% "scalamock-scalatest-support" % "3.2.2" % Test,
+  "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % Test
+
 )

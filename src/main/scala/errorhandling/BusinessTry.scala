@@ -2,13 +2,11 @@ package errorhandling
 
 import akka.util.Timeout
 import errorhandling.models.{Problem, Problems}
-import play.api.libs.json.{JsValue, Json, Reads, Writes}
+import play.api.libs.json.{JsValue, Reads, Writes}
 import play.api.mvc.Result
 
-import scala.concurrent.{Await, Future}
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
-import play.api.mvc.Results._
-import scala.concurrent.ExecutionContext
 
 /**
   * BusinnesTry is a useful variant of `scala.util.Try` and `scala.concurrent.Future`.
@@ -39,8 +37,8 @@ sealed trait BusinessTry[+R] {
   /**
     * Convert the `BusinessTry` to an asynchronous action result.
     */
-  def asResult(
-      implicit writes: Writes[R], ec: ExecutionContext): Future[Result]
+  def asResult(implicit converter: ResultConverter[R],
+               ec: ExecutionContext): Future[Result]
 
   def map[U](f: R => U)(implicit ec: ExecutionContext): BusinessTry[U]
 
@@ -122,13 +120,9 @@ case class BusinessSuccess[R](result: R) extends DecidedBusinessTry[R] {
 
   override def isFailure: Boolean = false
 
-  override def asResult(
-      implicit writes: Writes[R], ec: ExecutionContext): Future[Result] =
-    result match {
-      case businessResult: BusinessResult =>
-        Future.successful(businessResult.asResult)
-      case other => Future.successful(Ok(Json.toJson(result)))
-    }
+  override def asResult(implicit converter: ResultConverter[R],
+                        ec: ExecutionContext): Future[Result] =
+    Future.successful(converter.onSuccess(result))
 
   override def map[U](f: (R) => U)(
       implicit ec: ExecutionContext): BusinessTry[U] =
@@ -158,9 +152,9 @@ case class BusinessFailure[R](problem: Problem) extends DecidedBusinessTry[R] {
 
   override def isFailure: Boolean = true
 
-  override def asResult(
-      implicit writes: Writes[R], ec: ExecutionContext): Future[Result] =
-    Future.successful(problem.asResult)
+  override def asResult(implicit converter: ResultConverter[R],
+                        ec: ExecutionContext): Future[Result] =
+    Future.successful(converter.onProblem(problem))
 
   override def map[U](f: (R) => U)(
       implicit ec: ExecutionContext): BusinessTry[U] =
@@ -184,9 +178,12 @@ case class BusinessFailure[R](problem: Problem) extends DecidedBusinessTry[R] {
 
 case class FutureBusinessTry[R](futureTry: Future[BusinessTry[R]])
     extends BusinessTry[R] {
-  override def asResult(
-      implicit writes: Writes[R], ec: ExecutionContext): Future[Result] =
-    futureTry.flatMap(_.asResult)
+  override def asResult(implicit converter: ResultConverter[R],
+                        ec: ExecutionContext): Future[Result] =
+    futureTry.flatMap(_.asResult).recover {
+      case cause: Throwable =>
+        converter.onFailure(cause)
+    }
 
   override def map[U](f: (R) => U)(
       implicit ec: ExecutionContext): BusinessTry[U] =
@@ -212,7 +209,7 @@ case class FutureBusinessTry[R](futureTry: Future[BusinessTry[R]])
       implicit ec: ExecutionContext): BusinessTry[R] = {
     futureTry.onComplete {
       case Success(businessTry) => businessTry.onComplete(callback)
-      case Failure(exception) => callback(Failure(exception))
+      case Failure(exception)   => callback(Failure(exception))
     }
     this
   }
