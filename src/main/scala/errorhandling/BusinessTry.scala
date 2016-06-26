@@ -113,6 +113,11 @@ object BusinessTry {
         success
     )
   }
+
+  def require[R](option : Option[R], problem:Problem) : BusinessTry[R] = option match {
+    case Some(value) => success(value)
+    case None => failure(problem)
+  }
 }
 
 case class BusinessSuccess[R](result: R) extends DecidedBusinessTry[R] {
