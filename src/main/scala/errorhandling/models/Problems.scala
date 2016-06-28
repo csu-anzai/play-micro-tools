@@ -12,6 +12,10 @@ object Problems {
 
   val FORBIDDEN = Problem.forStatus(Status.FORBIDDEN, "Forbidden")
 
+  val CONFLICT = Problem.forStatus(Status.CONFLICT, "Conflict")
+
+  val NOT_FOUND = Problem.forStatus(Status.NOT_FOUND, "Not found")
+
   val INTERNAL_SERVER_ERROR =
     Problem.forStatus(Status.INTERNAL_SERVER_ERROR, "Internal server error")
 
