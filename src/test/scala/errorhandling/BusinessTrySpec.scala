@@ -1,6 +1,5 @@
 package errorhandling
 
-import akka.util.Timeout
 import errorhandling.models.{Problem, Problems}
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.concurrent.ScalaFutures
@@ -11,8 +10,7 @@ import play.mvc.Http.Status
 import play.api.test.Helpers._
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration._
-import scala.concurrent.{Await, Future, Promise}
+import scala.concurrent.{Future, Promise}
 
 class BusinessTrySpec
     extends WordSpec
