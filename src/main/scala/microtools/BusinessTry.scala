@@ -48,8 +48,8 @@ sealed trait BusinessTry[+R] {
   def withCondition(condition: BusinessCondition[R])(
       implicit ec: ExecutionContext): BusinessTry[R]
 
-  def fold[U](
-      onSuccess: R => BusinessTry[U], onFailure: Problem => BusinessTry[U])(
+  def fold[U](onSuccess: R => BusinessTry[U],
+              onFailure: Problem => BusinessTry[U])(
       implicit ec: ExecutionContext): BusinessTry[U]
 
   def onComplete(callback: Try[DecidedBusinessTry[R]] => Unit)(
@@ -114,10 +114,22 @@ object BusinessTry {
     )
   }
 
-  def require[R](option : Option[R], problem:Problem) : BusinessTry[R] = option match {
-    case Some(value) => success(value)
-    case None => failure(problem)
+  def transformJson(
+      json: JsValue,
+      transformation: Reads[_ <: JsValue]): BusinessTry[JsValue] = {
+    json
+      .transform(transformation)
+      .fold(
+          jsonErrors => failure(Problems.jsonValidationErrors(jsonErrors)),
+          success
+      )
   }
+
+  def require[R](option: Option[R], problem: Problem): BusinessTry[R] =
+    option match {
+      case Some(value) => success(value)
+      case None        => failure(problem)
+    }
 }
 
 case class BusinessSuccess[R](result: R) extends DecidedBusinessTry[R] {
