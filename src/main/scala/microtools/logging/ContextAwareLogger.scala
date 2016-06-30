@@ -1,7 +1,7 @@
-package errorhandling.logging
+package microtools.logging
 
-import errorhandling.models.Problem
-import errorhandling.{BusinessFailure, BusinessSuccess, DecidedBusinessTry}
+import microtools.models.Problem
+import microtools.{BusinessFailure, BusinessSuccess, DecidedBusinessTry}
 import org.slf4j.{Logger, MDC}
 
 import scala.util.{Failure, Success, Try}

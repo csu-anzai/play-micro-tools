@@ -1,4 +1,4 @@
-package errorhandling.hateoas
+package microtools.hateoas
 
 /**
   * Any kind of business action you may perform with a resource.

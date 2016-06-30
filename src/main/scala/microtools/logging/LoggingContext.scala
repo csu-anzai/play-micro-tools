@@ -1,4 +1,4 @@
-package errorhandling.logging
+package microtools.logging
 
 /**
   * A generic logging context.

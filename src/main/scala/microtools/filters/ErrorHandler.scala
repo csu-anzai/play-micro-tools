@@ -1,8 +1,8 @@
-package errorhandling.filters
+package microtools.filters
 
 import javax.inject.Inject
 
-import errorhandling.models.{Problem, Problems}
+import microtools.models.{Problem, Problems}
 import play.api.http.HttpErrorHandler
 import play.api.mvc.{RequestHeader, Result}
 import play.api.{Environment, Logger}

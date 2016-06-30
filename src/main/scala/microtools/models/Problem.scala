@@ -1,4 +1,4 @@
-package errorhandling.models
+package microtools.models
 
 import play.api.libs.json.{JsString, JsValue, Json}
 import play.api.mvc.{Result, Results}

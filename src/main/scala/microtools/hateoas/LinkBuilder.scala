@@ -1,4 +1,4 @@
-package errorhandling.hateoas
+package microtools.hateoas
 
 /**
   * Convert a business action to a link.

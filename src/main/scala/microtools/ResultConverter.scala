@@ -1,7 +1,7 @@
-package errorhandling
+package microtools
 
-import errorhandling.hateoas.BusinessResult
-import errorhandling.models.{Problem, Problems}
+import microtools.hateoas.BusinessResult
+import microtools.models.{Problem, Problems}
 import play.api.libs.json.{Json, Writes}
 import play.api.mvc.{Result, Results}
 

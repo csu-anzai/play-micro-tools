@@ -1,4 +1,4 @@
-package errorhandling.models
+package microtools.models
 
 import play.api.data.validation.ValidationError
 import play.api.http.Status

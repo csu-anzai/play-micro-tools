@@ -1,5 +1,5 @@
 
-name := "play-error-handling"
+name := "play-micro-tools"
 
 organization := "de.21re"
 

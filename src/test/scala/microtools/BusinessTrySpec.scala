@@ -1,6 +1,6 @@
-package errorhandling
+package microtools
 
-import errorhandling.models.{Problem, Problems}
+import microtools.models.{Problem, Problems}
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{MustMatchers, WordSpec}

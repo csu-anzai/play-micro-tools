@@ -1,4 +1,4 @@
-package errorhandling.hateoas
+package microtools.hateoas
 
 object SomeActions {
   case object GetData extends BusinessAction {

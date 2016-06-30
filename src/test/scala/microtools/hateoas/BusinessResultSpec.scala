@@ -1,4 +1,4 @@
-package errorhandling.hateoas
+package microtools.hateoas
 
 import org.scalatest.{MustMatchers, WordSpec}
 import play.api.libs.json.JsValue

@@ -1,4 +1,4 @@
-package errorhandling.hateoas
+package microtools.hateoas
 
 import play.api.http.HeaderNames
 import play.api.libs.json.{Json, Writes}

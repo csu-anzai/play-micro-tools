@@ -1,7 +1,7 @@
-package errorhandling
+package microtools
 
 import akka.util.Timeout
-import errorhandling.models.{Problem, Problems}
+import microtools.models.{Problem, Problems}
 import play.api.libs.json.{JsValue, Reads, Writes}
 import play.api.mvc.Result
 
