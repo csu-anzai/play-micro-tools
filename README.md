@@ -1,4 +1,4 @@
-# play-error-handling
+# play-micro-tools
 
-Small collection of tools simplifying the common tasks of dealing with errors in a play application.
+Mciro collection of tools simplifying the common tasks of writing micro-services in play.
 
