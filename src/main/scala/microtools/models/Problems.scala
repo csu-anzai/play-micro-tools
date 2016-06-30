@@ -16,6 +16,8 @@ object Problems {
 
   val NOT_FOUND = Problem.forStatus(Status.NOT_FOUND, "Not found")
 
+  val NOT_ACCEPTABLE = Problem.forStatus(Status.NOT_ACCEPTABLE, "Not acceptable")
+
   val INTERNAL_SERVER_ERROR =
     Problem.forStatus(Status.INTERNAL_SERVER_ERROR, "Internal server error")
 
@@ -29,4 +31,15 @@ object Problems {
             "errors" -> Json.arr(errors.map(_.messages.mkString(", ")))
         )
     })))
+
+  def jsonTransformErrors(
+                            jsonErrors: Seq[(JsPath, Seq[ValidationError])]): Problem =
+    NOT_ACCEPTABLE.copy(
+      details = Some(Json.arr(jsonErrors.map {
+        case (path, errors) =>
+          Json.obj(
+            "path" -> path.toString(),
+            "errors" -> Json.arr(errors.map(_.messages.mkString(", ")))
+          )
+      })))
 }

@@ -1,14 +1,17 @@
 package microtools.patch
 
+import microtools.models.Problems
 import microtools.{BusinessTry, JsonFormats}
-import play.api.libs.json._
 import play.api.libs.functional.syntax._
+import play.api.libs.json.Reads._
+import play.api.libs.json._
+
 import scala.concurrent.ExecutionContext
 
 /**
   * RFC6902 kind of patch operation.
   */
-case class Patch(op: PatchOperation.Type, path: String, value: JsValue) {
+case class Patch(op: PatchOperation.Type, path: String, value: Option[JsValue]) {
   def apply(json: JsValue)(
       implicit ec: ExecutionContext): BusinessTry[JsValue] =
     for {
@@ -18,10 +21,25 @@ case class Patch(op: PatchOperation.Type, path: String, value: JsValue) {
 
   def transformation(
       implicit ec: ExecutionContext): BusinessTry[Reads[_ <: JsValue]] = {
-    JsonPointer(path).map { path =>
-      op match {
-        case PatchOperation.REPLACE =>
-          (__.json.pick and path.json.put(value)).reduce
+    JsonPointer(path).flatMap { path =>
+      (op, value) match {
+        case (PatchOperation.ADD, Some(v)) =>
+          BusinessTry.success(path.json.update(new Reads[JsValue] {
+            override def reads(json: JsValue): JsResult[JsValue] = json match {
+              case JsArray(elements) => JsSuccess(JsArray(elements :+ v))
+              case JsNull => JsSuccess(v)
+              case existing => JsError("error.patch.add.value.exists")
+            }
+          }))
+        case (PatchOperation.REMOVE, None) =>
+          BusinessTry.success(path.json.prune)
+        case (PatchOperation.REPLACE, Some(v)) =>
+          BusinessTry.success(path.json.update(new Reads[JsValue] {
+            override def reads(json: JsValue): JsResult[JsValue] = JsSuccess(v)
+          }))
+        case _ =>
+          BusinessTry.failure(
+              Problems.BAD_REQUEST.withDetails(s"Invalid patch: ${this}"))
       }
     }
   }

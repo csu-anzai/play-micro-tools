@@ -120,7 +120,7 @@ object BusinessTry {
     json
       .transform(transformation)
       .fold(
-          jsonErrors => failure(Problems.jsonValidationErrors(jsonErrors)),
+          jsonErrors => failure(Problems.jsonTransformErrors(jsonErrors)),
           success
       )
   }
