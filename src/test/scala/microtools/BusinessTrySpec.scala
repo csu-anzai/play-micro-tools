@@ -22,8 +22,8 @@ class BusinessTrySpec
     val successful = BusinessTry.success(aResult)
 
     "a success" in {
-      successful.isSuccess mustBe true
-      successful.isFailure mustBe false
+      successful.awaitResult.isSuccess mustBe true
+      successful.awaitResult.isFailure mustBe false
     }
 
     "be mapable" in {
@@ -111,8 +111,8 @@ class BusinessTrySpec
     val failure = BusinessTry.failure(Problems.INTERNAL_SERVER_ERROR)
 
     "a faulure" in {
-      failure.isSuccess mustBe false
-      failure.isFailure mustBe true
+      failure.awaitResult.isSuccess mustBe false
+      failure.awaitResult.isFailure mustBe true
     }
 
     "not be mapable" in {

@@ -2,7 +2,7 @@ package microtools
 
 import akka.util.Timeout
 import microtools.models.{Problem, Problems}
-import play.api.libs.json.{JsValue, Reads, Writes}
+import play.api.libs.json.{JsValue, Reads}
 import play.api.mvc.Result
 
 import scala.concurrent.{Await, ExecutionContext, Future}
@@ -87,9 +87,9 @@ sealed trait DecidedBusinessTry[+R] extends BusinessTry[R] {
 }
 
 object BusinessTry {
-  def success[R](result: R): DecidedBusinessTry[R] = BusinessSuccess(result)
+  def success[R](result: R): BusinessTry[R] = BusinessSuccess(result)
 
-  def failure[R](problem: Problem): DecidedBusinessTry[R] =
+  def failure[R](problem: Problem): BusinessTry[R] =
     BusinessFailure[R](problem)
 
   def futureSuccess[R](futureResult: Future[R])(
@@ -107,7 +107,7 @@ object BusinessTry {
     }
 
   def validateJson[T](json: JsValue)(
-      implicit reads: Reads[T]): DecidedBusinessTry[T] = {
+      implicit reads: Reads[T]): BusinessTry[T] = {
     json.validate.fold(
         jsonErrors => failure(Problems.jsonValidationErrors(jsonErrors)),
         success
