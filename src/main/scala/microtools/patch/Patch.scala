@@ -34,9 +34,7 @@ case class Patch(op: PatchOperation.Type, path: String, value: Option[JsValue]) 
         case (PatchOperation.REMOVE, None) =>
           BusinessTry.success(path.json.prune)
         case (PatchOperation.REPLACE, Some(v)) =>
-          BusinessTry.success(path.json.update(new Reads[JsValue] {
-            override def reads(json: JsValue): JsResult[JsValue] = JsSuccess(v)
-          }))
+          BusinessTry.success((__.read[JsObject] and path.json.put(v)).reduce)
         case _ =>
           BusinessTry.failure(
               Problems.BAD_REQUEST.withDetails(s"Invalid patch: ${this}"))

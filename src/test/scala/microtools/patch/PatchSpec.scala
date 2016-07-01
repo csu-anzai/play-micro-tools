@@ -35,27 +35,50 @@ class PatchSpec extends WordSpec with MustMatchers {
       )
     }
 
-    "be able to add elements to an array" in {
+    "be able to mix fields with array index" in {
       val source = Json.obj(
-        "f1" -> Json.arr("elem1", "elem2"),
-        "f2" -> 1234,
-        "f3" -> Json.obj(
-          "s1" -> "sub1",
-          "s2" -> "sub2"
-        )
+          "person" -> Json.obj(
+              "name" -> "current"
+          )
       )
 
-      val patch =
-        Patch(op = PatchOperation.ADD, "/f1", Some(JsNumber(5678)))
+      val patch = Patch(op = PatchOperation.REPLACE,
+                        "/person/address",
+                        Some(Json.obj(
+                                "street" -> "Somewhere"
+                            )))
       val BusinessSuccess(result) = patch(source).awaitResult
 
       result mustBe Json.obj(
-        "f1" -> Json.arr("elem1", "elem2", 5678),
-        "f2" -> 1234,
-        "f3" -> Json.obj(
-          "s1" -> "sub1",
-          "s2" -> "sub2"
+        "person" -> Json.obj(
+          "name" -> "current",
+          "address" -> Json.obj(
+            "street" -> "Somewhere"
+          )
         )
+      )
+    }
+
+    "be able to add elements to an array" in {
+      val source = Json.obj(
+          "f1" -> Json.arr("elem1", "elem2"),
+          "f2" -> 1234,
+          "f3" -> Json.obj(
+              "s1" -> "sub1",
+              "s2" -> "sub2"
+          )
+      )
+
+      val patch                   = Patch(op = PatchOperation.ADD, "/f1", Some(JsNumber(5678)))
+      val BusinessSuccess(result) = patch(source).awaitResult
+
+      result mustBe Json.obj(
+          "f1" -> Json.arr("elem1", "elem2", 5678),
+          "f2" -> 1234,
+          "f3" -> Json.obj(
+              "s1" -> "sub1",
+              "s2" -> "sub2"
+          )
       )
     }
 
@@ -69,15 +92,15 @@ class PatchSpec extends WordSpec with MustMatchers {
           )
       )
 
-      val patch = Patch(op = PatchOperation.REMOVE, "/f2", None)
+      val patch                   = Patch(op = PatchOperation.REMOVE, "/f2", None)
       val BusinessSuccess(result) = patch(source).awaitResult
 
       result mustBe Json.obj(
-        "f1" -> "field1",
-        "f3" -> Json.obj(
-          "s1" -> "sub1",
-          "s2" -> "sub2"
-        )
+          "f1" -> "field1",
+          "f3" -> Json.obj(
+              "s1" -> "sub1",
+              "s2" -> "sub2"
+          )
       )
     }
   }
