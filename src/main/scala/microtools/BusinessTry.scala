@@ -197,11 +197,8 @@ case class FutureBusinessTry[R](futureTry: Future[BusinessTry[R]])
     extends BusinessTry[R] {
   override def asResult(implicit converter: ResultConverter[R],
                         ec: ExecutionContext): Future[Result] =
-    futureTry.flatMap(_.asResult).recover {
-      case cause: Throwable =>
-        converter.onFailure(cause)
-    }
-
+    futureTry.flatMap(_.asResult)
+  
   override def map[U](f: (R) => U)(
       implicit ec: ExecutionContext): BusinessTry[U] =
     FutureBusinessTry[U](futureTry.map(_.map(f)))
