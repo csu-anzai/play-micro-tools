@@ -40,6 +40,8 @@ sealed trait BusinessTry[+R] {
   def asResult(implicit converter: ResultConverter[R],
                ec: ExecutionContext): Future[Result]
 
+  def asFuture(implicit ec: ExecutionContext) : Future[Either[R, Problem]]
+
   def map[U](f: R => U)(implicit ec: ExecutionContext): BusinessTry[U]
 
   def flatMap[U](f: R => BusinessTry[U])(
@@ -141,6 +143,9 @@ case class BusinessSuccess[R](result: R) extends DecidedBusinessTry[R] {
                         ec: ExecutionContext): Future[Result] =
     Future.successful(converter.onSuccess(result))
 
+  override def asFuture(implicit ec: ExecutionContext): Future[Either[R, Problem]] =
+    Future.successful(Left(result))
+
   override def map[U](f: (R) => U)(
       implicit ec: ExecutionContext): BusinessTry[U] =
     BusinessSuccess(f(result))
@@ -173,6 +178,9 @@ case class BusinessFailure[R](problem: Problem) extends DecidedBusinessTry[R] {
                         ec: ExecutionContext): Future[Result] =
     Future.successful(converter.onProblem(problem))
 
+  override def asFuture(implicit ec: ExecutionContext): Future[Either[R, Problem]] =
+    Future.successful(Right(problem))
+
   override def map[U](f: (R) => U)(
       implicit ec: ExecutionContext): BusinessTry[U] =
     this.asInstanceOf[BusinessTry[U]]
@@ -198,7 +206,10 @@ case class FutureBusinessTry[R](futureTry: Future[BusinessTry[R]])
   override def asResult(implicit converter: ResultConverter[R],
                         ec: ExecutionContext): Future[Result] =
     futureTry.flatMap(_.asResult)
-  
+
+  override def asFuture(implicit ec: ExecutionContext): Future[Either[R, Problem]] =
+    futureTry.flatMap(_.asFuture)
+
   override def map[U](f: (R) => U)(
       implicit ec: ExecutionContext): BusinessTry[U] =
     FutureBusinessTry[U](futureTry.map(_.map(f)))

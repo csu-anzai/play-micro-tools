@@ -27,8 +27,8 @@ case class Patch(op: PatchOperation.Type, path: String, value: Option[JsValue]) 
           BusinessTry.success(path.json.update(new Reads[JsValue] {
             override def reads(json: JsValue): JsResult[JsValue] = json match {
               case JsArray(elements) => JsSuccess(JsArray(elements :+ v))
-              case JsNull => JsSuccess(v)
-              case existing => JsError("error.patch.add.value.exists")
+              case JsNull            => JsSuccess(v)
+              case existing          => JsError("error.patch.add.value.exists")
             }
           }))
         case (PatchOperation.REMOVE, None) =>
@@ -44,6 +44,7 @@ case class Patch(op: PatchOperation.Type, path: String, value: Option[JsValue]) 
 }
 
 object Patch extends JsonFormats {
-  implicit val patchOperatioFormat = enumFormat(PatchOperation, _.toLowerCase)
-  implicit val patchFormat         = Json.format[Patch]
+  implicit val patchOperatioFormat = enumFormat(
+      PatchOperation, normalize = _.toLowerCase)
+  implicit val patchFormat = Json.format[Patch]
 }
