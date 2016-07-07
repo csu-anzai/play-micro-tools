@@ -11,6 +11,8 @@ scalaVersion := "2.11.8"
 
 val playVersion = "2.5.3"
 
+val metricsVersion = "3.1.2"
+
 licenses +=("MIT", url("http://opensource.org/licenses/MIT"))
 
 resolvers += "21re-bintray" at "http://dl.bintray.com/21re/public"
@@ -28,6 +30,9 @@ bintrayCredentialsFile := {
 libraryDependencies ++= Seq(
   "com.typesafe.play" %% "play" % playVersion % Provided,
   "com.typesafe.play" %% "play-ws" % playVersion % Provided,
+  "io.dropwizard.metrics" % "metrics-core" % metricsVersion,
+  "io.dropwizard.metrics" % "metrics-jvm" % metricsVersion,
+  "io.dropwizard.metrics" % "metrics-json" % metricsVersion,
   "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4",
   "org.scalatest" %% "scalatest" % "2.2.6" % Test,
   "org.scalamock" %% "scalamock-scalatest-support" % "3.2.2" % Test,

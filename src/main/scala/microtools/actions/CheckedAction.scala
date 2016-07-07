@@ -1,7 +1,7 @@
 package microtools.actions
 
 import microtools.{BusinessCondition, BusinessTry}
-import microtools.models.Problem
+import microtools.models.{Problem, Problems}
 import play.api.http.Status
 import play.api.mvc.{ActionBuilder, Request, RequestHeader, Result}
 import play.mvc.Http.HeaderNames
@@ -28,6 +28,11 @@ object CheckedAction {
         }
     }
   }
+
+  val RequireInternal = BusinessCondition[RequestHeader](
+    rh =>
+      rh.headers.get("x-zone").contains("internal"),
+    Problems.FORBIDDEN.withDetails("Only internal requests are allowed"))
 
   val RequireTLS = BusinessCondition[RequestHeader](
       rh =>
