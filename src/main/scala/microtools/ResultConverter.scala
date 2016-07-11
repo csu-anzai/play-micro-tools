@@ -46,7 +46,7 @@ object ResultConverter {
         Problems.INTERNAL_SERVER_ERROR.withDetails(cause.getMessage).asResult
     }
 
-  def successResultConvert[R](success: R => Result) =
+  def successResultConverter[R](success: R => Result) =
     new ResultConverter[R] {
       override def onSuccess(result: R): Result =
         success(result)
@@ -60,5 +60,5 @@ object ResultConverter {
     }
 
   def jsonResultConverter[R: Writes](successStatus: Status = Results.Ok) =
-    successResultConvert((result: R) => successStatus(Json.toJson(result)))
+    successResultConverter((result: R) => successStatus(Json.toJson(result)))
 }
