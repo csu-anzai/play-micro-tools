@@ -184,7 +184,38 @@ class BusinessTrySpec
   }
 
   "BusinessTry" should {
-    "be compatible with for comprehention" in {
+    "wrap and handle Problems" in {
+
+      val promise = Promise[String]
+      val pf = PartialFunction[Throwable, Problem] {
+        case e: Exception => Problems.CONFLICT
+      }
+
+      val businessTry = BusinessTry.wrap(promise.future, pf)
+
+      promise.failure(new StringIndexOutOfBoundsException)
+
+      val result = businessTry.awaitResult
+
+      result.isSuccess mustBe false
+      result.isFailure mustBe true
+      result.asResult(new ResultConverter[String] {
+        override def onProblem(problem: Problem): Result = {
+          problem mustBe Problems.CONFLICT
+          Results.Ok
+        }
+
+        override def onFailure(cause: Throwable): Result =
+          fail("Fail is not an expected behaviour")
+
+        override def onSuccess(result: String): Result =
+          fail("Success is not an expected behaviour")
+      }, global)
+    }
+  }
+
+  "BusinessTry" should {
+    "be compatible with for comprehension" in {
       val firstTry = BusinessTry.success("first result")
 
       val map1 = mockFunction[String, BusinessTry[String]]
