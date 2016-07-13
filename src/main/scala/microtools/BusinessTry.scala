@@ -14,9 +14,9 @@ import scala.util.{Failure, Success, Try}
   * A `Problem` can be considered as any kind of known or expected exception, i.e. a to be expected business error,
   * whereas `Exception` may be anything unexpected, i.e. a technical error.
   *
-  * The other wy round, you may argue that a `Problem` is part of your business logic and thereby reproducable, i.e.
-  * if your system get's the same input the same `Problem` will occure over and over again. Whereas an `Exception` is
-  * generally not reproducable and might ifx itself after some time (e.g. a temporary network outage).
+  * The other way round, you may argue that a `Problem` is part of your business logic and thereby reproducable, i.e.
+  * if your system get's the same input in the same state the same `Problem` will occur over and over again. Whereas an
+  * `Exception` is generally not reproducible and might fix itself after some time (e.g. a temporary network outage).
   *
   * In general a `BusinessTry` is undecided, i.e. it might be a success or failure in the future.
   *
@@ -36,9 +36,21 @@ sealed trait BusinessTry[+R] {
 
   /**
     * Convert the `BusinessTry` to an asynchronous action result.
+    * @param converter converts the three final states of a BusinessTry to Play Result
+    * @return the returned future will not fail
     */
   def asResult(implicit converter: ResultConverter[R],
                ec: ExecutionContext): Future[Result]
+
+  /**
+    * Convert the `BusinessTry` to an asynchronous action result.
+    *
+    * Is the same as `this.asActionResult(converter) === this.asResult(converter, implicitly[ExecutionContext])`
+    * @param converter converts the three final states of a BusinessTry to Play Result
+    * @return the returned future will not fail
+    */
+  def asActionResult(converter: ResultConverter[R])(implicit ec: ExecutionContext): Future[Result] =
+    asResult(converter, ec)
 
   def asFuture(implicit ec: ExecutionContext): Future[Either[R, Problem]]
 
