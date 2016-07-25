@@ -9,6 +9,21 @@ import play.api.libs.ws.WSResponse
 import scala.concurrent.{ExecutionContext, Future}
 
 object WSTry {
+  def expectSuccess(futureResponse: Future[WSResponse])(
+      implicit ec: ExecutionContext): BusinessTry[WSResponse] =
+    BusinessTry.future(futureResponse.map {
+      case response if response.status < 300 =>
+        BusinessTry.success(response)
+      case response =>
+        response.json.validate[Problem] match {
+          case JsSuccess(problem, _) =>
+            BusinessTry.failure(problem)
+          case _ =>
+            BusinessTry.failure(Problems.INTERNAL_SERVER_ERROR
+                  .withDetails(s"Non ok result: ${response.status}"))
+        }
+    })
+
   def expectOkJson[T](futureResponse: Future[WSResponse])(
       implicit ec: ExecutionContext, reads: Reads[T]): BusinessTry[T] =
     BusinessTry.future(futureResponse.map {
@@ -22,8 +37,8 @@ object WSTry {
           case JsSuccess(problem, _) =>
             BusinessTry.failure(problem)
           case _ =>
-            BusinessTry.failure(Problems.INTERNAL_SERVER_ERROR.withDetails(
-                    s"Non ok result: ${response.status}"))
+            BusinessTry.failure(Problems.INTERNAL_SERVER_ERROR
+                  .withDetails(s"Non ok result: ${response.status}"))
         }
     })
 
@@ -40,8 +55,8 @@ object WSTry {
           case JsSuccess(problem, _) =>
             BusinessTry.failure(problem)
           case _ =>
-            BusinessTry.failure(Problems.INTERNAL_SERVER_ERROR.withDetails(
-                    s"Non ok result: ${response.status}"))
+            BusinessTry.failure(Problems.INTERNAL_SERVER_ERROR
+                  .withDetails(s"Non ok result: ${response.status}"))
         }
     })
 }
