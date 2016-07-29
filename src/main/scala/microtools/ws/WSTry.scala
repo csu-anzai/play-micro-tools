@@ -56,7 +56,7 @@ object WSTry {
             BusinessTry.failure(problem)
           case _ =>
             BusinessTry.failure(Problems.INTERNAL_SERVER_ERROR
-                  .withDetails(s"Non ok result: ${response.status}"))
+                  .withDetails(s"Non created result: ${response.status}"))
         }
     })
 }
