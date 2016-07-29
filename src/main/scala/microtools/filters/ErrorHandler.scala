@@ -2,21 +2,23 @@ package microtools.filters
 
 import javax.inject.Inject
 
-import microtools.models.{Problem, Problems}
+import microtools.logging.WithContextAwareLogger
+import microtools.models.{Problem, Problems, RequestContext}
+import play.api.Environment
 import play.api.http.HttpErrorHandler
 import play.api.mvc.{RequestHeader, Result}
-import play.api.{Environment, Logger}
 
 import scala.concurrent.Future
 
 class ErrorHandler @Inject()(implicit env: Environment)
-    extends HttpErrorHandler {
-  val logger = Logger("LoginController")
-
+    extends HttpErrorHandler
+    with WithContextAwareLogger {
   override def onClientError(request: RequestHeader,
                              statusCode: Int,
                              message: String): Future[Result] = {
-    implicit val loggingContext = logger.error(
+    implicit val requestContext = RequestContext.forRequest(request)
+
+    log.error(
         s"Client error $statusCode ${request.method} ${request.uri}: $message")
 
     val problem =
@@ -27,7 +29,9 @@ class ErrorHandler @Inject()(implicit env: Environment)
 
   override def onServerError(
       request: RequestHeader, exception: Throwable): Future[Result] = {
-    implicit val loggingContext = logger.error(
+    implicit val requestContext = RequestContext.forRequest(request)
+
+    log.error(
         s"Internal server error ${request.method} ${request.uri}", exception)
 
     val problem =

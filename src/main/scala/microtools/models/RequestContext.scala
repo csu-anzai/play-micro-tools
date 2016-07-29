@@ -3,7 +3,7 @@ package microtools.models
 import java.util.UUID
 
 import microtools.logging.LoggingContext
-import play.api.mvc.Request
+import play.api.mvc.RequestHeader
 
 import scala.util.Try
 
@@ -20,7 +20,7 @@ object RequestContext {
     override def enableBusinessDebug: Boolean = false
   }
 
-  def forRequest(request: Request[_]) = new RequestContext {
+  def forRequest(request: RequestHeader) = new RequestContext {
     override def flowId: String = request.cookies
       .get(ExtraHeaders.FLOW_ID_HEADER)
       .map(_.value)
