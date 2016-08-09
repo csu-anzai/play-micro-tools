@@ -20,9 +20,9 @@ trait LoggingContext {
 }
 
 object LoggingContext {
-  def static(contextValues: (String, String)*): LoggingContext =
+  def static(_contextValues: (String, String)*): LoggingContext =
     new LoggingContext {
-      override def contextValues: Seq[(String, String)] = contextValues
+      override def contextValues: Seq[(String, String)] = _contextValues
 
       override def enableBusinessDebug: Boolean = false
     }
