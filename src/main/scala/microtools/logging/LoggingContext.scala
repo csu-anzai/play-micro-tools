@@ -18,3 +18,12 @@ trait LoggingContext {
 
   def contextValues: Seq[(String, String)]
 }
+
+object LoggingContext {
+  def static(contextValues: (String, String)*): LoggingContext =
+    new LoggingContext {
+      override def contextValues: Seq[(String, String)] = contextValues
+
+      override def enableBusinessDebug: Boolean = false
+    }
+}
