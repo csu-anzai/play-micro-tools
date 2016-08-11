@@ -23,32 +23,24 @@ trait TimedActions extends WithContextAwareLogger { self: Controller =>
       override def invokeBlock[A](
           request: Request[A],
           block: (TimedRequest[A]) => Future[Result]): Future[Result] = {
-        val businessDebug = request.cookies
-          .get(ExtraHeaders.DEBUG_HEADER)
-          .flatMap(c => Try(c.value.toBoolean).toOption)
-          .getOrElse(request.headers
-                .get(ExtraHeaders.DEBUG_HEADER)
-                .flatMap(s => Try(s.toBoolean).toOption)
-                .getOrElse(false))
-        val flowId = request.cookies
-          .get(ExtraHeaders.FLOW_ID_HEADER)
-          .map(_.value)
-          .getOrElse(request.headers
-                .get(ExtraHeaders.FLOW_ID_HEADER)
-                .getOrElse(generateFlowId()))
+        val businessDebug = Helper.isBusinessDebug(request)
+        val flowId        = Helper.getOrCreateFlowId(request)
 
-        implicit val meteredRequest = new TimedRequest(
-            businessDebug, flowId, request.uri, request)
+        implicit val meteredRequest =
+          new TimedRequest(businessDebug, flowId, request.uri, request)
         val timeCtx = timer.time()
         val result  = block(meteredRequest)
 
         result.onComplete {
           case Success(_) =>
             val nanos = timeCtx.stop()
-            log.info(s"$actionId: Success", "millis" -> (nanos / 1000000.0).toString)
+            log.info(s"$actionId: Success",
+                     "millis" -> (nanos / 1000000.0).toString)
           case Failure(e) =>
             val nanos = timeCtx.stop()
-            log.error(s"$actionId: Internal error", e, "millis" -> (nanos / 1000000.0).toString)
+            log.error(s"$actionId: Internal error",
+                      e,
+                      "millis" -> (nanos / 1000000.0).toString)
         }
         result
       }
@@ -63,8 +55,7 @@ object TimedActions {
       override val flowId: String,
       requestUri: String,
       request: Request[A]
-  )
-      extends WrappedRequest[A](request)
+  ) extends WrappedRequest[A](request)
       with RequestContext {
 
     override def contextValues: Seq[(String, String)] = Seq(
@@ -72,6 +63,4 @@ object TimedActions {
         "request_uri" -> requestUri
     )
   }
-
-  def generateFlowId(): String = UUID.randomUUID().toString
 }

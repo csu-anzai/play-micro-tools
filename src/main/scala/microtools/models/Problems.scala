@@ -10,6 +10,8 @@ import play.api.libs.json.{JsPath, Json}
 object Problems {
   val BAD_REQUEST = Problem.forStatus(Status.BAD_REQUEST, "Bad request")
 
+  val UNAUTHORIZED = Problem.forStatus(Status.UNAUTHORIZED, "Unauthorized")
+
   val FORBIDDEN = Problem.forStatus(Status.FORBIDDEN, "Forbidden")
 
   val CONFLICT = Problem.forStatus(Status.CONFLICT, "Conflict")
