@@ -18,6 +18,8 @@ object Problems {
 
   val NOT_FOUND = Problem.forStatus(Status.NOT_FOUND, "Not found")
 
+  val GONE = Problem.forStatus(Status.GONE, "Gone")
+
   val NOT_ACCEPTABLE = Problem.forStatus(Status.NOT_ACCEPTABLE, "Not acceptable")
 
   val FAILED_DEPENDENCY = Problem.forStatus(Status.FAILED_DEPENDENCY, "Failed dependency")
