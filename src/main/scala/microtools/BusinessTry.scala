@@ -49,7 +49,8 @@ sealed trait BusinessTry[+R] {
     * @param converter converts the three final states of a BusinessTry to Play Result
     * @return the returned future will not fail
     */
-  def asActionResult(converter: ResultConverter[R])(implicit ec: ExecutionContext): Future[Result] =
+  def asActionResult(converter: ResultConverter[R])(
+      implicit ec: ExecutionContext): Future[Result] =
     asResult(converter, ec)
 
   def asFuture(implicit ec: ExecutionContext): Future[Either[R, Problem]]
@@ -62,8 +63,8 @@ sealed trait BusinessTry[+R] {
   def withCondition(condition: BusinessCondition[R])(
       implicit ec: ExecutionContext): BusinessTry[R]
 
-  def fold[U](
-      onSuccess: R => BusinessTry[U], onFailure: Problem => BusinessTry[U])(
+  def fold[U](onSuccess: R => BusinessTry[U],
+              onFailure: Problem => BusinessTry[U])(
       implicit ec: ExecutionContext): BusinessTry[U]
 
   def onComplete(callback: Try[DecidedBusinessTry[R]] => Unit)(
@@ -108,16 +109,22 @@ object BusinessTry {
 
   def futureSuccess[R](futureResult: Future[R])(
       implicit ec: ExecutionContext): BusinessTry[R] =
-    FutureBusinessTry(futureResult.map(success))
+    FutureBusinessTry(futureResult.map(success).recover {
+      case e: ProblemException => BusinessTry.failure(e.problem)
+    })
 
-  def future[R](futureTry: Future[BusinessTry[R]]): BusinessTry[R] =
-    FutureBusinessTry(futureTry)
-
-  def wrap[R](futureResult: Future[R],
-              handleProblem: PartialFunction[Throwable, Problem] =
-                PartialFunction.empty)(
+  def future[R](futureTry: Future[BusinessTry[R]])(
       implicit ec: ExecutionContext): BusinessTry[R] =
-    FutureBusinessTry(futureResult.map(success).recover(handleProblem.andThen(failure)))
+    FutureBusinessTry(futureTry.recover {
+      case e: ProblemException => BusinessTry.failure(e.problem)
+    })
+
+  def wrap[R](
+      futureResult: Future[R],
+      handleProblem: PartialFunction[Throwable, Problem] =
+        PartialFunction.empty)(implicit ec: ExecutionContext): BusinessTry[R] =
+    FutureBusinessTry(
+        futureResult.map(success).recover(handleProblem.andThen(failure)))
 
   def forAll[U](tries: TraversableOnce[BusinessTry[U]])(
       implicit ec: ExecutionContext): BusinessTry[Seq[U]] =
