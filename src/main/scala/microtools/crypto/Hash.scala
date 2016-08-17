@@ -17,7 +17,7 @@ trait Hash {
 
   def update(data: Int): Hash = update(ByteBuffer.allocate(4).putInt(data))
 
-  def updata(data: Long): Hash = update(ByteBuffer.allocate(8).putLong(data))
+  def update(data: Long): Hash = update(ByteBuffer.allocate(8).putLong(data))
 
   def raw: Array[Byte]
 
