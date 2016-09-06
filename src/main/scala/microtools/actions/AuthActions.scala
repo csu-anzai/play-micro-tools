@@ -26,15 +26,18 @@ trait AuthActions extends WithContextAwareLogger { self: Controller =>
         token   <- request.headers.get(ExtraHeaders.AUTH_TOKEN_HEADER)
       } yield {
         val authRequest =
-          new AuthRequest(businessDebug,
-                          flowId,
-                          subject,
-                          Map.empty,
-                          token,
-                          ipAddress,
-            userAgent,
-                          request.uri,
-                          request)
+          new AuthRequest(
+            enableBusinessDebug = businessDebug,
+            flowId = flowId,
+            subject = subject,
+            organization =
+              request.headers.get(ExtraHeaders.AUTH_ORGANIZATION_HEADER),
+            scopes = Map.empty,
+            token = token,
+            ipAddress = ipAddress,
+            userAgent = userAgent,
+            requestUri = request.uri,
+            request = request)
 
         block(authRequest)
       }).getOrElse(Future.successful(Problems.UNAUTHORIZED.asResult))
@@ -47,10 +50,11 @@ object AuthActions {
       override val enableBusinessDebug: Boolean,
       override val flowId: String,
       override val subject: String,
+      override val organization: Option[String],
       override val scopes: Map[String, Seq[String]],
       override val token: String,
       override val ipAddress: String,
-      override val userAgent : Option[String],
+      override val userAgent: Option[String],
       requestUri: String,
       request: Request[A]
   ) extends WrappedRequest[A](request)
