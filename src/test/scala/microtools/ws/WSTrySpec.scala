@@ -37,7 +37,8 @@ class WSTrySpec
     "return an failing BusinessTry and log the response content (also for non json content)" in {
       val failedResponse = mock[WSResponse]
       (failedResponse.status _).expects.returning(500).anyNumberOfTimes()
-      (failedResponse.json _).expects.throwing(new Exception(""))
+      (failedResponse.json _).expects.throwing(new Exception("")).anyNumberOfTimes()
+      (failedResponse.body _).expects.returning("Some error").anyNumberOfTimes()
 
       noException must be thrownBy WSTry.expectSuccess(
           Future.successful(failedResponse))

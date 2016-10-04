@@ -34,6 +34,8 @@ libraryDependencies ++= Seq(
   "io.dropwizard.metrics" % "metrics-core" % metricsVersion,
   "io.dropwizard.metrics" % "metrics-jvm" % metricsVersion,
   "io.dropwizard.metrics" % "metrics-json" % metricsVersion,
+  "io.dropwizard.metrics" % "metrics-logback" % metricsVersion,
+  "ch.qos.logback" % "logback-classic" % "1.1.7",
   "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4",
   "org.scalatest" %% "scalatest" % "2.2.6" % Test,
   "org.scalamock" %% "scalamock-scalatest-support" % "3.2.2" % Test,
