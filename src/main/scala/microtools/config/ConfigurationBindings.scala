@@ -16,6 +16,18 @@ trait ConfigurationBindings { self: Module =>
     configs.keys.toSeq.flatMap(bindKey(configs, _))
   }
 
+  def bindAsMap(configuration: Configuration,
+                name: String,
+                key: String): Seq[Binding[_]] = {
+    val configs: Configuration =
+      configuration.getConfig(key).getOrElse(Configuration.empty)
+    val map: Map[String, String] = configs.keys
+      .map(key => key -> configs.getString(key).getOrElse(""))
+      .toMap
+
+    Seq(bind[Map[String, String]].qualifiedWith(name).to(map))
+  }
+
   def bindKey(config: Configuration, key: String): Seq[Binding[_]] = {
     val bindings = Seq.newBuilder[Binding[_]]
 
