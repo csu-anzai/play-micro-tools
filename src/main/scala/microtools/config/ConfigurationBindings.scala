@@ -7,6 +7,17 @@ import play.api.inject.{Binding, Module}
 
 import scala.util.Try
 
+class BinableMapStringString(underlying: Map[String, String])
+    extends Map[String, String] {
+  override def +[B1 >: String](kv: (String, B1)) = underlying + kv
+
+  override def get(key: String) = underlying.get(key)
+
+  override def iterator = underlying.iterator
+
+  override def -(key: String) = underlying - key
+}
+
 trait ConfigurationBindings { self: Module =>
 
   def bindingsFor(configuration: Configuration, key: String): Seq[Binding[_]] = {
@@ -25,7 +36,10 @@ trait ConfigurationBindings { self: Module =>
       .map(key => key -> configs.getString(key).getOrElse(""))
       .toMap
 
-    Seq(bind[Map[String, String]].qualifiedWith(name).toInstance(map))
+    Seq(
+      bind[BinableMapStringString]
+        .qualifiedWith(name)
+        .toInstance(new BinableMapStringString(map)))
   }
 
   def bindKey(config: Configuration, key: String): Seq[Binding[_]] = {
