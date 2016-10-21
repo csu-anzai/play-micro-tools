@@ -25,7 +25,7 @@ trait ConfigurationBindings { self: Module =>
       .map(key => key -> configs.getString(key).getOrElse(""))
       .toMap
 
-    Seq(bind[Map[String, String]].qualifiedWith(name).to(map))
+    Seq(bind[Map[String, String]].qualifiedWith(name).toInstance(map))
   }
 
   def bindKey(config: Configuration, key: String): Seq[Binding[_]] = {
