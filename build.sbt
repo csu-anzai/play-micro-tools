@@ -9,7 +9,7 @@ version := {
 
 scalaVersion := "2.11.8"
 
-val playVersion = "2.5.3"
+val playVersion = "2.5.9"
 
 val metricsVersion = "3.1.2"
 
@@ -36,7 +36,6 @@ libraryDependencies ++= Seq(
   "io.dropwizard.metrics" % "metrics-json" % metricsVersion,
   "io.dropwizard.metrics" % "metrics-logback" % metricsVersion,
   "ch.qos.logback" % "logback-classic" % "1.1.7",
-  "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4",
   "org.scalatest" %% "scalatest" % "2.2.6" % Test,
   "org.scalamock" %% "scalamock-scalatest-support" % "3.2.2" % Test,
   "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % Test,
