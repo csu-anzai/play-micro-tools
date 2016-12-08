@@ -1,6 +1,7 @@
 package microtools.wire
 
 import akka.actor.ActorSystem
+import akka.stream.Materializer
 import play.api.inject.ApplicationLifecycle
 import play.api.{Configuration, Environment}
 
@@ -13,4 +14,5 @@ trait PlayEnvironment {
   def actorSystem: ActorSystem
 
   implicit def executionContext: ExecutionContext = actorSystem.dispatcher
+  implicit def materializer: Materializer
 }

@@ -1,6 +1,5 @@
 package microtools.wire
 
-
 import java.net.URL
 
 import com.softwaremill.tagging._
@@ -16,12 +15,13 @@ object WireTag {
   def givenString[TAG <: WireTag[String]](implicit tag: TAG): String @@ TAG =
     findEnvOrSysProp(tag.name).getOrElse(tag.default).taggedWith[TAG]
 
-  def givenBoolean[TAG <: WireTag[String]](implicit tag: TAG): Boolean @@ TAG =
+  def givenBoolean[TAG <: WireTag[Boolean]](implicit tag: TAG): Boolean @@ TAG =
     findEnvOrSysProp(tag.name).getOrElse(tag.default).toBoolean.taggedWith[TAG]
 
-  def givenInt[TAG <: WireTag[String]](implicit tag: TAG): Int @@ TAG =
+  def givenInt[TAG <: WireTag[Int]](implicit tag: TAG): Int @@ TAG =
     findEnvOrSysProp(tag.name).getOrElse(tag.default).toInt.taggedWith[TAG]
 
   def givenUrl[TAG <: WireTag[URL]](implicit tag: TAG): URL @@ TAG =
     new URL(findEnvOrSysProp(tag.name).getOrElse(tag.default)).taggedWith[TAG]
+
 }
