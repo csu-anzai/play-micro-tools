@@ -27,6 +27,8 @@ bintrayCredentialsFile := {
   sys.props.get("BINTRAY_CREDENTIALS").orElse(sys.env.get("BINTRAY_CREDENTIALS")).map(new File(_)).getOrElse(baseDirectory.value / ".bintray" / "credentials")
 }
 
+val macWireVersion = "2.2.5"
+
 libraryDependencies ++= Seq(
   "com.typesafe.play" %% "play" % playVersion % Provided,
   "com.typesafe.play" %% "play-ws" % playVersion % Provided,
@@ -35,6 +37,9 @@ libraryDependencies ++= Seq(
   "io.dropwizard.metrics" % "metrics-jvm" % metricsVersion,
   "io.dropwizard.metrics" % "metrics-json" % metricsVersion,
   "io.dropwizard.metrics" % "metrics-logback" % metricsVersion,
+  "com.softwaremill.macwire" %% "macros" % macWireVersion % Provided,
+  "com.softwaremill.macwire" %% "util" % macWireVersion,
+  "com.softwaremill.macwire" %% "proxy" % macWireVersion,
   "ch.qos.logback" % "logback-classic" % "1.1.7",
   "org.scalatest" %% "scalatest" % "2.2.6" % Test,
   "org.scalamock" %% "scalamock-scalatest-support" % "3.2.2" % Test,
