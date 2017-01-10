@@ -1,50 +1,68 @@
 package microtools.patch
 
-import microtools.models.Problems
+import microtools.patch.JsonPointer._
 import microtools.{BusinessTry, JsonFormats}
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json._
 
-import scala.concurrent.ExecutionContext
-
 /**
   * RFC6902 kind of patch operation.
   */
-case class Patch(op: PatchOperation.Type, path: String, value: Option[JsValue]) {
-  def apply(json: JsValue)(
-      implicit ec: ExecutionContext): BusinessTry[JsValue] =
-    for {
-      transformer <- transformation
-      result      <- BusinessTry.transformJson(json, transformer)
-    } yield result
+sealed trait Patch {
+  def apply(json: JsValue): BusinessTry[JsValue] =
+    BusinessTry.transformJson(json, transformation)
 
-  def transformation(
-      implicit ec: ExecutionContext): BusinessTry[Reads[_ <: JsValue]] = {
-    JsonPointer(path).flatMap { path =>
-      (op, value) match {
-        case (PatchOperation.ADD, Some(v)) =>
-          BusinessTry.success(path.json.update(new Reads[JsValue] {
-            override def reads(json: JsValue): JsResult[JsValue] = json match {
-              case JsArray(elements) => JsSuccess(JsArray(elements :+ v))
-              case JsNull            => JsSuccess(v)
-              case existing          => JsError("error.patch.add.value.exists")
-            }
-          }))
-        case (PatchOperation.REMOVE, None) =>
-          BusinessTry.success(path.json.prune)
-        case (PatchOperation.REPLACE, Some(v)) =>
-          BusinessTry.success((__.read[JsObject] and path.json.put(v)).reduce)
-        case _ =>
-          BusinessTry.failure(
-              Problems.BAD_REQUEST.withDetails(s"Invalid patch: ${this}"))
-      }
-    }
-  }
+  def transformation: Reads[_ <: JsValue]
+}
+
+case class Remove(path: JsPath) extends Patch {
+  override def transformation: Reads[JsObject] =
+    path.json.prune
+}
+case class Add(path: JsPath, value: JsValue) extends Patch {
+  override def transformation: Reads[_ <: JsValue] =
+    path.json.update(Reads {
+      case JsArray(elements) => JsSuccess(JsArray(elements :+ value))
+      case JsNull            => JsSuccess(value)
+      case existing          => JsError("error.patch.add.value.exists")
+    })
+}
+case class Replace(path: JsPath, value: JsValue) extends Patch {
+  override def transformation: Reads[_ <: JsValue] =
+    (__.read[JsObject] and path.json.put(value)).reduce
 }
 
 object Patch extends JsonFormats {
-  implicit val patchOperatioFormat = enumFormat(
-      PatchOperation, normalize = _.toLowerCase)
-  implicit val patchFormat = Json.format[Patch]
+  @deprecated("Use microtools.patch Add, Remove etc. instead")
+  def apply(op: PatchOperation.Type, path: String, value: Option[JsValue]): Patch = op match {
+    case PatchOperation.ADD =>
+      Add(JsonPointer.jsPathFormat.reads(JsString(path)).get,
+          value.getOrElse(sys.error("value is required for add")))
+    case PatchOperation.REPLACE =>
+      Replace(JsonPointer.jsPathFormat.reads(JsString(path)).get,
+              value.getOrElse(sys.error("value is required for replace")))
+    case PatchOperation.REMOVE =>
+      Remove(JsonPointer.jsPathFormat.reads(JsString(path)).get)
+  }
+
+  val patchRead: Reads[Patch] =
+    (__ \ "op").read[String].flatMap {
+      case "remove"    => path.map(Remove)
+      case "add"       => (path and value)(Add)
+      case "replace"   => (path and value)(Replace)
+      case unsupported => Reads(_ => JsError(s"Unsupported patch operation: $unsupported"))
+    }
+
+  private val patchWrite: OWrites[Patch] = OWrites {
+    case Remove(path)         => Json.obj("op" -> "remove", "path"  -> path)
+    case Add(path, value)     => Json.obj("op" -> "add", "path"     -> path, "value" -> value)
+    case Replace(path, value) => Json.obj("op" -> "replace", "path" -> path, "value" -> value)
+  }
+
+  private lazy val path = __.\("path").read[JsPath]
+
+  private lazy val value = __.\("value").read[JsValue]
+
+  implicit val patchFormat: OFormat[Patch] = OFormat(patchRead, patchWrite)
 }

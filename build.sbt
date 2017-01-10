@@ -9,6 +9,10 @@ version := {
 
 scalaVersion := "2.11.8"
 
+scalacOptions ++= Seq(
+  "-deprecation"
+)
+
 val playVersion = "2.5.9"
 
 val metricsVersion = "3.1.2"

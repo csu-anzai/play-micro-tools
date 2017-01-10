@@ -39,8 +39,7 @@ sealed trait BusinessTry[+R] {
     * @param converter converts the three final states of a BusinessTry to Play Result
     * @return the returned future will not fail
     */
-  def asResult(implicit converter: ResultConverter[R],
-               ec: ExecutionContext): Future[Result]
+  def asResult(implicit converter: ResultConverter[R], ec: ExecutionContext): Future[Result]
 
   /**
     * Convert the `BusinessTry` to an asynchronous action result.
@@ -57,21 +56,17 @@ sealed trait BusinessTry[+R] {
 
   def map[U](f: R => U)(implicit ec: ExecutionContext): BusinessTry[U]
 
-  def flatMap[U](f: R => BusinessTry[U])(
-      implicit ec: ExecutionContext): BusinessTry[U]
+  def flatMap[U](f: R => BusinessTry[U])(implicit ec: ExecutionContext): BusinessTry[U]
 
-  def withCondition(condition: BusinessCondition[R])(
-      implicit ec: ExecutionContext): BusinessTry[R]
+  def withCondition(condition: BusinessCondition[R])(implicit ec: ExecutionContext): BusinessTry[R]
 
-  def fold[U](onSuccess: R => BusinessTry[U],
-              onFailure: Problem => BusinessTry[U])(
+  def fold[U](onSuccess: R => BusinessTry[U], onFailure: Problem => BusinessTry[U])(
       implicit ec: ExecutionContext): BusinessTry[U]
 
   def onComplete(callback: Try[DecidedBusinessTry[R]] => Unit)(
       implicit ec: ExecutionContext): BusinessTry[R]
 
-  def zip[U](that: BusinessTry[U])(
-      implicit ec: ExecutionContext): BusinessTry[(R, U)] = {
+  def zip[U](that: BusinessTry[U])(implicit ec: ExecutionContext): BusinessTry[(R, U)] = {
     flatMap { thisResult =>
       that.map { thatResult =>
         (thisResult, thatResult)
@@ -107,48 +102,41 @@ object BusinessTry {
   def failure[R](problem: Problem): BusinessTry[R] =
     BusinessFailure[R](problem)
 
-  def futureSuccess[R](futureResult: Future[R])(
-      implicit ec: ExecutionContext): BusinessTry[R] =
+  def futureSuccess[R](futureResult: Future[R])(implicit ec: ExecutionContext): BusinessTry[R] =
     FutureBusinessTry(futureResult.map(success).recover {
       case e: ProblemException => BusinessTry.failure(e.problem)
     })
 
-  def future[R](futureTry: Future[BusinessTry[R]])(
-      implicit ec: ExecutionContext): BusinessTry[R] =
+  def future[R](futureTry: Future[BusinessTry[R]])(implicit ec: ExecutionContext): BusinessTry[R] =
     FutureBusinessTry(futureTry.recover {
       case e: ProblemException => BusinessTry.failure(e.problem)
     })
 
-  def wrap[R](
-      futureResult: Future[R],
-      handleProblem: PartialFunction[Throwable, Problem] =
-        PartialFunction.empty)(implicit ec: ExecutionContext): BusinessTry[R] =
-    FutureBusinessTry(
-        futureResult.map(success).recover(handleProblem.andThen(failure)))
+  def wrap[R](futureResult: Future[R],
+              handleProblem: PartialFunction[Throwable, Problem] = PartialFunction.empty)(
+      implicit ec: ExecutionContext): BusinessTry[R] =
+    FutureBusinessTry(futureResult.map(success).recover(handleProblem.andThen(failure)))
 
   def forAll[U](tries: TraversableOnce[BusinessTry[U]])(
       implicit ec: ExecutionContext): BusinessTry[Seq[U]] =
-    tries.foldLeft[BusinessTry[Seq[U]]](BusinessTry.success(Seq.empty)) {
-      (results, aTry) =>
-        results.flatMap(rs => aTry.map(result => rs :+ result))
+    tries.foldLeft[BusinessTry[Seq[U]]](BusinessTry.success(Seq.empty)) { (results, aTry) =>
+      results.flatMap(rs => aTry.map(result => rs :+ result))
     }
 
-  def validateJson[T](json: JsValue)(
-      implicit reads: Reads[T]): BusinessTry[T] = {
+  def validateJson[T](json: JsValue)(implicit reads: Reads[T]): BusinessTry[T] = {
     json.validate.fold(
-        jsonErrors => failure(Problems.jsonValidationErrors(jsonErrors)),
-        success
+      jsonErrors => failure(Problems.jsonValidationErrors(jsonErrors)),
+      success
     )
   }
 
-  def transformJson(
-      json: JsValue,
-      transformation: Reads[_ <: JsValue]): BusinessTry[JsValue] = {
+  def transformJson(json: JsValue,
+                    transformation: Reads[_ <: JsValue]): DecidedBusinessTry[JsValue] = {
     json
       .transform(transformation)
       .fold(
-          jsonErrors => failure(Problems.jsonTransformErrors(jsonErrors)),
-          success
+        jsonErrors => BusinessFailure(Problems.jsonTransformErrors(jsonErrors)),
+        BusinessSuccess(_)
       )
   }
 
@@ -168,12 +156,10 @@ case class BusinessSuccess[R](result: R) extends DecidedBusinessTry[R] {
                         ec: ExecutionContext): Future[Result] =
     Future.successful(converter.onSuccess(result))
 
-  override def asFuture(
-      implicit ec: ExecutionContext): Future[Either[R, Problem]] =
+  override def asFuture(implicit ec: ExecutionContext): Future[Either[R, Problem]] =
     Future.successful(Left(result))
 
-  override def map[U](f: (R) => U)(
-      implicit ec: ExecutionContext): BusinessTry[U] =
+  override def map[U](f: (R) => U)(implicit ec: ExecutionContext): BusinessTry[U] =
     BusinessSuccess(f(result))
 
   override def flatMap[U](f: (R) => BusinessTry[U])(
@@ -186,8 +172,7 @@ case class BusinessSuccess[R](result: R) extends DecidedBusinessTry[R] {
     else
       BusinessFailure[R](condition.problem)
 
-  override def fold[U](onSuccess: (R) => BusinessTry[U],
-                       onFailure: (Problem) => BusinessTry[U])(
+  override def fold[U](onSuccess: (R) => BusinessTry[U], onFailure: (Problem) => BusinessTry[U])(
       implicit ec: ExecutionContext): BusinessTry[U] =
     onSuccess(result)
 
@@ -204,12 +189,10 @@ case class BusinessFailure[R](problem: Problem) extends DecidedBusinessTry[R] {
                         ec: ExecutionContext): Future[Result] =
     Future.successful(converter.onProblem(problem))
 
-  override def asFuture(
-      implicit ec: ExecutionContext): Future[Either[R, Problem]] =
+  override def asFuture(implicit ec: ExecutionContext): Future[Either[R, Problem]] =
     Future.successful(Right(problem))
 
-  override def map[U](f: (R) => U)(
-      implicit ec: ExecutionContext): BusinessTry[U] =
+  override def map[U](f: (R) => U)(implicit ec: ExecutionContext): BusinessTry[U] =
     this.asInstanceOf[BusinessTry[U]]
 
   override def flatMap[U](f: (R) => BusinessTry[U])(
@@ -219,8 +202,7 @@ case class BusinessFailure[R](problem: Problem) extends DecidedBusinessTry[R] {
   override def withCondition(condition: BusinessCondition[R])(
       implicit ec: ExecutionContext): BusinessTry[R] = this
 
-  override def fold[U](onSuccess: (R) => BusinessTry[U],
-                       onFailure: (Problem) => BusinessTry[U])(
+  override def fold[U](onSuccess: (R) => BusinessTry[U], onFailure: (Problem) => BusinessTry[U])(
       implicit ec: ExecutionContext): BusinessTry[U] =
     onFailure(problem)
 
@@ -228,18 +210,15 @@ case class BusinessFailure[R](problem: Problem) extends DecidedBusinessTry[R] {
     this
 }
 
-case class FutureBusinessTry[R](futureTry: Future[BusinessTry[R]])
-    extends BusinessTry[R] {
+case class FutureBusinessTry[R](futureTry: Future[BusinessTry[R]]) extends BusinessTry[R] {
   override def asResult(implicit converter: ResultConverter[R],
                         ec: ExecutionContext): Future[Result] =
     futureTry.flatMap(_.asResult)
 
-  override def asFuture(
-      implicit ec: ExecutionContext): Future[Either[R, Problem]] =
+  override def asFuture(implicit ec: ExecutionContext): Future[Either[R, Problem]] =
     futureTry.flatMap(_.asFuture)
 
-  override def map[U](f: (R) => U)(
-      implicit ec: ExecutionContext): BusinessTry[U] =
+  override def map[U](f: (R) => U)(implicit ec: ExecutionContext): BusinessTry[U] =
     FutureBusinessTry[U](futureTry.map(_.map(f)))
 
   override def flatMap[U](f: (R) => BusinessTry[U])(
@@ -250,8 +229,7 @@ case class FutureBusinessTry[R](futureTry: Future[BusinessTry[R]])
       implicit ec: ExecutionContext): BusinessTry[R] =
     FutureBusinessTry[R](futureTry.map(_.withCondition(condition)))
 
-  override def fold[U](onSuccess: (R) => BusinessTry[U],
-                       onFailure: (Problem) => BusinessTry[U])(
+  override def fold[U](onSuccess: (R) => BusinessTry[U], onFailure: (Problem) => BusinessTry[U])(
       implicit ec: ExecutionContext): BusinessTry[U] =
     FutureBusinessTry(futureTry.map(_.fold(onSuccess, onFailure)))
 

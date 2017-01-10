@@ -1,26 +1,41 @@
 package microtools.patch
 
-import microtools.BusinessTry
+import microtools.patch.JsonPointer._
 import org.scalatest.{MustMatchers, WordSpec}
-import play.api.libs.json.JsPath
-import play.api.test.Helpers._
+import play.api.libs.json.{JsPath, JsString, Json}
 
 class JsonPointerSpec extends WordSpec with MustMatchers {
   "JsonPointer" should {
     "parser empty" in {
-      JsonPointer("").awaitResult mustBe BusinessTry.success(JsPath)
+      JsString("").as[JsPath] mustBe JsPath
     }
 
     "parse simple path" in {
-      JsonPointer("/a/b/c").awaitResult mustBe BusinessTry.success(JsPath \ "a" \ "b" \ "c")
+      JsString("/a/b/c").as[JsPath] mustBe (JsPath \ "a" \ "b" \ "c")
     }
 
     "unescape slash and tilde" in {
-      JsonPointer("/demo~10/t~0lde").awaitResult mustBe BusinessTry.success(JsPath \ "demo/0" \ "t~lde")
+      JsString("/demo~10/t~0lde").as[JsPath] mustBe (JsPath \ "demo/0" \ "t~lde")
     }
 
     "Support array index" in {
-      JsonPointer("/demo/12").awaitResult mustBe BusinessTry.success(JsPath \ "demo" \ 12)
+      JsString("/demo/12").as[JsPath] mustBe (JsPath \ "demo" \ 12)
+    }
+
+    "write empty" in {
+      Json.toJson(JsPath) mustBe JsString("")
+    }
+
+    "write simple path" in {
+      Json.toJson(JsPath \ "a" \ "b" \ "c") mustBe JsString("/a/b/c")
+    }
+
+    "write array index" in {
+      Json.toJson(JsPath \ "demo" \ 12) mustBe JsString("/demo/12")
+    }
+
+    "write escape symbols" in {
+      Json.toJson(JsPath \ "~demo~" \ "/demo") mustBe JsString("/~0demo~0/~1demo")
     }
   }
 }
