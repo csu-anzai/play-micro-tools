@@ -36,6 +36,7 @@ val macWireVersion = "2.2.5"
 libraryDependencies ++= Seq(
   "com.typesafe.play" %% "play" % playVersion % Provided,
   "com.typesafe.play" %% "play-ws" % playVersion % Provided,
+  "com.chuusai" %% "shapeless" % "2.3.2" % Provided,
   "com.github.etaty" %% "rediscala" % "1.6.0" % Provided,
   "io.dropwizard.metrics" % "metrics-core" % metricsVersion,
   "io.dropwizard.metrics" % "metrics-jvm" % metricsVersion,
@@ -45,9 +46,8 @@ libraryDependencies ++= Seq(
   "com.softwaremill.macwire" %% "util" % macWireVersion,
   "com.softwaremill.macwire" %% "proxy" % macWireVersion,
   "ch.qos.logback" % "logback-classic" % "1.1.7",
-  "org.scalatest" %% "scalatest" % "2.2.6" % Test,
-  "org.scalamock" %% "scalamock-scalatest-support" % "3.2.2" % Test,
-  "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % Test,
-  "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % Test,
+  "org.scalatest" %% "scalatest" % "3.0.1" % Test,
+  "org.scalamock" %% "scalamock-scalatest-support" % "3.4.2" % Test,
+  "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.0-M1" % Test,
   "org.mockito" % "mockito-core" % "1.10.19" % Test
 )

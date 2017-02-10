@@ -1,0 +1,49 @@
+package microtools.shapeless
+
+import play.api.libs.json._
+import shapeless.labelled.{FieldType, field}
+import shapeless.{::, HList, HNil, Lazy, Witness}
+
+object ShapelessObjectJson {
+  implicit val hNilWrites: Writes[HNil] = Writes[HNil](_ => JsNull)
+
+  implicit val hNilReads: Reads[HNil] = Reads(_ => JsSuccess(HNil))
+
+  implicit def hListFirstObjectWrites[K <: Symbol, H](
+      implicit witness: Witness.Aux[K],
+      hWrites: Lazy[Writes[H]]
+  ): OWrites[FieldType[K, H] :: HNil] = OWrites[FieldType[K, H] :: HNil] {
+    case (head :: _) =>
+      val h    = hWrites.value.writes(head)
+      val name = witness.value.name
+
+      Json.obj(name -> h)
+  }
+
+  implicit def hListObjectWrites[K <: Symbol, H, T <: HList](
+      implicit witness: Witness.Aux[K],
+      hWrites: Lazy[Writes[H]],
+      tWrites: OWrites[T]
+  ): OWrites[FieldType[K, H] :: T] = OWrites[FieldType[K, H] :: T] {
+    case head :: tail =>
+      val name = witness.value.name
+      val h    = hWrites.value.writes(head)
+      val t    = tWrites.writes(tail)
+
+      Json.obj(name -> h) ++ t
+  }
+
+  implicit def hListObjectReads[K <: Symbol, H, T <: HList](
+      implicit witness: Witness.Aux[K],
+      hReads: Lazy[Reads[H]],
+      tReads: Reads[T]
+  ): Reads[FieldType[K, H] :: T] = Reads[FieldType[K, H] :: T] { json =>
+    ((json \ witness.value.name).validate(hReads.value), json.validate(tReads)) match {
+      case (JsSuccess(h, _), JsSuccess(t, _))   => JsSuccess(field[K](h) :: t)
+      case (JsError(errors1), JsError(errors2)) => JsError(errors1 ++ errors2)
+      case (JsError(errors), _)                 => JsError(errors)
+      case (_, JsError(errors))                 => JsError(errors)
+    }
+  }
+
+}

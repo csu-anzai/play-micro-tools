@@ -7,17 +7,16 @@ import org.mockito.Matchers._
 import org.mockito.Mockito._
 import org.scalatest.OptionValues
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.mock.MockitoSugar
-import org.scalatest.prop.PropertyChecks
+import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.Configuration
 import play.api.http.Status
-import play.api.mvc.{Action, Results}
+import play.api.mvc.Results
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 
-import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 class ThrottledActionsSpec
     extends PlaySpec
