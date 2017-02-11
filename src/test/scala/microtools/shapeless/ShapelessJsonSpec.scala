@@ -55,12 +55,10 @@ class ShapelessJsonSpec extends PlaySpec with MustMatchers {
     "deserialize json object to labeled HList" in {
       import ShapelessObjectJson._
 
-      val someInt    = Witness('someInt)
-      val someString = Witness('someString)
-      val someBool = Witness('someBool)
+      type record = Record.`'someInt -> Int, 'someString -> String, 'someBool -> Boolean`.T
       val result = Json
         .obj("someString" -> "string", "someInt" -> 1234, "someBool" -> true)
-        .as[FieldType[someInt.T, Int] :: FieldType[someBool.T, Boolean] :: FieldType[someString.T, String] :: HNil]
+        .as[record]
 
       result('someInt) mustBe 1234
       result('someString) mustBe "string"
