@@ -1,6 +1,6 @@
 package microtools.patch
 
-@deprecated("Use microtools.patch Add, Remove etc. instead")
+@deprecated("Use microtools.patch Add, Remove etc. instead", "0.1-40")
 object PatchOperation extends Enumeration {
   type Type = Value
 

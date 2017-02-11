@@ -34,7 +34,7 @@ case class Replace(path: JsPath, value: JsValue) extends Patch {
 }
 
 object Patch extends JsonFormats {
-  @deprecated("Use microtools.patch Add, Remove etc. instead")
+  @deprecated("Use microtools.patch Add, Remove etc. instead", "0.1-40")
   def apply(op: PatchOperation.Type, path: String, value: Option[JsValue]): Patch = op match {
     case PatchOperation.ADD =>
       Add(JsonPointer.jsPathFormat.reads(JsString(path)).get,
