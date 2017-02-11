@@ -2,23 +2,14 @@ package microtools.shapeless
 
 import play.api.libs.json._
 import shapeless.labelled.{FieldType, field}
-import shapeless.{::, HList, HNil, Lazy, Witness}
+import shapeless.{:+:, ::, CNil, Coproduct, HList, HNil, Inl, Inr, Lazy, Witness}
 
 object ShapelessObjectJson {
-  implicit val hNilWrites: Writes[HNil] = Writes[HNil](_ => JsNull)
+  implicit val hNilWrites: OWrites[HNil] = OWrites[HNil](_ => Json.obj())
+
+  implicit val cNilWrites: OWrites[CNil] = OWrites[CNil](_ => Json.obj())
 
   implicit val hNilReads: Reads[HNil] = Reads(_ => JsSuccess(HNil))
-
-  implicit def hListFirstObjectWrites[K <: Symbol, H](
-      implicit witness: Witness.Aux[K],
-      hWrites: Lazy[Writes[H]]
-  ): OWrites[FieldType[K, H] :: HNil] = OWrites[FieldType[K, H] :: HNil] {
-    case (head :: _) =>
-      val h    = hWrites.value.writes(head)
-      val name = witness.value.name
-
-      Json.obj(name -> h)
-  }
 
   implicit def hListObjectWrites[K <: Symbol, H, T <: HList](
       implicit witness: Witness.Aux[K],
@@ -31,6 +22,14 @@ object ShapelessObjectJson {
       val t    = tWrites.writes(tail)
 
       Json.obj(name -> h) ++ t
+  }
+
+  implicit def coproductObjectWrites[H, T <: Coproduct](
+      implicit hWrites: Lazy[OWrites[H]],
+      tWrites: OWrites[T]
+  ): OWrites[H :+: T] = OWrites[H :+: T] {
+    case Inl(h) => hWrites.value.writes(h)
+    case Inr(t) => tWrites.writes(t)
   }
 
   implicit def hListObjectReads[K <: Symbol, H, T <: HList](

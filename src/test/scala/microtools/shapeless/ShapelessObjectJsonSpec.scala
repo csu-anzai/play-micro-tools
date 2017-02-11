@@ -3,25 +3,22 @@ package microtools.shapeless
 import org.scalatest.MustMatchers
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsNull, Json}
-import shapeless.{::, HNil, Witness}
+import shapeless.{:+:, ::, CNil, Coproduct, HNil, Witness}
 import shapeless.syntax.singleton._
 import shapeless.labelled._
 import shapeless.record._
 
-class ShapelessJsonSpec extends PlaySpec with MustMatchers {
+class ShapelessObjectJsonSpec extends PlaySpec with MustMatchers {
+  import ShapelessObjectJson._
 
   "Shapeless writes" should {
-    "serialize HNil to jsNull" in {
-      import ShapelessObjectJson._
-
+    "serialize HNil to empty object" in {
       val json = Json.toJson(HNil)
 
-      json mustBe JsNull
+      json mustBe Json.obj()
     }
 
     "serialize Labeled HList to object" in {
-      import ShapelessObjectJson._
-
       val json =
         Json.toJson(('someInt ->> 1234) :: ('someStr ->> "string") :: ('someBool ->> true) :: HNil)
 
@@ -29,32 +26,15 @@ class ShapelessJsonSpec extends PlaySpec with MustMatchers {
       (json \ "someStr").as[String] mustBe "string"
       (json \ "someBool").as[Boolean] mustBe true
     }
-
-    "serialize generic HList to array" in {
-      import ShapelessListJson._
-
-      val json =
-        Json.toJson(1234 :: "string" :: true :: HNil)
-
-      (json \ 0).as[Int] mustBe 1234
-      (json \ 1).as[String] mustBe "string"
-      (json \ 2).as[Boolean] mustBe true
-
-      Json.toJson(1234 :: "string" :: true :: HNil)
-    }
   }
 
   "shapeless reads" should {
     "deserialize HNil on any" in {
-      import ShapelessObjectJson._
-
       Json.obj("bla" -> "blub").as[HNil] mustBe HNil
       JsNull.as[HNil] mustBe HNil
     }
 
     "deserialize json object to labeled HList" in {
-      import ShapelessObjectJson._
-
       type record = Record.`'someInt -> Int, 'someString -> String, 'someBool -> Boolean`.T
       val result = Json
         .obj("someString" -> "string", "someInt" -> 1234, "someBool" -> true)
