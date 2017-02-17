@@ -2,12 +2,10 @@ package microtools.shapeless
 
 import play.api.libs.json._
 import shapeless.labelled.{FieldType, field}
-import shapeless.{:+:, ::, CNil, Coproduct, HList, HNil, Inl, Inr, Lazy, Witness}
+import shapeless.{::, HList, HNil, Lazy, Witness}
 
 object ShapelessObjectJson {
   implicit val hNilWrites: OWrites[HNil] = OWrites[HNil](_ => Json.obj())
-
-  implicit val cNilWrites: OWrites[CNil] = OWrites[CNil](_ => Json.obj())
 
   implicit val hNilReads: Reads[HNil] = Reads(_ => JsSuccess(HNil))
 
@@ -24,14 +22,6 @@ object ShapelessObjectJson {
       Json.obj(name -> h) ++ t
   }
 
-  implicit def coproductObjectWrites[H, T <: Coproduct](
-      implicit hWrites: Lazy[OWrites[H]],
-      tWrites: OWrites[T]
-  ): OWrites[H :+: T] = OWrites[H :+: T] {
-    case Inl(h) => hWrites.value.writes(h)
-    case Inr(t) => tWrites.writes(t)
-  }
-
   implicit def hListObjectReads[K <: Symbol, H, T <: HList](
       implicit witness: Witness.Aux[K],
       hReads: Lazy[Reads[H]],
@@ -44,5 +34,4 @@ object ShapelessObjectJson {
       case (_, JsError(errors))                 => JsError(errors)
     }
   }
-
 }

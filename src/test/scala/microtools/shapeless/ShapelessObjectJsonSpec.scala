@@ -3,10 +3,9 @@ package microtools.shapeless
 import org.scalatest.MustMatchers
 import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsNull, Json}
-import shapeless.{:+:, ::, CNil, Coproduct, HNil, Witness}
-import shapeless.syntax.singleton._
-import shapeless.labelled._
+import shapeless.HNil
 import shapeless.record._
+import shapeless.syntax.singleton._
 
 class ShapelessObjectJsonSpec extends PlaySpec with MustMatchers {
   import ShapelessObjectJson._

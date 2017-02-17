@@ -1,12 +1,10 @@
 package microtools.shapeless
 
 import play.api.libs.json._
-import shapeless.{:+:, ::, CNil, Coproduct, HList, HNil, Inl, Inr, Lazy}
+import shapeless.{::, HList, HNil, Lazy}
 
 object ShapelessListJson {
   implicit val hNilWrites: Writes[HNil] = Writes[HNil](_ => JsNull)
-
-  implicit val cNilWrites: Writes[CNil] = Writes[CNil](_ => JsNull)
 
   implicit val hNilReads: Reads[HNil] = Reads(_ => JsSuccess(HNil))
 
@@ -23,14 +21,6 @@ object ShapelessListJson {
         case (h: JsValue, JsNull)     => Json.arr(h)
         case _                        => Json.arr()
       }
-  }
-
-  implicit def coproductWrites[H, T <: Coproduct](
-      implicit hWrites: Lazy[Writes[H]],
-      tWrites: Writes[T]
-  ): Writes[H :+: T] = Writes[H :+: T] {
-    case Inl(h) => hWrites.value.writes(h)
-    case Inr(t) => tWrites.writes(t)
   }
 
   implicit def hListArrayReads[H, T <: HList](
