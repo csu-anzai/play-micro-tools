@@ -1,10 +1,13 @@
 package microtools.shapeless
 
-import play.api.libs.json.{JsNull, Reads, Writes}
+import play.api.data.validation.ValidationError
+import play.api.libs.json.{JsError, JsNull, Reads, Writes}
 import shapeless.{:+:, CNil, Coproduct, Inl, Inr, Lazy}
 
 object ShapelessCoproductJson {
   implicit val cNilWrites: Writes[CNil] = Writes[CNil](_ => JsNull)
+
+  implicit val cNilReads: Reads[CNil] = Reads[CNil]( _ => JsError(ValidationError("error.invalid")))
 
   implicit def coproductWrites[H, T <: Coproduct](
       implicit hWrites: Lazy[Writes[H]],
@@ -13,9 +16,6 @@ object ShapelessCoproductJson {
     case Inl(h) => hWrites.value.writes(h)
     case Inr(t) => tWrites.writes(t)
   }
-
-  implicit def coproductReadsHead[H](implicit hReads: Reads[H]): Reads[H :+: CNil] =
-    hReads.map(v => Inl[H, CNil](v))
 
   implicit def coproductReads[H, T <: Coproduct](implicit hReads: Lazy[Reads[H]],
                                                  tReads: Reads[T]): Reads[H :+: T] =
