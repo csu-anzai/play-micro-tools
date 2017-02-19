@@ -3,7 +3,7 @@ package microtools.shapeless
 import play.api.libs.json._
 import shapeless.{::, HList, HNil, Lazy}
 
-object ShapelessListJson {
+trait ShapelessListJson {
   implicit val hNilWrites: Writes[HNil] = Writes[HNil](_ => JsNull)
 
   implicit val hNilReads: Reads[HNil] = Reads(_ => JsSuccess(HNil))
@@ -35,3 +35,5 @@ object ShapelessListJson {
     }
   }
 }
+
+object ShapelessListJson extends ShapelessListJson

@@ -4,7 +4,7 @@ import play.api.data.validation.ValidationError
 import play.api.libs.json.{JsError, JsNull, Reads, Writes}
 import shapeless.{:+:, CNil, Coproduct, Inl, Inr, Lazy}
 
-object ShapelessCoproductJson {
+trait ShapelessCoproductJson {
   implicit val cNilWrites: Writes[CNil] = Writes[CNil](_ => JsNull)
 
   implicit val cNilReads: Reads[CNil] = Reads[CNil]( _ => JsError(ValidationError("error.invalid")))
@@ -21,3 +21,5 @@ object ShapelessCoproductJson {
                                                  tReads: Reads[T]): Reads[H :+: T] =
     hReads.value.map[H :+: T](h => Inl[H, T](h)) orElse tReads.map[H :+: T](t => Inr[H, T](t))
 }
+
+object ShapelessCoproductJson extends ShapelessCoproductJson

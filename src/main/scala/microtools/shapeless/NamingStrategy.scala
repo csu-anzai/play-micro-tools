@@ -2,19 +2,20 @@ package microtools.shapeless
 
 import play.api.libs.json.{JsObject, JsPath, JsValue}
 
-trait NamingStrategy {
-  def nameFor[T](t: T)(implicit m: Manifest[T]): JsObject
+trait NamingStrategy[T] {
+  def nameFor(t: T): JsObject
 
-  def verify[T](json: JsValue)(implicit m: Manifest[T]): Boolean
+  def verify(json: JsValue): Boolean
 }
 
-class ClassNameNamingStrategy(path: JsPath) extends NamingStrategy {
-  val writer = path.write[String]
-  val reader = path.read[String]
+class ClassNameNamingStrategy(path: JsPath) {
+  val classNameWriter = path.write[String]
+  val classNameReader = path.read[String]
 
-  override def nameFor[T](t: T)(implicit m: Manifest[T]): JsObject =
-    writer.writes(m.runtimeClass.getSimpleName)
+  implicit def namingFor[T](implicit m: Manifest[T]): NamingStrategy[T] = new NamingStrategy[T] {
+    override def nameFor(t: T): JsObject = classNameWriter.writes(m.runtimeClass.getSimpleName)
 
-  override def verify[T](json: JsValue)(implicit m: Manifest[T]): Boolean =
-    reader.reads(json).filter(_ == m.runtimeClass.getSimpleName).isSuccess
+    override def verify(json: JsValue): Boolean =
+      classNameReader.reads(json).filter(_ == m.runtimeClass.getSimpleName).isSuccess
+  }
 }
