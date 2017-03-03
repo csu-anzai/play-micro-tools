@@ -21,7 +21,7 @@ trait ThrottledActions extends WithContextAwareLogger {
                       softLimit: Long,
                       hardLimit: Long,
                       throttle: Duration = Duration.ofMillis(100))(
-      implicit ec: ExecutionContext, system: ActorSystem) =
+      implicit ec: ExecutionContext, system: ActorSystem): ActionBuilder[Request] =
     new ActionBuilder[Request] {
       override def invokeBlock[A](
           request: Request[A],

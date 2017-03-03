@@ -16,12 +16,12 @@ trait ServiceDaoHelper {
     else
       (serviceEndpoint, "http")
 
-  def handleError(ex: String => Exception)(errorMessage: String) = {
+  def handleError(ex: String => Exception)(errorMessage: String): Nothing = {
     Logger.error(errorMessage)
     throw ex(errorMessage)
   }
 
-  def headers =
+  def headers: Seq[(String, String)] =
     Seq(ExtraHeaders.AUTH_SUBJECT_HEADER -> s"service/$serviceName",
       authScopeHeader                  -> "R",
       HeaderNames.X_FORWARDED_PROTO -> forwardProto)

@@ -17,7 +17,7 @@ trait TimedActions extends WithContextAwareLogger { self: Controller =>
 
   def metricRegistry: MetricRegistry
 
-  def TimedAction(actionId: String)(implicit ec: ExecutionContext) = {
+  def TimedAction(actionId: String)(implicit ec: ExecutionContext): ActionBuilder[TimedRequest] = {
     val timer = metricRegistry.timer(s"${log.name}.$actionId")
 
     new ActionBuilder[TimedRequest] {

@@ -15,7 +15,7 @@ trait ResultConverter[-R] {
 }
 
 object ResultConverter {
-  implicit def resultResultConverter[R <: Result] = new ResultConverter[R] {
+  implicit def resultResultConverter[R <: Result]: ResultConverter[R] = new ResultConverter[R] {
     override def onSuccess(result: R): Result = result
 
     override def onProblem(problem: Problem): Result = problem.asResult
@@ -24,7 +24,7 @@ object ResultConverter {
       Problems.INTERNAL_SERVER_ERROR.withDetails(cause.getMessage).asResult
   }
 
-  implicit def businessResultConverter[R <: BusinessResult] =
+  implicit def businessResultConverter[R <: BusinessResult]: ResultConverter[R] =
     new ResultConverter[R] {
       override def onSuccess(result: R): Result = result.asResult
 
@@ -46,7 +46,7 @@ object ResultConverter {
         Problems.INTERNAL_SERVER_ERROR.withDetails(cause.getMessage).asResult
     }
 
-  def successResultConverter[R](success: R => Result) =
+  def successResultConverter[R](success: R => Result): ResultConverter[R] =
     new ResultConverter[R] {
       override def onSuccess(result: R): Result =
         success(result)
@@ -59,6 +59,6 @@ object ResultConverter {
       }
     }
 
-  def jsonResultConverter[R: Writes](successStatus: Status = Results.Ok) =
+  def jsonResultConverter[R: Writes](successStatus: Status = Results.Ok): ResultConverter[R] =
     successResultConverter((result: R) => successStatus(Json.toJson(result)))
 }
