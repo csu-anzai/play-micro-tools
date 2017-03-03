@@ -17,7 +17,7 @@ trait RequestContext extends LoggingContext {
 }
 
 object RequestContext {
-  def static(staticFlowId: String) = new RequestContext {
+  def static(staticFlowId: String): RequestContext = new RequestContext {
     override def flowId: String = staticFlowId
 
     override def contextValues: Seq[(String, String)] = Seq.empty
@@ -29,7 +29,7 @@ object RequestContext {
     override def userAgent = None
   }
 
-  def forRequest(request: RequestHeader) = new RequestContext {
+  def forRequest(request: RequestHeader): RequestContext = new RequestContext {
     override def flowId: String =
       request.cookies
         .get(ExtraHeaders.FLOW_ID_HEADER)

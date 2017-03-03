@@ -21,21 +21,21 @@ trait Hash {
 
   def raw: Array[Byte]
 
-  def base64() = Base64.getEncoder.withoutPadding().encodeToString(raw)
+  def base64(): String = Base64.getEncoder.withoutPadding().encodeToString(raw)
 
-  def safeBase64() = Base64.getUrlEncoder.withoutPadding().encodeToString(raw)
+  def safeBase64(): String = Base64.getUrlEncoder.withoutPadding().encodeToString(raw)
 }
 
 object Hash {
   class StdMessageDigest(algorithm: String) extends Hash {
     val md = MessageDigest.getInstance(algorithm)
 
-    override def update(data: ByteBuffer) = {
+    override def update(data: ByteBuffer): StdMessageDigest = {
       md.update(data)
       this
     }
 
-    override def raw = md.digest()
+    override def raw: Array[Byte] = md.digest()
   }
 
   def sha256(): Hash = new StdMessageDigest("SHA-256")

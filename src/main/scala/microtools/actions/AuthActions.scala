@@ -10,7 +10,7 @@ import scala.concurrent.Future
 trait AuthActions extends WithContextAwareLogger { self: Controller =>
   import AuthActions._
 
-  def AuthAction = new ActionBuilder[AuthRequest] {
+  def AuthAction: ActionBuilder[AuthRequest] = new ActionBuilder[AuthRequest] {
     override def invokeBlock[A](
         request: Request[A],
         block: (AuthRequest[A]) => Future[Result]): Future[Result] = {

@@ -31,6 +31,10 @@ bintrayCredentialsFile := {
   sys.props.get("BINTRAY_CREDENTIALS").orElse(sys.env.get("BINTRAY_CREDENTIALS")).map(new File(_)).getOrElse(baseDirectory.value / ".bintray" / "credentials")
 }
 
+lazy val mainSourcesScalaStyle = taskKey[Unit]("mainSourcesScalaStyle")
+mainSourcesScalaStyle := org.scalastyle.sbt.ScalastylePlugin.scalastyle.in(Compile).toTask("").value
+(test in Test) := {(test in Test) dependsOn mainSourcesScalaStyle}.value
+
 val macWireVersion = "2.2.5"
 
 libraryDependencies ++= Seq(

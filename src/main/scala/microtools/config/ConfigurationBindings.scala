@@ -9,13 +9,13 @@ import scala.util.Try
 
 class BinableMapStringString(underlying: Map[String, String])
     extends Map[String, String] {
-  override def +[B1 >: String](kv: (String, B1)) = underlying + kv
+  override def +[B1 >: String](kv: (String, B1)): Map[String, B1] = underlying + kv
 
-  override def get(key: String) = underlying.get(key)
+  override def get(key: String): Option[String] = underlying.get(key)
 
-  override def iterator = underlying.iterator
+  override def iterator: Iterator[(String, String)] = underlying.iterator
 
-  override def -(key: String) = underlying - key
+  override def -(key: String): Map[String, String] = underlying - key
 }
 
 trait ConfigurationBindings { self: Module =>

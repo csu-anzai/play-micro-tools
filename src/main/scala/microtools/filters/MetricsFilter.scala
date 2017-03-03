@@ -19,7 +19,7 @@ class MetricsFilter @Inject()(metricRegistry: MetricRegistry)(
   private val serverErrorMeter =
     metricRegistry.meter("play.requests.serverError")
 
-  override def apply(f: (RequestHeader) => Future[Result])(rh: RequestHeader) = {
+  override def apply(f: (RequestHeader) => Future[Result])(rh: RequestHeader): Future[Result] = {
     val timeCtx = successTimer.time()
     val futureResult  = f(rh)
 

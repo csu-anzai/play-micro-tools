@@ -6,7 +6,7 @@ import com.codahale.metrics.MetricRegistry
 import com.codahale.metrics.json.MetricsModule
 import com.fasterxml.jackson.databind.ObjectMapper
 import play.api.http.HeaderNames
-import play.api.mvc.Controller
+import play.api.mvc.{ Action, AnyContent, Controller }
 
 trait MetricsJsonAction { self: Controller =>
 
@@ -18,7 +18,7 @@ trait MetricsJsonAction { self: Controller =>
 
   def metricRegistry: MetricRegistry
 
-  def metrics = CheckedAction(RequireInternal) {
+  def metrics: Action[AnyContent] = CheckedAction(RequireInternal) {
     Ok(objectMapper.writeValueAsString(metricRegistry))
       .withHeaders(HeaderNames.CONTENT_TYPE -> "application/json")
   }
