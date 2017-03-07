@@ -1,7 +1,5 @@
 package microtools.actions
 
-import java.util.UUID
-
 import com.codahale.metrics.MetricRegistry
 import microtools.logging.WithContextAwareLogger
 import microtools.models.{ExtraHeaders, RequestContext}
@@ -9,7 +7,7 @@ import play.api.mvc._
 import play.mvc.Http.HeaderNames
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success, Try}
+import scala.util.{Failure, Success}
 
 trait TimedActions extends WithContextAwareLogger { self: Controller =>
 
@@ -33,7 +31,8 @@ trait TimedActions extends WithContextAwareLogger { self: Controller =>
         implicit val meteredRequest =
           new TimedRequest(businessDebug, flowId, ipAddress, userAgent, request.uri, request)
         val timeCtx = timer.time()
-        val result  = block(meteredRequest)
+        val result =
+          block(meteredRequest).map(_.withHeaders(ExtraHeaders.FLOW_ID_HEADER -> flowId))
 
         result.onComplete {
           case Success(_) =>
