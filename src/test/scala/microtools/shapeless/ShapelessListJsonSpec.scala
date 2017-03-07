@@ -5,7 +5,7 @@ import org.scalatestplus.play.PlaySpec
 import play.api.libs.json.{JsNull, Json}
 import shapeless.HNil
 
-class ShapelessListJsonSpec  extends PlaySpec with MustMatchers {
+class ShapelessListJsonSpec extends PlaySpec with MustMatchers {
   import ShapelessListJson._
 
   "Shapeless writes" should {

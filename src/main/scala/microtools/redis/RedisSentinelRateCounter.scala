@@ -8,13 +8,14 @@ import redis.SentinelMonitoredRedisClientMasterSlaves
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class RedisSentinelRateCounter(sentinels: String, master: String)(
-    implicit ec: ExecutionContext, system: ActorSystem)
+class RedisSentinelRateCounter(sentinels: String, master: String)(implicit ec: ExecutionContext,
+                                                                  system: ActorSystem)
     extends RateCounter {
   import RedisSentinelRateCounter._
 
   lazy val client = SentinelMonitoredRedisClientMasterSlaves(
-      sentinels.split(',').map(_.trim).map(parseSentinelHost), master)
+    sentinels.split(',').map(_.trim).map(parseSentinelHost),
+    master)
 
   override def incrementAndGet(key: String, storeFor: Duration): Future[Int] = {
     try {

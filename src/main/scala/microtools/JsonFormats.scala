@@ -12,25 +12,26 @@ import play.api.libs.json._
 trait JsonFormats {
   def enumReads[E <: Enumeration](enum: E,
                                   default: Option[E#Value] = None,
-                                  normalize: String => String =
-                                    identity): Reads[E#Value] =
+                                  normalize: String => String = identity): Reads[E#Value] =
     new Reads[E#Value] {
       def reads(json: JsValue): JsResult[E#Value] = json match {
         case JsString(s) => {
-            try {
-              JsSuccess(enum.withName(normalize(s)))
-            } catch {
-              case _: NoSuchElementException =>
-                default
-                  .map(JsSuccess(_))
-                  .getOrElse(JsError(Seq(JsPath() ->
-                              Seq(ValidationError(
-                                      "error.invalid.enum.value")))))
-            }
+          try {
+            JsSuccess(enum.withName(normalize(s)))
+          } catch {
+            case _: NoSuchElementException =>
+              default
+                .map(JsSuccess(_))
+                .getOrElse(
+                  JsError(Seq(JsPath() ->
+                    Seq(ValidationError("error.invalid.enum.value")))))
           }
+        }
         case _ =>
-          JsError(Seq(JsPath() ->
-                  Seq(ValidationError("error.expected.string"))))
+          JsError(
+            Seq(
+              JsPath() ->
+                Seq(ValidationError("error.expected.string"))))
       }
     }
 
@@ -41,8 +42,7 @@ trait JsonFormats {
 
   def enumFormat[E <: Enumeration](enum: E,
                                    default: Option[E#Value] = None,
-                                   normalize: String => String =
-                                     identity): Format[E#Value] = {
+                                   normalize: String => String = identity): Format[E#Value] = {
     Format(enumReads(enum, default, normalize), enumWrites)
   }
 
@@ -58,12 +58,16 @@ trait JsonFormats {
           JsSuccess(Instant.from(DateTimeFormatter.ISO_DATE_TIME.parse(str)))
         } catch {
           case _: DateTimeException =>
-            JsError(Seq(JsPath() ->
-                    Seq(ValidationError("error.expected.date.isoformat"))))
+            JsError(
+              Seq(
+                JsPath() ->
+                  Seq(ValidationError("error.expected.date.isoformat"))))
         }
       case _ =>
-        JsError(Seq(JsPath() ->
-                Seq(ValidationError("error.expected.date"))))
+        JsError(
+          Seq(
+            JsPath() ->
+              Seq(ValidationError("error.expected.date"))))
     }
   }
 }

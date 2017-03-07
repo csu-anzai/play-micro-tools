@@ -14,7 +14,7 @@ class BusinessResultSpec extends WordSpec with MustMatchers {
       val ok = BusinessResult.ok(SomeData(123, "some string"))
 
       val result = Future.successful(ok.asResult)
-      val json = contentAsJson(result)
+      val json   = contentAsJson(result)
 
       (json \ "anInt").as[Int] mustBe 123
       (json \ "aString").as[String] mustBe "some string"
@@ -22,10 +22,11 @@ class BusinessResultSpec extends WordSpec with MustMatchers {
     }
 
     "support ok with links" in {
-      val ok = BusinessResult.ok(SomeData(123, "some string"), allowesActions = Seq(GetData, DeleteData))
+      val ok =
+        BusinessResult.ok(SomeData(123, "some string"), allowesActions = Seq(GetData, DeleteData))
 
       val result = Future.successful(ok.asResult)
-      val json = contentAsJson(result)
+      val json   = contentAsJson(result)
 
       (json \ "anInt").as[Int] mustBe 123
       (json \ "aString").as[String] mustBe "some string"

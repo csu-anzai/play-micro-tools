@@ -15,10 +15,9 @@ trait CircuitBreakers {
   def circuitBreakFuture[T](callId: String,
                             maxFailures: Int,
                             callTimeout: FiniteDuration,
-                            resetTimeout: FiniteDuration)(
-      implicit ec: ExecutionContext,
-      ctx: LoggingContext,
-      s: Scheduler): FutureDecorator[T] = {
+                            resetTimeout: FiniteDuration)(implicit ec: ExecutionContext,
+                                                          ctx: LoggingContext,
+                                                          s: Scheduler): FutureDecorator[T] = {
     val circuitBreaker =
       CircuitBreaker.create(s, maxFailures, callTimeout, resetTimeout)
 
@@ -39,10 +38,9 @@ trait CircuitBreakers {
   def circuitBreakTry[T](callId: String,
                          maxFailures: Int,
                          callTimeout: FiniteDuration,
-                         resetTimeout: FiniteDuration)(
-      implicit ec: ExecutionContext,
-      ctx: LoggingContext,
-      s: Scheduler): TryDecorator[T] = {
+                         resetTimeout: FiniteDuration)(implicit ec: ExecutionContext,
+                                                       ctx: LoggingContext,
+                                                       s: Scheduler): TryDecorator[T] = {
     val circuitBreaker =
       CircuitBreaker.create(s, maxFailures, callTimeout, resetTimeout)
 
@@ -56,21 +54,21 @@ trait CircuitBreakers {
     new TryDecorator[T] {
       override def apply(block: => BusinessTry[T]): BusinessTry[T] = {
         BusinessTry.future(
-            circuitBreaker
-              .withCircuitBreaker(block.asFuture.flatMap {
-            case Left(success) =>
-              Future.successful(BusinessTry.success(success))
-            case Right(problem) if problem.code >= 500 =>
-              Future.failed(new ProblemException(problem))
-            case Right(problem) =>
-              Future.successful(BusinessTry.failure(problem))
-          })
-              .recover {
-            case e: CircuitBreakerOpenException =>
-              log.error(s"$callId: Circuit breaker open")
-              BusinessTry.failure(Problems.SERVICE_UNAVAILABLE.withDetails(
-                      s"$callId: Circuit breaker open"))
-          })
+          circuitBreaker
+            .withCircuitBreaker(block.asFuture.flatMap {
+              case Left(success) =>
+                Future.successful(BusinessTry.success(success))
+              case Right(problem) if problem.code >= 500 =>
+                Future.failed(new ProblemException(problem))
+              case Right(problem) =>
+                Future.successful(BusinessTry.failure(problem))
+            })
+            .recover {
+              case e: CircuitBreakerOpenException =>
+                log.error(s"$callId: Circuit breaker open")
+                BusinessTry.failure(
+                  Problems.SERVICE_UNAVAILABLE.withDetails(s"$callId: Circuit breaker open"))
+            })
       }
     }
   }

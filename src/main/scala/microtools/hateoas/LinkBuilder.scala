@@ -5,5 +5,5 @@ package microtools.hateoas
   * This this is supposed to be the glue between the business logic and the corresponding routes.
   */
 trait LinkBuilder {
-  def actionLink(action: BusinessAction):Link
+  def actionLink(action: BusinessAction): Link
 }

@@ -23,8 +23,8 @@ trait WSTry {
         BusinessTry.success(response.body)
       case response =>
         log.error(s"WS request failed with response=${response.headers}")
-        BusinessTry.failure(Problems.INTERNAL_SERVER_ERROR.withDetails(
-                s"Non ok result: ${response.headers}"))
+        BusinessTry.failure(
+          Problems.INTERNAL_SERVER_ERROR.withDetails(s"Non ok result: ${response.headers}"))
     })
 
   def expectSuccess(futureResponse: Future[WSResponse])(
@@ -37,10 +37,9 @@ trait WSTry {
         notTheExpectedResponse("ok", response)
     })
 
-  def expectOkJson[T](futureResponse: Future[WSResponse])(
-      implicit ec: ExecutionContext,
-      ctx: LoggingContext,
-      reads: Reads[T]): BusinessTry[T] =
+  def expectOkJson[T](futureResponse: Future[WSResponse])(implicit ec: ExecutionContext,
+                                                          ctx: LoggingContext,
+                                                          reads: Reads[T]): BusinessTry[T] =
     BusinessTry.future(futureResponse.map {
       case response if response.status == Status.OK =>
         BusinessTry.validateJson[T](response.json)
@@ -48,10 +47,9 @@ trait WSTry {
         notTheExpectedResponse("ok", response)
     })
 
-  def expectCreatedJson[T](futureResponse: Future[WSResponse])(
-      implicit ec: ExecutionContext,
-      ctx: LoggingContext,
-      reads: Reads[T]): BusinessTry[T] =
+  def expectCreatedJson[T](futureResponse: Future[WSResponse])(implicit ec: ExecutionContext,
+                                                               ctx: LoggingContext,
+                                                               reads: Reads[T]): BusinessTry[T] =
     BusinessTry.future(futureResponse.map {
       case response if response.status == Status.CREATED =>
         BusinessTry.validateJson[T](response.json)
@@ -59,23 +57,18 @@ trait WSTry {
         notTheExpectedResponse("created", response)
     })
 
-  private def notTheExpectedResponse(
-      expected: String,
-      response: WSResponse)(
-  implicit ec: LoggingContext): BusinessFailure[Nothing] = {
+  private def notTheExpectedResponse(expected: String, response: WSResponse)(
+      implicit ec: LoggingContext): BusinessFailure[Nothing] = {
     Try(response.json.as[Problem]) match {
       case Success(problem) =>
-        log.error(
-            s"WS request failed with status=${response.status} problem=$problem")
+        log.error(s"WS request failed with status=${response.status} problem=$problem")
 
         BusinessFailure(problem)
       case _ =>
-        log.error(
-            s"WS request failed with status=${response.status} body=${response.body}")
+        log.error(s"WS request failed with status=${response.status} body=${response.body}")
 
         BusinessFailure(
-            Problems.INTERNAL_SERVER_ERROR.withDetails(
-                s"Non $expected result: ${response.status}"))
+          Problems.INTERNAL_SERVER_ERROR.withDetails(s"Non $expected result: ${response.status}"))
     }
   }
 }

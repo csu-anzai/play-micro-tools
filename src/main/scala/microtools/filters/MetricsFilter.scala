@@ -20,8 +20,8 @@ class MetricsFilter @Inject()(metricRegistry: MetricRegistry)(
     metricRegistry.meter("play.requests.serverError")
 
   override def apply(f: (RequestHeader) => Future[Result])(rh: RequestHeader): Future[Result] = {
-    val timeCtx = successTimer.time()
-    val futureResult  = f(rh)
+    val timeCtx      = successTimer.time()
+    val futureResult = f(rh)
 
     futureResult.onComplete {
       case Success(result) if result.header.status < 400 =>

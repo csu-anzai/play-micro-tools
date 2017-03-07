@@ -12,11 +12,7 @@ import play.api.test.Helpers._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Future, Promise}
 
-class BusinessTrySpec
-    extends WordSpec
-    with MockFactory
-    with MustMatchers
-    with ScalaFutures {
+class BusinessTrySpec extends WordSpec with MockFactory with MustMatchers with ScalaFutures {
   "Successful BusinessTry" should {
     val aResult    = SomeResult(1234, "A successful result")
     val successful = BusinessTry.success(aResult)
@@ -82,8 +78,8 @@ class BusinessTrySpec
 
       status(result) mustBe Status.OK
       contentAsJson(result) mustBe Json.obj(
-          "anInt"   -> aResult.anInt,
-          "aString" -> aResult.aString
+        "anInt"   -> aResult.anInt,
+        "aString" -> aResult.aString
       )
     }
 
@@ -199,18 +195,21 @@ class BusinessTrySpec
 
       result.isSuccess mustBe false
       result.isFailure mustBe true
-      result.asResult(new ResultConverter[String] {
-        override def onProblem(problem: Problem): Result = {
-          problem mustBe Problems.CONFLICT
-          Results.Ok
-        }
+      result.asResult(
+        new ResultConverter[String] {
+          override def onProblem(problem: Problem): Result = {
+            problem mustBe Problems.CONFLICT
+            Results.Ok
+          }
 
-        override def onFailure(cause: Throwable): Result =
-          fail("Fail is not an expected behaviour")
+          override def onFailure(cause: Throwable): Result =
+            fail("Fail is not an expected behaviour")
 
-        override def onSuccess(result: String): Result =
-          fail("Success is not an expected behaviour")
-      }, global)
+          override def onSuccess(result: String): Result =
+            fail("Success is not an expected behaviour")
+        },
+        global
+      )
     }
   }
 

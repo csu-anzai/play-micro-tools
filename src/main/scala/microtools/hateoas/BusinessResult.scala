@@ -9,10 +9,9 @@ trait BusinessResult {
 }
 
 object BusinessResult {
-  def ok[D](data: D,
-            allowesActions: Seq[BusinessAction] = Seq.empty,
-            etag: Option[String] = None)(implicit linkBuilder: LinkBuilder,
-                                         writes: Writes[D]): BusinessResult =
+  def ok[D](data: D, allowesActions: Seq[BusinessAction] = Seq.empty, etag: Option[String] = None)(
+      implicit linkBuilder: LinkBuilder,
+      writes: Writes[D]): BusinessResult =
     new BusinessResult {
       override def asResult: Result = {
         val headers = etag.map(HeaderNames.ETAG -> _).toSeq
@@ -22,12 +21,10 @@ object BusinessResult {
       }
     }
 
-  def created(selfAction: BusinessAction)(
-      implicit linkBuilder: LinkBuilder): BusinessResult =
+  def created(selfAction: BusinessAction)(implicit linkBuilder: LinkBuilder): BusinessResult =
     new BusinessResult {
       override def asResult: Result = {
-        val headers = Seq(
-            HeaderNames.LOCATION -> linkBuilder.actionLink(selfAction).href)
+        val headers = Seq(HeaderNames.LOCATION -> linkBuilder.actionLink(selfAction).href)
         Results.Created.withHeaders(headers: _*)
       }
     }
@@ -39,8 +36,7 @@ object BusinessResult {
       writes: Writes[D]): BusinessResult =
     new BusinessResult {
       override def asResult: Result = {
-        val headers = Seq(
-            HeaderNames.LOCATION -> linkBuilder.actionLink(selfAction).href)
+        val headers = Seq(HeaderNames.LOCATION -> linkBuilder.actionLink(selfAction).href)
         Results
           .Created(JsonTransformers.addHAL(Json.toJson(data), allowesActions))
           .withHeaders(headers: _*)

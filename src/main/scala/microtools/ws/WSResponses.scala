@@ -63,8 +63,7 @@ object WSResponseCreated {
 }
 
 object WSResponseAccepted {
-  def unapply(
-      response: WSResponse): Option[(URI, Seq[String], Option[JsValue])] = {
+  def unapply(response: WSResponse): Option[(URI, Seq[String], Option[JsValue])] = {
     if (response.status == Status.ACCEPTED)
       response.header(HeaderNames.LOCATION).map { locationUrl =>
         val json =
@@ -72,9 +71,7 @@ object WSResponseAccepted {
             Some(response.json)
           else
             None
-        (URI.create(locationUrl),
-         response.allHeaders.getOrElse("link", Seq.empty),
-         json)
+        (URI.create(locationUrl), response.allHeaders.getOrElse("link", Seq.empty), json)
       } else
       None
   }
@@ -103,9 +100,9 @@ object WSResponseClientError {
         case Success(JsSuccess(problem, _)) => Some(problem)
         case _ =>
           Some(
-              Problem
-                .forStatus(response.status, response.statusText)
-                .withDetails(response.body))
+            Problem
+              .forStatus(response.status, response.statusText)
+              .withDetails(response.body))
       } else
       None
   }
@@ -118,9 +115,9 @@ object WSResponseUnprocesssableEntity {
         case Success(JsSuccess(problem, _)) => Some(problem)
         case _ =>
           Some(
-              Problem
-                .forStatus(response.status, response.statusText)
-                .withDetails(response.body))
+            Problem
+              .forStatus(response.status, response.statusText)
+              .withDetails(response.body))
       } else
       None
   }
@@ -133,9 +130,9 @@ object WSResponseServerError {
         case Success(JsSuccess(problem, _)) => Some(problem)
         case _ =>
           Some(
-              Problem
-                .forStatus(response.status, response.statusText)
-                .withDetails(response.body))
+            Problem
+              .forStatus(response.status, response.statusText)
+              .withDetails(response.body))
       } else
       None
   }

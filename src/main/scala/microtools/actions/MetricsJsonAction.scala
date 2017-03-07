@@ -6,15 +6,14 @@ import com.codahale.metrics.MetricRegistry
 import com.codahale.metrics.json.MetricsModule
 import com.fasterxml.jackson.databind.ObjectMapper
 import play.api.http.HeaderNames
-import play.api.mvc.{ Action, AnyContent, Controller }
+import play.api.mvc.{Action, AnyContent, Controller}
 
 trait MetricsJsonAction { self: Controller =>
 
   import CheckedAction._
 
   val objectMapper = new ObjectMapper()
-  objectMapper.registerModule(
-      new MetricsModule(TimeUnit.SECONDS, TimeUnit.MILLISECONDS, true))
+  objectMapper.registerModule(new MetricsModule(TimeUnit.SECONDS, TimeUnit.MILLISECONDS, true))
 
   def metricRegistry: MetricRegistry
 

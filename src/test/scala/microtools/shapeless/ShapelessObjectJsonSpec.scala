@@ -7,7 +7,6 @@ import shapeless.HNil
 import shapeless.record._
 import shapeless.syntax.singleton._
 
-
 class ShapelessObjectJsonSpec extends PlaySpec with MustMatchers {
 
   "Shapeless writes" should {
