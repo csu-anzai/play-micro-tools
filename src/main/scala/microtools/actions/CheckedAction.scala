@@ -15,9 +15,8 @@ object CheckedAction {
 
   case class CheckedAction(requirements: BusinessCondition[RequestHeader]*)
       extends ActionBuilder[Request] {
-    override def invokeBlock[A](
-        request: Request[A],
-        block: (Request[A]) => Future[Result]): Future[Result] = {
+    override def invokeBlock[A](request: Request[A],
+                                block: (Request[A]) => Future[Result]): Future[Result] = {
       requirements
         .find(!_.condition(request))
         .map { failedCondition =>
@@ -30,16 +29,16 @@ object CheckedAction {
   }
 
   val RequireInternal = BusinessCondition[RequestHeader](
-    rh =>
-      rh.headers.get("x-zone").contains("internal"),
+    rh => rh.headers.get("x-zone").contains("internal"),
     Problems.FORBIDDEN.withDetails("Only internal requests are allowed"))
 
   val RequireTLS = BusinessCondition[RequestHeader](
-      rh =>
-        rh.secure || rh.headers
-          .get(HeaderNames.X_FORWARDED_PROTO)
-          .contains("https"),
-      Problem
-        .forStatus(Status.UPGRADE_REQUIRED, "Upgrade required")
-        .withDetails("Require secure https"))
+    rh =>
+      rh.secure || rh.headers
+        .get(HeaderNames.X_FORWARDED_PROTO)
+        .contains("https"),
+    Problem
+      .forStatus(Status.UPGRADE_REQUIRED, "Upgrade required")
+      .withDetails("Require secure https")
+  )
 }

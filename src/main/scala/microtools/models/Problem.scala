@@ -27,9 +27,9 @@ object Problem {
   implicit val jsonFormat = Json.format[Problem]
 
   def forStatus(code: Int, message: String): Problem = Problem(
-      code = code,
-      `type` = s"https://status.es/$code",
-      message = message,
-      details = None
+    code = code,
+    `type` = s"https://status.es/$code",
+    message = message,
+    details = None
   )
 }

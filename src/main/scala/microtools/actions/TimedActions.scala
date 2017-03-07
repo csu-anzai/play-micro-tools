@@ -21,9 +21,8 @@ trait TimedActions extends WithContextAwareLogger { self: Controller =>
     val timer = metricRegistry.timer(s"${log.name}.$actionId")
 
     new ActionBuilder[TimedRequest] {
-      override def invokeBlock[A](
-          request: Request[A],
-          block: (TimedRequest[A]) => Future[Result]): Future[Result] = {
+      override def invokeBlock[A](request: Request[A],
+                                  block: (TimedRequest[A]) => Future[Result]): Future[Result] = {
         val businessDebug = Helper.isBusinessDebug(request)
         val flowId        = Helper.getOrCreateFlowId(request)
         val ipAddress = request.headers
@@ -39,13 +38,10 @@ trait TimedActions extends WithContextAwareLogger { self: Controller =>
         result.onComplete {
           case Success(_) =>
             val nanos = timeCtx.stop()
-            log.info(s"$actionId: Success",
-                     "millis" -> (nanos / 1000000.0).toString)
+            log.info(s"$actionId: Success", "millis" -> (nanos / 1000000.0).toString)
           case Failure(e) =>
             val nanos = timeCtx.stop()
-            log.error(s"$actionId: Internal error",
-                      e,
-                      "millis" -> (nanos / 1000000.0).toString)
+            log.error(s"$actionId: Internal error", e, "millis" -> (nanos / 1000000.0).toString)
         }
         result
       }
@@ -66,8 +62,8 @@ object TimedActions {
       with RequestContext {
 
     override def contextValues: Seq[(String, String)] = Seq(
-        "flow_id"     -> flowId,
-        "request_uri" -> requestUri
+      "flow_id"     -> flowId,
+      "request_uri" -> requestUri
     )
   }
 }

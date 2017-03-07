@@ -11,14 +11,14 @@ trait Protocol {
     new Reads[E#Value] {
       def reads(json: JsValue): JsResult[E#Value] = json match {
         case JsString(s) => {
-            try {
-              JsSuccess(enum.withName(s))
-            } catch {
-              case _: NoSuchElementException =>
-                JsError(
-                    s"Enumeration expected of type: '${enum.getClass}', but it does not appear to contain the value: '$s'")
-            }
+          try {
+            JsSuccess(enum.withName(s))
+          } catch {
+            case _: NoSuchElementException =>
+              JsError(
+                s"Enumeration expected of type: '${enum.getClass}', but it does not appear to contain the value: '$s'")
           }
+        }
         case _ => JsError("String value expected")
       }
     }
@@ -44,12 +44,16 @@ trait Protocol {
           JsSuccess(Instant.from(DateTimeFormatter.ISO_DATE_TIME.parse(str)))
         } catch {
           case _: DateTimeException =>
-            JsError(Seq(JsPath() ->
-                    Seq(ValidationError("error.expected.date.isoformat"))))
+            JsError(
+              Seq(
+                JsPath() ->
+                  Seq(ValidationError("error.expected.date.isoformat"))))
         }
       case _ =>
-        JsError(Seq(JsPath() ->
-                Seq(ValidationError("error.expected.date"))))
+        JsError(
+          Seq(
+            JsPath() ->
+              Seq(ValidationError("error.expected.date"))))
     }
   }
 }

@@ -7,7 +7,7 @@ import shapeless.{:+:, CNil, Coproduct, Inl, Inr, Lazy}
 trait ShapelessCoproductJson {
   implicit val cNilWrites: Writes[CNil] = Writes[CNil](_ => JsNull)
 
-  implicit val cNilReads: Reads[CNil] = Reads[CNil]( _ => JsError(ValidationError("error.invalid")))
+  implicit val cNilReads: Reads[CNil] = Reads[CNil](_ => JsError(ValidationError("error.invalid")))
 
   implicit def coproductWrites[H, T <: Coproduct](
       implicit hWrites: Lazy[Writes[H]],

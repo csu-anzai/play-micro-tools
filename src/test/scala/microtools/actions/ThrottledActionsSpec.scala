@@ -18,11 +18,7 @@ import play.api.test.Helpers._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class ThrottledActionsSpec
-    extends PlaySpec
-    with MockitoSugar
-    with ScalaFutures
-    with OptionValues {
+class ThrottledActionsSpec extends PlaySpec with MockitoSugar with ScalaFutures with OptionValues {
 
   "Throttle" should {
     implicit val system: ActorSystem = mock[ActorSystem]
@@ -62,8 +58,8 @@ class ThrottledActionsSpec
       }
 
       "return none if the dao returns an failure" in {
-        when(dao.incrementAndGet(any(), any())).thenReturn(Future.failed(
-                new RuntimeException("An error that should be handled")))
+        when(dao.incrementAndGet(any(), any()))
+          .thenReturn(Future.failed(new RuntimeException("An error that should be handled")))
 
         val request = FakeRequest()
         status(classUnderTest.throttled(request)) mustBe Status.OK

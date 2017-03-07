@@ -21,11 +21,11 @@ trait ThrottledActions extends WithContextAwareLogger {
                       softLimit: Long,
                       hardLimit: Long,
                       throttle: Duration = Duration.ofMillis(100))(
-      implicit ec: ExecutionContext, system: ActorSystem): ActionBuilder[Request] =
+      implicit ec: ExecutionContext,
+      system: ActorSystem): ActionBuilder[Request] =
     new ActionBuilder[Request] {
-      override def invokeBlock[A](
-          request: Request[A],
-          block: (Request[A]) => Future[Result]): Future[Result] = {
+      override def invokeBlock[A](request: Request[A],
+                                  block: (Request[A]) => Future[Result]): Future[Result] = {
         implicit val ctx = RequestContext.forRequest(request)
         val requestKey   = s"$actionId-${requestIP(request)}"
 
@@ -41,8 +41,7 @@ trait ThrottledActions extends WithContextAwareLogger {
               log.warn(s"Hard rate limit reached for $requestKey")
               Future.successful(Results.TooManyRequests)
             case counter if counter > softLimit =>
-              log.info(
-                  s"Soft rate limit reached for $requestKey. Throttle down.")
+              log.info(s"Soft rate limit reached for $requestKey. Throttle down.")
               after(FiniteDuration((counter - softLimit) * throttle.toMillis,
                                    TimeUnit.MILLISECONDS),
                     system.scheduler) {

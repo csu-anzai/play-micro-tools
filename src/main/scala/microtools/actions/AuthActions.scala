@@ -11,9 +11,8 @@ trait AuthActions extends WithContextAwareLogger { self: Controller =>
   import AuthActions._
 
   def AuthAction: ActionBuilder[AuthRequest] = new ActionBuilder[AuthRequest] {
-    override def invokeBlock[A](
-        request: Request[A],
-        block: (AuthRequest[A]) => Future[Result]): Future[Result] = {
+    override def invokeBlock[A](request: Request[A],
+                                block: (AuthRequest[A]) => Future[Result]): Future[Result] = {
       val businessDebug = Helper.isBusinessDebug(request)
       val flowId        = Helper.getOrCreateFlowId(request)
       val ipAddress = request.headers
@@ -30,14 +29,14 @@ trait AuthActions extends WithContextAwareLogger { self: Controller =>
             enableBusinessDebug = businessDebug,
             flowId = flowId,
             subject = subject,
-            organization =
-              request.headers.get(ExtraHeaders.AUTH_ORGANIZATION_HEADER),
+            organization = request.headers.get(ExtraHeaders.AUTH_ORGANIZATION_HEADER),
             scopes = Map.empty,
             token = token,
             ipAddress = ipAddress,
             userAgent = userAgent,
             requestUri = request.uri,
-            request = request)
+            request = request
+          )
 
         block(authRequest)
       }).getOrElse(Future.successful(Problems.UNAUTHORIZED.asResult))

@@ -10,7 +10,8 @@ import akka.util.ByteString
 trait Hash {
   def update(data: ByteBuffer): Hash
 
-  def update(data: ByteString): Hash = data.asByteBuffers.foldLeft(this)((hash, buffer) => hash.update(buffer))
+  def update(data: ByteString): Hash =
+    data.asByteBuffers.foldLeft(this)((hash, buffer) => hash.update(buffer))
 
   def update(data: String): Hash =
     update(ByteBuffer.wrap(data.getBytes(StandardCharsets.UTF_8)))

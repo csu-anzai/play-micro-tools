@@ -23,6 +23,6 @@ trait ServiceDaoHelper {
 
   def headers: Seq[(String, String)] =
     Seq(ExtraHeaders.AUTH_SUBJECT_HEADER -> s"service/$serviceName",
-      authScopeHeader                  -> "R",
-      HeaderNames.X_FORWARDED_PROTO -> forwardProto)
+        authScopeHeader                  -> "R",
+        HeaderNames.X_FORWARDED_PROTO    -> forwardProto)
 }

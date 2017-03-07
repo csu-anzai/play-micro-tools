@@ -7,8 +7,7 @@ import play.api.inject.{Binding, Module}
 
 import scala.util.Try
 
-class BinableMapStringString(underlying: Map[String, String])
-    extends Map[String, String] {
+class BinableMapStringString(underlying: Map[String, String]) extends Map[String, String] {
   override def +[B1 >: String](kv: (String, B1)): Map[String, B1] = underlying + kv
 
   override def get(key: String): Option[String] = underlying.get(key)
@@ -27,9 +26,7 @@ trait ConfigurationBindings { self: Module =>
     configs.keys.toSeq.flatMap(bindKey(configs, _))
   }
 
-  def bindAsMap(configuration: Configuration,
-                name: String,
-                key: String): Seq[Binding[_]] = {
+  def bindAsMap(configuration: Configuration, name: String, key: String): Seq[Binding[_]] = {
     val configs: Configuration =
       configuration.getConfig(key).getOrElse(Configuration.empty)
     val map: Map[String, String] = configs.keys

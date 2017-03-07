@@ -72,7 +72,7 @@ class TimedCallsSpec extends PlaySpec with MockitoSugar with MustMatchers {
     val futureDelegate = mock[() => Future[String]]
     val tryDelegate    = mock[() => BusinessTry[String]]
 
-    val underTest = new TimedCalls with WithContextAwareLogger{
+    val underTest = new TimedCalls with WithContextAwareLogger {
       def futureCall(): Future[String] = timeFuture("futureCall").apply {
         futureDelegate.apply()
       }

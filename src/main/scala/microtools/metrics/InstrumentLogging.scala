@@ -15,7 +15,7 @@ class InstrumentLogging @Inject()(metricRegistry: MetricRegistry) {
 object InstrumentLogging {
   def instrument(metricRegistry: MetricRegistry): Unit = {
     val factory = LoggerFactory.getILoggerFactory.asInstanceOf[LoggerContext]
-    val root = factory.getLogger(Logger.ROOT_LOGGER_NAME)
+    val root    = factory.getLogger(Logger.ROOT_LOGGER_NAME)
 
     val instrumentedAppended = new InstrumentedAppender(metricRegistry)
     instrumentedAppended.setContext(root.getLoggerContext)

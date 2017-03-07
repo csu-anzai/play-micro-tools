@@ -30,25 +30,21 @@ object Problems {
   val SERVICE_UNAVAILABLE =
     Problem.forStatus(Status.SERVICE_UNAVAILABLE, "Service unavailable")
 
-  def jsonValidationErrors(
-      jsonErrors: Seq[(JsPath, Seq[ValidationError])]): Problem =
-    BAD_REQUEST.copy(
-        details = Some(Json.arr(jsonErrors.map {
+  def jsonValidationErrors(jsonErrors: Seq[(JsPath, Seq[ValidationError])]): Problem =
+    BAD_REQUEST.copy(details = Some(Json.arr(jsonErrors.map {
       case (path, errors) =>
         Json.obj(
-            "path" -> path.toString(),
-            "errors" -> Json.arr(errors.map(_.messages.mkString(", ")))
+          "path"   -> path.toString(),
+          "errors" -> Json.arr(errors.map(_.messages.mkString(", ")))
         )
     })))
 
-  def jsonTransformErrors(
-                            jsonErrors: Seq[(JsPath, Seq[ValidationError])]): Problem =
-    NOT_ACCEPTABLE.copy(
-      details = Some(Json.arr(jsonErrors.map {
-        case (path, errors) =>
-          Json.obj(
-            "path" -> path.toString(),
-            "errors" -> Json.arr(errors.map(_.messages.mkString(", ")))
-          )
-      })))
+  def jsonTransformErrors(jsonErrors: Seq[(JsPath, Seq[ValidationError])]): Problem =
+    NOT_ACCEPTABLE.copy(details = Some(Json.arr(jsonErrors.map {
+      case (path, errors) =>
+        Json.obj(
+          "path"   -> path.toString(),
+          "errors" -> Json.arr(errors.map(_.messages.mkString(", ")))
+        )
+    })))
 }

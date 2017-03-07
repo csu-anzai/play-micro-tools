@@ -13,11 +13,10 @@ object JsonTransformers {
       }
   }
 
-  def jsonHAL(actions: Seq[BusinessAction])(
-      implicit linkBuilder: LinkBuilder): Reads[JsObject] = {
+  def jsonHAL(actions: Seq[BusinessAction])(implicit linkBuilder: LinkBuilder): Reads[JsObject] = {
     val links = JsObject(actions.map { action =>
       action.rel -> Json.toJson(linkBuilder.actionLink(action))
     })
-    __.read[JsObject].map( o => o ++ JsObject(Seq("_links" -> links)))
+    __.read[JsObject].map(o => o ++ JsObject(Seq("_links" -> links)))
   }
 }

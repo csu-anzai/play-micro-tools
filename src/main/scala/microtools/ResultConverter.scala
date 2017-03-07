@@ -34,8 +34,7 @@ object ResultConverter {
         Problems.INTERNAL_SERVER_ERROR.withDetails(cause.getMessage).asResult
     }
 
-  implicit def defaultConverter[R](
-      implicit writes: Writes[R]): ResultConverter[R] =
+  implicit def defaultConverter[R](implicit writes: Writes[R]): ResultConverter[R] =
     new ResultConverter[R] {
       override def onSuccess(result: R): Result =
         Results.Ok(Json.toJson(result))

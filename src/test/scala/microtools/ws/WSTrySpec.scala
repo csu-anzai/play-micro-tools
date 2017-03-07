@@ -13,11 +13,7 @@ import play.api.libs.ws.WSResponse
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class WSTrySpec
-    extends WordSpec
-    with MockFactory
-    with MustMatchers
-    with ScalaFutures {
+class WSTrySpec extends WordSpec with MockFactory with MustMatchers with ScalaFutures {
 
   implicit val testContext = LoggingContext.static()
   implicit val timeout     = Timeout(1, TimeUnit.SECONDS)
@@ -40,8 +36,7 @@ class WSTrySpec
       (failedResponse.json _).expects.throwing(new Exception("")).anyNumberOfTimes()
       (failedResponse.body _).expects.returning("Some error").anyNumberOfTimes()
 
-      noException must be thrownBy WSTry.expectSuccess(
-          Future.successful(failedResponse))
+      noException must be thrownBy WSTry.expectSuccess(Future.successful(failedResponse))
 
       val errorMessage: String = WSTry
         .expectSuccess(Future.successful(failedResponse))

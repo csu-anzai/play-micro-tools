@@ -54,7 +54,8 @@ object RequestContext {
             .flatMap(s => Try(s.toBoolean).toOption)
             .getOrElse(false))
 
-    override def ipAddress = request.headers.get(HeaderNames.X_FORWARDED_FOR).getOrElse(request.remoteAddress)
+    override def ipAddress =
+      request.headers.get(HeaderNames.X_FORWARDED_FOR).getOrElse(request.remoteAddress)
 
     override def userAgent = request.headers.get(HeaderNames.USER_AGENT)
   }

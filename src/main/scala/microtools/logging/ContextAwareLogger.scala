@@ -9,8 +9,8 @@ import scala.util.{Failure, Success, Try}
 class ContextAwareLogger(logger: Logger) {
   def name: String = logger.getName
 
-  def withLoggingContext[T](extraValues: Seq[(String, String)] = Seq.empty)(
-      block: => T)(implicit loggingContext: LoggingContext): T = {
+  def withLoggingContext[T](extraValues: Seq[(String, String)] = Seq.empty)(block: => T)(
+      implicit loggingContext: LoggingContext): T = {
     val values = loggingContext.contextValues ++ extraValues
     try {
       values.foreach(kv => MDC.put(kv._1, kv._2))
@@ -75,8 +75,8 @@ class ContextAwareLogger(logger: Logger) {
     * @param message the message to log
     * @param error   the associated exception
     */
-  def trace(message: => String, error: => Throwable)
-    (implicit loggingContext: LoggingContext): Unit = withLoggingContext() {
+  def trace(message: => String, error: => Throwable)(
+      implicit loggingContext: LoggingContext): Unit = withLoggingContext() {
     if (logger.isTraceEnabled) logger.trace(message, error)
   }
 
@@ -117,10 +117,10 @@ class ContextAwareLogger(logger: Logger) {
     *
     * @param message the message to log
     */
-  def businessDebug(message: => String)(
-      implicit loggingContext: LoggingContext): Unit = withLoggingContext() {
-    if (isBusinessDebugEnabled) logger.debug(message)
-  }
+  def businessDebug(message: => String)(implicit loggingContext: LoggingContext): Unit =
+    withLoggingContext() {
+      if (isBusinessDebugEnabled) logger.debug(message)
+    }
 
   /**
     * Logs a message with the `INFO` level.
@@ -139,8 +139,7 @@ class ContextAwareLogger(logger: Logger) {
     * @param message the message to log
     * @param error   the associated exception
     */
-  def info(
-      message: => String, error: => Throwable, extraValues: (String, String)*)(
+  def info(message: => String, error: => Throwable, extraValues: (String, String)*)(
       implicit loggingContext: LoggingContext): Unit =
     withLoggingContext(extraValues) {
       if (logger.isInfoEnabled) logger.info(message, error)
@@ -184,8 +183,7 @@ class ContextAwareLogger(logger: Logger) {
     * @param message the message to log
     * @param error   the associated exception
     */
-  def error(
-      message: => String, error: => Throwable, extraValues: (String, String)*)(
+  def error(message: => String, error: => Throwable, extraValues: (String, String)*)(
       implicit loggingContext: LoggingContext): Unit = withLoggingContext() {
     if (logger.isErrorEnabled) logger.error(message, error)
   }

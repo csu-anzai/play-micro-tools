@@ -18,8 +18,7 @@ class ErrorHandler @Inject()(implicit env: Environment)
                              message: String): Future[Result] = {
     implicit val requestContext = RequestContext.forRequest(request)
 
-    log.error(
-        s"Client error $statusCode ${request.method} ${request.uri}: $message")
+    log.error(s"Client error $statusCode ${request.method} ${request.uri}: $message")
 
     val problem =
       Problem.forStatus(statusCode, "Client error").withDetails(message)
@@ -27,12 +26,10 @@ class ErrorHandler @Inject()(implicit env: Environment)
     Future.successful(problem.asResult)
   }
 
-  override def onServerError(
-      request: RequestHeader, exception: Throwable): Future[Result] = {
+  override def onServerError(request: RequestHeader, exception: Throwable): Future[Result] = {
     implicit val requestContext = RequestContext.forRequest(request)
 
-    log.error(
-        s"Internal server error ${request.method} ${request.uri}", exception)
+    log.error(s"Internal server error ${request.method} ${request.uri}", exception)
 
     val problem =
       Problems.INTERNAL_SERVER_ERROR.withDetails(exception.getMessage)
