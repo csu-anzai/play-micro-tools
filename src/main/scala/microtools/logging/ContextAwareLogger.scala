@@ -119,7 +119,7 @@ class ContextAwareLogger(logger: Logger) {
     */
   def businessDebug(message: => String)(implicit loggingContext: LoggingContext): Unit =
     withLoggingContext() {
-      if (isBusinessDebugEnabled) logger.debug(message)
+      if (isBusinessDebugEnabled) logger.info(message)
     }
 
   /**
