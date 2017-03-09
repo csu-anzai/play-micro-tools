@@ -10,6 +10,7 @@ import play.api.libs.json._
   * RFC6902 kind of patch operation.
   */
 sealed trait Patch {
+  def path: JsPath
   def apply(json: JsValue): BusinessTry[JsValue] =
     BusinessTry.transformJson(json, transformation)
 
@@ -34,17 +35,27 @@ case class Replace(path: JsPath, value: JsValue) extends Patch {
 }
 
 object Patch extends JsonFormats {
-  @deprecated("Use microtools.patch Add, Remove etc. instead", "0.1-40")
-  def apply(op: PatchOperation.Type, path: String, value: Option[JsValue]): Patch = op match {
-    case PatchOperation.ADD =>
-      Add(JsonPointer.jsPathFormat.reads(JsString(path)).get,
-          value.getOrElse(sys.error("value is required for add")))
-    case PatchOperation.REPLACE =>
-      Replace(JsonPointer.jsPathFormat.reads(JsString(path)).get,
-              value.getOrElse(sys.error("value is required for replace")))
-    case PatchOperation.REMOVE =>
-      Remove(JsonPointer.jsPathFormat.reads(JsString(path)).get)
+  private def stringToJsPath(path: String): JsPath =
+    JsonPointer.jsPathFormat.reads(JsString(path)).get
+
+  @deprecated(
+    "Use microtools.patch Add, Remove etc. classes or the add, replace, etc. methods here instead",
+    "0.1-40")
+  def apply(op: PatchOperation.Type, path: String, value: Option[JsValue]): Patch = {
+    val jsPath = stringToJsPath(path)
+    op match {
+      case PatchOperation.ADD =>
+        Add(jsPath, value.getOrElse(sys.error("value is required for add")))
+      case PatchOperation.REPLACE =>
+        Replace(jsPath, value.getOrElse(sys.error("value is required for replace")))
+      case PatchOperation.REMOVE =>
+        Remove(jsPath)
+    }
   }
+
+  def add(path: String, value: JsValue): Patch     = Add(stringToJsPath(path), value)
+  def replace(path: String, value: JsValue): Patch = Replace(stringToJsPath(path), value)
+  def remove(path: String): Patch                  = Remove(stringToJsPath(path))
 
   val patchRead: Reads[Patch] =
     (__ \ "op").read[String].flatMap {
