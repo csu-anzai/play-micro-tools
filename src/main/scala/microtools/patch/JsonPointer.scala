@@ -23,9 +23,8 @@ object JsonPointer {
 
     private val number: Parser[PathNode] = digit.+ ^^ (chs => IdxPathNode(chs.mkString.toInt))
 
-    private val string: Parser[PathNode] = (escapedSlash | escapedTilde | notSeparator).* ^^ (chs =>
-                                                                                                KeyPathNode(
-                                                                                                  chs.mkString))
+    private val string: Parser[PathNode] = (escapedSlash | escapedTilde | notSeparator).* ^^ (
+        chs => KeyPathNode(chs.mkString))
 
     private val part: Parser[PathNode] = '/' ~> (number | string)
 
