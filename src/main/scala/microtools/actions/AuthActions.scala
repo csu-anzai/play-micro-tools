@@ -7,7 +7,7 @@ import play.mvc.Http.HeaderNames
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait AuthActions extends WithContextAwareLogger { self: Controller =>
+trait AuthActions extends WithContextAwareLogger {
   import AuthActions._
 
   def AuthAction(implicit ec: ExecutionContext): ActionBuilder[AuthRequest] =
@@ -31,7 +31,7 @@ trait AuthActions extends WithContextAwareLogger { self: Controller =>
               flowId = flowId,
               subject = subject,
               organization = request.headers.get(ExtraHeaders.AUTH_ORGANIZATION_HEADER),
-              scopes = Map.empty,
+              scopes = extractScopes(request.headers),
               token = token,
               ipAddress = ipAddress,
               userAgent = userAgent,
@@ -43,6 +43,19 @@ trait AuthActions extends WithContextAwareLogger { self: Controller =>
         }).getOrElse(Future.successful(Problems.UNAUTHORIZED.asResult))
       }
     }
+
+  def extractScopes(headers: Headers): Map[String, Seq[String]] = {
+    val scopesHeaderPrefix = "X-Auth-Scopes-"
+    headers.headers.foldLeft(Map.empty[String, Seq[String]]) {
+      (accu: Map[String, Seq[String]], header) =>
+        val (key, value) = header
+        if (key.startsWith(scopesHeaderPrefix)) {
+          val serviceName = key.drop(scopesHeaderPrefix.length).toLowerCase
+          accu + (serviceName -> (accu.getOrElse(serviceName, Seq.empty[String]) :+ value))
+        } else
+          accu
+    }
+  }
 }
 
 object AuthActions {

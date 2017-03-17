@@ -17,6 +17,7 @@ import play.api.test.Helpers._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.language.reflectiveCalls
 
 class ThrottledActionsSpec extends PlaySpec with MockitoSugar with ScalaFutures with OptionValues {
 
