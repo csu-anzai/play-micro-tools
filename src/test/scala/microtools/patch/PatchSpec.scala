@@ -1,7 +1,7 @@
 package microtools.patch
 
 import microtools.BusinessSuccess
-import org.scalatest.{MustMatchers, WordSpec}
+import org.scalatest.{Assertion, MustMatchers, WordSpec}
 import play.api.libs.json.{JsNumber, Json, _}
 
 class PatchSpec extends WordSpec with MustMatchers {
@@ -76,7 +76,7 @@ class PatchSpec extends WordSpec with MustMatchers {
       )
     }
 
-    "ba able to remove a field" in {
+    "be able to remove a field" in {
       val source = Json.obj(
         "f1" -> "field1",
         "f2" -> 1234,
@@ -96,6 +96,22 @@ class PatchSpec extends WordSpec with MustMatchers {
           "s2" -> "sub2"
         )
       )
+    }
+
+    "(de-)serialize according to the RFC-6902" in {
+
+      assertSame(Remove(__ \ "f2"), Json.obj("op" -> "remove", "path" -> "/f2"))
+
+      assertSame(Add(__ \ "f2", JsBoolean(true)),
+                 Json.obj("op" -> "add", "path" -> "/f2", "value" -> true))
+
+      assertSame(Replace(__ \ "f2", JsBoolean(true)),
+                 Json.obj("op" -> "replace", "path" -> "/f2", "value" -> true))
+
+      def assertSame(patch: Patch, jsObject: JsObject): Assertion = {
+        Json.toJson(patch) mustBe jsObject
+        jsObject.as[Patch] mustBe patch
+      }
     }
   }
 }
