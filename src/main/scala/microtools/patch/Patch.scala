@@ -24,9 +24,9 @@ case class Remove(path: JsPath) extends Patch {
 case class Add(path: JsPath, value: JsValue) extends Patch {
   override def transformation: Reads[_ <: JsValue] =
     path.json.update(Reads {
-      case JsArray(elements) => JsSuccess(JsArray(elements :+ value))
-      case JsNull            => JsSuccess(value)
-      case existing          => JsError("error.patch.add.value.exists")
+      case arr: JsArray => JsSuccess(arr :+ value)
+      case JsNull       => JsSuccess(value)
+      case _            => JsError("error.patch.add.value.exists")
     })
 }
 case class Replace(path: JsPath, value: JsValue) extends Patch {
@@ -39,8 +39,17 @@ object Patch extends JsonFormats {
     JsonPointer.jsPathFormat.reads(JsString(path)).get
 
   @deprecated(
-    "Use microtools.patch Add, Remove etc. classes or the add, replace, etc. methods here instead",
-    "0.1-40")
+    """
+      |Use microtools.patch Add, Remove etc. case classes here instead.
+      |Example:
+      | previously:
+      |  Patch(PatchOperation.REPLACE, "/some/path/0", Some(value))
+      | now:
+      |  Replace(__ / "some" / "path" / 0, value)
+      | (with import play.api.libs.json.__)
+      |""".stripMargin,
+    "0.1-40"
+  )
   def apply(op: PatchOperation.Type, path: String, value: Option[JsValue]): Patch = {
     val jsPath = stringToJsPath(path)
     op match {
@@ -52,10 +61,6 @@ object Patch extends JsonFormats {
         Remove(jsPath)
     }
   }
-
-  def add(path: String, value: JsValue): Patch     = Add(stringToJsPath(path), value)
-  def replace(path: String, value: JsValue): Patch = Replace(stringToJsPath(path), value)
-  def remove(path: String): Patch                  = Remove(stringToJsPath(path))
 
   val patchRead: Reads[Patch] =
     (__ \ "op").read[String].flatMap {
