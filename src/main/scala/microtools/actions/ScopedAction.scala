@@ -1,22 +1,19 @@
 package microtools.actions
 
 import microtools.actions.AuthActions.AuthRequest
-import microtools.models.Problems
+import microtools.models.{Problems, Scopes, ServiceName}
 import play.api.mvc.ActionFunction
+
 import scala.concurrent.Future
 import play.api.mvc.Result
 
-case class ServiceName(name: String) extends AnyVal {
-  override def toString: String = name
-}
-
 trait ScopeRequirement {
-  def check(scopes: Seq[String]): Boolean
+  def check(scopes: Scopes): Boolean
 }
 
 object ScopeRequirement {
-  def pure(block: Seq[String] => Boolean): ScopeRequirement = new ScopeRequirement {
-    override def check(scopes: Seq[String]): Boolean = block(scopes)
+  def pure(block: Scopes => Boolean): ScopeRequirement = new ScopeRequirement {
+    override def check(scopes: Scopes): Boolean = block(scopes)
   }
 
   def and(leftScopeRequirement: ScopeRequirement,
@@ -48,9 +45,8 @@ case class ScopedAction(scopeRequirement: ScopeRequirement)(implicit serviceName
 
   override def invokeBlock[A](request: AuthRequest[A],
                               block: (AuthRequest[A]) => Future[Result]): Future[Result] = {
-    val authScopeHeaders: Seq[String] =
-      request.scopes.getOrElse(serviceName.name.toLowerCase, Seq.empty)
-    val requestIsAuthorized = (wildcardScope or scopeRequirement).check(authScopeHeaders)
+    val authScopeHeaders: Scopes = request.scopes.forService(serviceName)
+    val requestIsAuthorized      = (wildcardScope or scopeRequirement).check(authScopeHeaders)
     if (requestIsAuthorized) {
       block(request)
     } else {

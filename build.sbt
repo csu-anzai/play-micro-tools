@@ -59,6 +59,7 @@ libraryDependencies ++= Seq(
   "com.softwaremill.macwire" %% "proxy"                       % macWireVersion,
   "ch.qos.logback"           % "logback-classic"              % "1.1.7",
   "org.scalatest"            %% "scalatest"                   % "3.0.1" % Test,
+  "org.scalacheck"           %% "scalacheck"                  % "1.13.4" % Test,
   "org.scalamock"            %% "scalamock-scalatest-support" % "3.4.2" % Test,
   "org.scalatestplus.play"   %% "scalatestplus-play"          % "2.0.0-M1" % Test,
   "org.mockito"              % "mockito-core"                 % "1.10.19" % Test

@@ -1,6 +1,5 @@
 package microtools.actions
 
-
 object StandardScopeRequirements {
 
   val read = ScopeRequirement.require("read")
