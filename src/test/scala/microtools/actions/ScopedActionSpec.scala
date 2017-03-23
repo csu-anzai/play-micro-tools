@@ -1,6 +1,6 @@
 package microtools.actions
 
-import microtools.models.ExtraHeaders
+import microtools.models.{ExtraHeaders, ServiceName}
 import org.scalatest.OptionValues
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mockito.MockitoSugar
@@ -9,6 +9,7 @@ import play.api.http.Status
 import play.api.mvc.Results
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.language.reflectiveCalls
 

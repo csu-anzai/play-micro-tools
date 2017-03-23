@@ -1,7 +1,7 @@
 package microtools.actions
 
 import microtools.logging.WithContextAwareLogger
-import microtools.models.{AuthRequestContext, ExtraHeaders, Problems}
+import microtools.models._
 import play.api.mvc._
 import play.mvc.Http.HeaderNames
 
@@ -29,10 +29,11 @@ trait AuthActions extends WithContextAwareLogger {
             new AuthRequest(
               enableBusinessDebug = businessDebug,
               flowId = flowId,
-              subject = subject,
-              organization = request.headers.get(ExtraHeaders.AUTH_ORGANIZATION_HEADER),
-              scopes = extractScopes(request.headers),
-              token = token,
+              subject = Subject(subject),
+              organization =
+                request.headers.get(ExtraHeaders.AUTH_ORGANIZATION_HEADER).map(Organization),
+              scopes = ScopesByService.fromHeaders(request.headers),
+              token = Token(token),
               ipAddress = ipAddress,
               userAgent = userAgent,
               requestUri = request.uri,
@@ -43,29 +44,16 @@ trait AuthActions extends WithContextAwareLogger {
         }).getOrElse(Future.successful(Problems.UNAUTHORIZED.asResult))
       }
     }
-
-  def extractScopes(headers: Headers): Map[String, Seq[String]] = {
-    val scopesHeaderPrefix = "X-Auth-Scopes-"
-    headers.headers.foldLeft(Map.empty[String, Seq[String]]) {
-      (accu: Map[String, Seq[String]], header) =>
-        val (key, value) = header
-        if (key.startsWith(scopesHeaderPrefix)) {
-          val serviceName = key.drop(scopesHeaderPrefix.length).toLowerCase
-          accu + (serviceName -> (accu.getOrElse(serviceName, Seq.empty[String]) :+ value))
-        } else
-          accu
-    }
-  }
 }
 
 object AuthActions {
   class AuthRequest[A](
       override val enableBusinessDebug: Boolean,
       override val flowId: String,
-      override val subject: String,
-      override val organization: Option[String],
-      override val scopes: Map[String, Seq[String]],
-      override val token: String,
+      override val subject: Subject,
+      override val organization: Option[Organization],
+      override val scopes: ScopesByService,
+      override val token: Token,
       override val ipAddress: String,
       override val userAgent: Option[String],
       requestUri: String,
@@ -75,7 +63,7 @@ object AuthActions {
     override def contextValues: Seq[(String, String)] = Seq(
       "flow_id"     -> flowId,
       "request_uri" -> requestUri,
-      "subject"     -> subject
+      "subject"     -> subject.toString
     )
   }
 }
