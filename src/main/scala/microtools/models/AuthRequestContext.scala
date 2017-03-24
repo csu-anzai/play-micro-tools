@@ -1,11 +1,16 @@
 package microtools.models
 
-sealed trait Organization extends Any
+sealed trait Organization extends Any {
+  def maybeId: Option[String]
+}
 
-case object NoOrganization extends Organization
+case object NoOrganization extends Organization {
+  override def maybeId: Option[String] = None
+}
 
 case class GenericOrganization(id: String) extends AnyVal with Organization {
-  override def toString: String = id
+  override def maybeId: Option[String] = Some(id)
+  override def toString: String        = id
 }
 
 object Organization {
