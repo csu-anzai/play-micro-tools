@@ -18,7 +18,7 @@ class ScopedActionSpec extends PlaySpec with MockitoSugar with ScalaFutures with
   trait WithScopedAction {
 
     implicit val serviceName = ServiceName("scopedActionSpec")
-    val scopeRequirement     = StandardScopeRequirements.readAny or StandardScopeRequirements.writeAny
+    val scopeRequirement     = StandardScopeRequirements.read or StandardScopeRequirements.write
     val scopedAction = new AuthActions {
       def action = (AuthAction andThen ScopedAction(scopeRequirement)) { request =>
         Results.NoContent

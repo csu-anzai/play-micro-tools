@@ -21,12 +21,12 @@ class DemoController(implicit ec: ExecutionContext) extends Controller with Auth
   // Controller specific stuff
 
   private def readRequirements(resourceId: String) =
-    StandardScopeRequirements.read(isCustomerService) or
-      StandardScopeRequirements.self(isOwnerOf(resourceId))
+    StandardScopeRequirements.checkedRead(isCustomerService) or
+      StandardScopeRequirements.checkedSelf(isOwnerOf(resourceId))
 
   private def updateRequirements(resourceId: String) =
-    StandardScopeRequirements.write(isCustomerService) or
-      StandardScopeRequirements.self(isOwnerOf(resourceId))
+    StandardScopeRequirements.checkedWrite(isCustomerService) or
+      StandardScopeRequirements.checkedSelf(isOwnerOf(resourceId))
 
   def getProtectedResource(id: String): Action[AnyContent] =
     (AuthAction andThen ScopedAction(readRequirements(id))).async { implicit request =>
