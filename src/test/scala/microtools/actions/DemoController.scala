@@ -1,6 +1,7 @@
 package microtools.actions
 
-import microtools.models.{CustomerSubject, ServiceName, ServiceSubject}
+import microtools.logging.LoggingContext
+import microtools.models.{CustomerSubject, Organization, ServiceName, ServiceSubject, Subject}
 import play.api.mvc.{Action, AnyContent, Controller}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -14,18 +15,22 @@ class DemoController(implicit ec: ExecutionContext) extends Controller with Auth
   // This is something that should be centralized in a trait
   implicit val serviceName: ServiceName = ServiceName("demo-service")
 
-  private def isCustomerService: ScopeRequirement.AccessCheck = {
-    case (ServiceSubject("customer"), _) => true
-  }
+  private def isCustomerService: ScopeRequirement.AccessCheckWithLogging =
+    new ScopeRequirement.AccessCheckWithLogging {
+      override def check(subject: Subject, organization: Organization)(
+          implicit loggingContext: LoggingContext) = (subject, organization) match {
+        case (ServiceSubject("customer"), _) => true
+      }
+    }
 
   // Controller specific stuff
 
   private def readRequirements(resourceId: String) =
-    StandardScopeRequirements.checkedRead(isCustomerService) or
+    StandardScopeRequirements.checkedReadWithLogging(isCustomerService) or
       StandardScopeRequirements.checkedSelf(isOwnerOf(resourceId))
 
   private def updateRequirements(resourceId: String) =
-    StandardScopeRequirements.checkedWrite(isCustomerService) or
+    StandardScopeRequirements.checkedWriteWithLogging(isCustomerService) or
       StandardScopeRequirements.checkedSelf(isOwnerOf(resourceId))
 
   def getProtectedResource(id: String): Action[AnyContent] =

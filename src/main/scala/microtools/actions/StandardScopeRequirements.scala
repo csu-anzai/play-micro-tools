@@ -2,6 +2,18 @@ package microtools.actions
 
 object StandardScopeRequirements {
 
+  def checkedReadWithLogging(
+      accessCheck: ScopeRequirement.AccessCheckWithLogging): ScopeRequirement =
+    ScopeRequirement.require("R", accessCheck)
+
+  def checkedWriteWithLogging(
+      accessCheck: ScopeRequirement.AccessCheckWithLogging): ScopeRequirement =
+    ScopeRequirement.require("W", accessCheck)
+
+  def checkedSelfWithLogging(
+      accessCheck: ScopeRequirement.AccessCheckWithLogging): ScopeRequirement =
+    ScopeRequirement.require("S", accessCheck)
+
   def checkedRead(block: ScopeRequirement.AccessCheck): ScopeRequirement =
     ScopeRequirement.require("R")(block)
 
