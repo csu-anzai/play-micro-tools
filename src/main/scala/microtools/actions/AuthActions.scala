@@ -31,7 +31,7 @@ trait AuthActions extends WithContextAwareLogger {
               flowId = flowId,
               subject = Subject(subject),
               organization =
-                request.headers.get(ExtraHeaders.AUTH_ORGANIZATION_HEADER).map(Organization),
+                Organization(request.headers.get(ExtraHeaders.AUTH_ORGANIZATION_HEADER)),
               scopes = ScopesByService.fromHeaders(request.headers),
               token = Token(token),
               ipAddress = ipAddress,
@@ -51,7 +51,7 @@ object AuthActions {
       override val enableBusinessDebug: Boolean,
       override val flowId: String,
       override val subject: Subject,
-      override val organization: Option[Organization],
+      override val organization: Organization,
       override val scopes: ScopesByService,
       override val token: Token,
       override val ipAddress: String,

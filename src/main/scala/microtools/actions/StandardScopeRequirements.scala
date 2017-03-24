@@ -2,10 +2,28 @@ package microtools.actions
 
 object StandardScopeRequirements {
 
-  val read = ScopeRequirement.require("R")
+  def checkedReadWithLogging(
+      accessCheck: ScopeRequirement.AccessCheckWithLogging): ScopeRequirement =
+    ScopeRequirement.require("R", accessCheck)
 
-  val write = ScopeRequirement.require("W")
+  def checkedWriteWithLogging(
+      accessCheck: ScopeRequirement.AccessCheckWithLogging): ScopeRequirement =
+    ScopeRequirement.require("W", accessCheck)
 
-  val self = ScopeRequirement.require("S")
+  def checkedSelfWithLogging(
+      accessCheck: ScopeRequirement.AccessCheckWithLogging): ScopeRequirement =
+    ScopeRequirement.require("S", accessCheck)
 
+  def checkedRead(block: ScopeRequirement.AccessCheck): ScopeRequirement =
+    ScopeRequirement.require("R")(block)
+
+  def checkedWrite(block: ScopeRequirement.AccessCheck): ScopeRequirement =
+    ScopeRequirement.require("W")(block)
+
+  def checkedSelf(block: ScopeRequirement.AccessCheck): ScopeRequirement =
+    ScopeRequirement.require("S")(block)
+
+  val read  = checkedRead { case _  => true }
+  val write = checkedWrite { case _ => true }
+  val self  = checkedSelf { case _  => true }
 }
