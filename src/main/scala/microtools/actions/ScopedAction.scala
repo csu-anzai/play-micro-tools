@@ -44,12 +44,11 @@ object ScopeRequirement {
         left.checkAccess(subject, organization) || right.checkAccess(subject, organization)
     }
 
-  def require(scope: String)(
-      pf: PartialFunction[(Subject, Organization), Boolean]): ScopeRequirement = {
+  def require(scope: String)(pf: AccessCheck): ScopeRequirement = {
     val accessCheck = new AccessCheckWithLogging {
       override def check(subject: Subject, organization: Organization)(
           implicit loggingContext: LoggingContext) = {
-        PartialFunction.condOpt((subject, organization))(pf).getOrElse(false)
+        pf.lift((subject, organization)).getOrElse(false)
       }
     }
     require(scope, accessCheck)
