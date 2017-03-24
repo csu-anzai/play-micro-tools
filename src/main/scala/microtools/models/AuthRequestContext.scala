@@ -1,7 +1,18 @@
 package microtools.models
 
-case class Organization(id: String) extends AnyVal {
+sealed trait Organization extends Any
+
+case object NoOrganization extends Organization
+
+case class GenericOrganization(id: String) extends AnyVal with Organization {
   override def toString: String = id
+}
+
+object Organization {
+  def apply(org: Option[String]): Organization = org match {
+    case Some(id) => GenericOrganization(id)
+    case None     => NoOrganization
+  }
 }
 
 case class Token(token: String) extends AnyVal {
@@ -13,7 +24,7 @@ case class Token(token: String) extends AnyVal {
 trait AuthRequestContext extends RequestContext {
   def subject: Subject
 
-  def organization: Option[Organization]
+  def organization: Organization
 
   def scopes: ScopesByService
 
