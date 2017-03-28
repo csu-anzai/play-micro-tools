@@ -1,7 +1,7 @@
 package microtools.actions
 
 import microtools.logging.LoggingContext
-import microtools.models.{CustomerSubject, Organization, ServiceName, ServiceSubject, Subject}
+import microtools.models._
 import play.api.mvc.{Action, AnyContent, Controller}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -18,8 +18,19 @@ class DemoController(implicit ec: ExecutionContext) extends Controller with Auth
   private def isCustomerService: ScopeRequirement.AccessCheckWithLogging =
     new ScopeRequirement.AccessCheckWithLogging {
       override def check(subject: Subject, organization: Organization)(
-          implicit loggingContext: LoggingContext) = (subject, organization) match {
-        case (ServiceSubject("customer"), _) => true
+          implicit loggingContext: LoggingContext): Boolean = {
+        val contextValues = loggingContext.contextValues.toMap
+        log.info(s"Flow Id: ${contextValues.getOrElse("flowId", "unknown")}")
+        (subject, organization) match {
+          case (ServiceSubject("customer"), _) =>
+            log.info(
+              s"Customer Service check was successful for subject $subject and organization $organization")
+            true
+          case _ =>
+            log.info(
+              s"Customer Service check was unsuccessful for subject $subject and organization $organization")
+            false
+        }
       }
     }
 
