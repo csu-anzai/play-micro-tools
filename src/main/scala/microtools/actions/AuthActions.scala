@@ -41,7 +41,9 @@ trait AuthActions extends WithContextAwareLogger {
             )
 
           block(authRequest).map(_.withHeaders(ExtraHeaders.FLOW_ID_HEADER -> flowId))
-        }).getOrElse(Future.successful(Problems.UNAUTHORIZED.asResult))
+        }).getOrElse {
+          Future.successful(Problems.UNAUTHORIZED.asResult(RequestContext.forRequest(request)))
+        }
       }
     }
 }

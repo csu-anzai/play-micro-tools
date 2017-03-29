@@ -1,5 +1,6 @@
 package microtools
 
+import microtools.logging.LoggingContext
 import microtools.models.{Problem, Problems}
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.concurrent.ScalaFutures
@@ -13,6 +14,9 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Future, Promise}
 
 class BusinessTrySpec extends WordSpec with MockFactory with MustMatchers with ScalaFutures {
+
+  implicit val loggingContext = LoggingContext.static()
+
   "Successful BusinessTry" should {
     val aResult    = SomeResult(1234, "A successful result")
     val successful = BusinessTry.success(aResult)
@@ -90,9 +94,11 @@ class BusinessTrySpec extends WordSpec with MockFactory with MustMatchers with S
             .Accepted(result.aString)
             .withHeaders("X-Int" -> result.anInt.toString)
 
-        override def onProblem(problem: Problem): Result = ???
+        override def onProblem(problem: Problem)(implicit loggingContext: LoggingContext): Result =
+          ???
 
-        override def onFailure(cause: Throwable): Result = ???
+        override def onFailure(cause: Throwable)(implicit loggingContext: LoggingContext): Result =
+          ???
       }
 
       val result = successful.asResult
@@ -197,18 +203,21 @@ class BusinessTrySpec extends WordSpec with MockFactory with MustMatchers with S
       result.isFailure mustBe true
       result.asResult(
         new ResultConverter[String] {
-          override def onProblem(problem: Problem): Result = {
+          override def onProblem(problem: Problem)(
+              implicit loggingContext: LoggingContext): Result = {
             problem mustBe Problems.CONFLICT
             Results.Ok
           }
 
-          override def onFailure(cause: Throwable): Result =
+          override def onFailure(cause: Throwable)(
+              implicit loggingContext: LoggingContext): Result =
             fail("Fail is not an expected behaviour")
 
           override def onSuccess(result: String): Result =
             fail("Success is not an expected behaviour")
         },
-        global
+        global,
+        loggingContext
       )
     }
   }
