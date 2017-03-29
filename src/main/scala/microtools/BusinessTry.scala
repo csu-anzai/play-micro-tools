@@ -1,6 +1,7 @@
 package microtools
 
 import akka.util.Timeout
+import microtools.logging.LoggingContext
 import microtools.models.{Problem, Problems}
 import play.api.libs.json.{JsValue, Reads}
 import play.api.mvc.Result
@@ -39,7 +40,9 @@ sealed trait BusinessTry[+R] {
     * @param converter converts the three final states of a BusinessTry to Play Result
     * @return the returned future will not fail
     */
-  def asResult(implicit converter: ResultConverter[R], ec: ExecutionContext): Future[Result]
+  def asResult(implicit converter: ResultConverter[R],
+               ec: ExecutionContext,
+               loggingContext: LoggingContext): Future[Result]
 
   /**
     * Convert the `BusinessTry` to an asynchronous action result.
@@ -49,8 +52,9 @@ sealed trait BusinessTry[+R] {
     * @return the returned future will not fail
     */
   def asActionResult(converter: ResultConverter[R])(
-      implicit ec: ExecutionContext): Future[Result] =
-    asResult(converter, ec)
+      implicit ec: ExecutionContext,
+      loggingContext: LoggingContext): Future[Result] =
+    asResult(converter, ec, loggingContext)
 
   def asFuture(implicit ec: ExecutionContext): Future[Either[R, Problem]]
 
@@ -153,7 +157,8 @@ case class BusinessSuccess[R](result: R) extends DecidedBusinessTry[R] {
   override def isFailure: Boolean = false
 
   override def asResult(implicit converter: ResultConverter[R],
-                        ec: ExecutionContext): Future[Result] =
+                        ec: ExecutionContext,
+                        loggingContext: LoggingContext): Future[Result] =
     Future.successful(converter.onSuccess(result))
 
   override def asFuture(implicit ec: ExecutionContext): Future[Either[R, Problem]] =
@@ -186,7 +191,8 @@ case class BusinessFailure[R](problem: Problem) extends DecidedBusinessTry[R] {
   override def isFailure: Boolean = true
 
   override def asResult(implicit converter: ResultConverter[R],
-                        ec: ExecutionContext): Future[Result] =
+                        ec: ExecutionContext,
+                        loggingContext: LoggingContext): Future[Result] =
     Future.successful(converter.onProblem(problem))
 
   override def asFuture(implicit ec: ExecutionContext): Future[Either[R, Problem]] =
@@ -212,7 +218,8 @@ case class BusinessFailure[R](problem: Problem) extends DecidedBusinessTry[R] {
 
 case class FutureBusinessTry[R](futureTry: Future[BusinessTry[R]]) extends BusinessTry[R] {
   override def asResult(implicit converter: ResultConverter[R],
-                        ec: ExecutionContext): Future[Result] =
+                        ec: ExecutionContext,
+                        loggingContext: LoggingContext): Future[Result] =
     futureTry.flatMap(_.asResult)
 
   override def asFuture(implicit ec: ExecutionContext): Future[Either[R, Problem]] =

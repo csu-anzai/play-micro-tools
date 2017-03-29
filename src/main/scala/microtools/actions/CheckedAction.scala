@@ -1,5 +1,6 @@
 package microtools.actions
 
+import microtools.models.RequestContext
 import microtools.{BusinessCondition, BusinessTry}
 import microtools.models.{Problem, Problems}
 import play.api.http.Status
@@ -20,7 +21,7 @@ object CheckedAction {
       requirements
         .find(!_.condition(request))
         .map { failedCondition =>
-          Future.successful(failedCondition.problem.asResult)
+          Future.successful(failedCondition.problem.asResult(RequestContext.forRequest(request)))
         }
         .getOrElse {
           block(request)
