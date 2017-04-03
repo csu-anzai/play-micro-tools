@@ -1,7 +1,7 @@
 package microtools.wire
 
-import play.api.libs.ws.WSClient
+import microtools.ws.WSClientWithFlow
 
 trait WithWSClient {
-  def wsClient: WSClient
+  def wsClient: WSClientWithFlow
 }
