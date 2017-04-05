@@ -1,6 +1,6 @@
 package microtools.actions
 
-object StandardScopeRequirements {
+trait StandardScopeRequirements {
 
   def checkedReadWithLogging(
       accessCheck: ScopeRequirement.AccessCheckWithLogging): ScopeRequirement =
@@ -27,3 +27,5 @@ object StandardScopeRequirements {
   val write = checkedWrite { case _ => true }
   val self  = checkedSelf { case _  => true }
 }
+
+object StandardScopeRequirements extends StandardScopeRequirements
