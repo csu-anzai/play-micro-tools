@@ -1,18 +1,24 @@
 package microtools.actions
 
+import microtools.BusinessTry
 import microtools.actions.AuthActions.AuthRequest
 import microtools.logging.LoggingContext
 import microtools.models._
-import play.api.mvc.ActionFunction
+import play.api.mvc.{ActionFunction, Result}
 
 import scala.concurrent.Future
-import play.api.mvc.Result
 
 trait ScopeRequirement {
   def appliesTo(scopes: Scopes): Boolean
 
   def checkAccess(subject: Subject, organization: Organization)(
       implicit loggingContext: LoggingContext): Boolean
+
+  def required(implicit authRequestContext: AuthRequestContext): BusinessTry[Unit] =
+    if (checkAccess(authRequestContext.subject, authRequestContext.organization))
+      BusinessTry.success(Unit)
+    else
+      BusinessTry.failure(Problems.FORBIDDEN.withDetails("Insufficient scopes"))
 }
 
 object ScopeRequirement {
