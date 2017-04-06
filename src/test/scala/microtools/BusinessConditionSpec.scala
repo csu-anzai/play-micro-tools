@@ -8,7 +8,8 @@ import scala.concurrent.ExecutionContext.Implicits.global
 class BusinessConditionSpec extends WordSpec with MustMatchers {
   "BusinessCondition" should {
     "be usable as filter" in {
-      val condition = BusinessCondition[Int](_ > 10, Problems.BAD_REQUEST.withDetails("Out of bounds"))
+      val condition =
+        BusinessCondition[Int](_ > 10, Problems.BAD_REQUEST.withDetails("Out of bounds"))
       val valueTry1 = BusinessTry.success(5).withCondition(condition)
       val valueTry2 = BusinessTry.success(20).withCondition(condition)
 
@@ -22,8 +23,10 @@ class BusinessConditionSpec extends WordSpec with MustMatchers {
     }
 
     "combine with and" in {
-      val condition1 = BusinessCondition[Int](_ > 10, Problems.BAD_REQUEST.withDetails("Out of bounds <= 10"))
-      val condition2 = BusinessCondition[Int](_ < 20, Problems.BAD_REQUEST.withDetails("Out of bounds >= 20"))
+      val condition1 =
+        BusinessCondition[Int](_ > 10, Problems.BAD_REQUEST.withDetails("Out of bounds <= 10"))
+      val condition2 =
+        BusinessCondition[Int](_ < 20, Problems.BAD_REQUEST.withDetails("Out of bounds >= 20"))
 
       val valueTry1 = BusinessTry.success(5).withCondition(condition1 and condition2)
       val valueTry2 = BusinessTry.success(30).withCondition(condition1 and condition2)
@@ -41,8 +44,10 @@ class BusinessConditionSpec extends WordSpec with MustMatchers {
     }
 
     "combine with or" in {
-      val condition1 = BusinessCondition[Int](_ < 10, Problems.BAD_REQUEST.withDetails("Out of bounds >= 10"))
-      val condition2 = BusinessCondition[Int](_ > 20, Problems.BAD_REQUEST.withDetails("Out of bounds <= 20"))
+      val condition1 =
+        BusinessCondition[Int](_ < 10, Problems.BAD_REQUEST.withDetails("Out of bounds >= 10"))
+      val condition2 =
+        BusinessCondition[Int](_ > 20, Problems.BAD_REQUEST.withDetails("Out of bounds <= 20"))
 
       val valueTry1 = BusinessTry.success(5).withCondition(condition1 or condition2)
       val valueTry2 = BusinessTry.success(30).withCondition(condition1 or condition2)

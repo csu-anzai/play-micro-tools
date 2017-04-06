@@ -14,6 +14,10 @@ scalacOptions ++= Seq(
   "-deprecation"
 )
 
+shellPrompt := { state ⇒
+  scala.Console.CYAN + "play-µ-tools > " + scala.Console.RESET
+}
+
 val playVersion = "2.5.9"
 
 val metricsVersion = "3.1.2"

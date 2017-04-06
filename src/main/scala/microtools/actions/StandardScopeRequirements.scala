@@ -1,6 +1,6 @@
 package microtools.actions
 
-trait StandardScopeRequirements {
+abstract class StandardScopeRequirements {
 
   def checkedReadWithLogging(
       accessCheck: ScopeRequirement.AccessCheckWithLogging): ScopeRequirement =
