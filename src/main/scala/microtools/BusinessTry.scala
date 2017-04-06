@@ -171,11 +171,7 @@ case class BusinessSuccess[R](result: R) extends DecidedBusinessTry[R] {
       implicit ec: ExecutionContext): BusinessTry[U] = f(result)
 
   override def withCondition(condition: BusinessCondition[R])(
-      implicit ec: ExecutionContext): BusinessTry[R] =
-    if (condition.condition(result))
-      this
-    else
-      BusinessFailure[R](condition.problem)
+      implicit ec: ExecutionContext): BusinessTry[R] = condition(result)
 
   override def fold[U](onSuccess: (R) => BusinessTry[U], onFailure: (Problem) => BusinessTry[U])(
       implicit ec: ExecutionContext): BusinessTry[U] =

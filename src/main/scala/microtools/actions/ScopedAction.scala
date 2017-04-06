@@ -1,6 +1,6 @@
 package microtools.actions
 
-import microtools.BusinessTry
+import microtools.{BusinessCondition, BusinessTry}
 import microtools.actions.AuthActions.AuthRequest
 import microtools.logging.LoggingContext
 import microtools.models._
@@ -13,12 +13,6 @@ trait ScopeRequirement {
 
   def checkAccess(subject: Subject, organization: Organization)(
       implicit loggingContext: LoggingContext): Boolean
-
-  def required(implicit authRequestContext: AuthRequestContext): BusinessTry[Unit] =
-    if (checkAccess(authRequestContext.subject, authRequestContext.organization))
-      BusinessTry.success(Unit)
-    else
-      BusinessTry.failure(Problems.FORBIDDEN.withDetails("Insufficient scopes"))
 }
 
 object ScopeRequirement {
@@ -75,6 +69,23 @@ object ScopeRequirement {
       ScopeRequirement.and(scopeRequirement, otherRequirement)
     def or(otherRequirement: ScopeRequirement): ScopeRequirement =
       ScopeRequirement.or(scopeRequirement, otherRequirement)
+  }
+
+  implicit def asBusinessCondition[T](scopeRequirement: ScopeRequirement)(
+      implicit authRequestContext: AuthRequestContext,
+      serviceName: ServiceName): BusinessCondition[T] = new BusinessCondition[T] {
+    override def apply[R <: T](value: R): BusinessTry[R] = {
+      val authScopes: Scopes = authRequestContext.scopes.forService(serviceName)
+
+      if (!scopeRequirement.appliesTo(authScopes)) {
+        BusinessTry.failure(Problems.FORBIDDEN.withDetails("Insufficient scopes"))
+      } else if (!scopeRequirement.checkAccess(authRequestContext.subject,
+                                               authRequestContext.organization)) {
+        BusinessTry.failure(Problems.FORBIDDEN.withDetails("Access to resource denied"))
+      } else {
+        BusinessTry.success(value)
+      }
+    }
   }
 }
 

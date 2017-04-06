@@ -1,12 +1,13 @@
 package microtools.actions
 
+import microtools.{BusinessTry, actions}
 import microtools.models.{ExtraHeaders, ServiceName}
 import org.scalatest.OptionValues
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.http.Status
-import play.api.mvc.Results
+import play.api.mvc.{AnyContent, Results}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 
@@ -29,6 +30,7 @@ class ScopedActionSpec extends PlaySpec with MockitoSugar with ScalaFutures with
       FakeRequest()
         .withHeaders(ExtraHeaders.AUTH_SUBJECT_HEADER -> "", ExtraHeaders.AUTH_TOKEN_HEADER -> "")
   }
+
   "A scoped action" should {
     "allow requests with exact scope match" in new WithScopedAction {
 
@@ -57,6 +59,29 @@ class ScopedActionSpec extends PlaySpec with MockitoSugar with ScalaFutures with
 
       val request = authorizedRequest.withHeaders(s"X-Auth-Scopes-Bauer" -> "*")
       status(scopedAction.action(request)) mustBe Status.FORBIDDEN
+    }
+  }
+
+  "A ScopeRequest" should {
+    "by convertable to a Business condition" in new WithScopedAction {
+      val requestWithW = authorizedRequest.withHeaders(s"X-Auth-Scopes-${serviceName.name}" -> "W",
+                                                       s"X-Auth-Scopes-${serviceName.name}" -> "X")
+      val requestWithR = authorizedRequest.withHeaders(s"X-Auth-Scopes-${serviceName.name}" -> "R",
+                                                       s"X-Auth-Scopes-${serviceName.name}" -> "X")
+
+      val conditionalAction = new AuthActions {
+        def action = (AuthAction andThen ScopedAction(scopeRequirement)).async { implicit request =>
+          val valueTry = BusinessTry.success("The value")
+
+          (for {
+            value <- valueTry.withCondition(StandardScopeRequirements.write)
+          } yield Results.Ok(value)).asResult
+        }
+      }
+
+      status(conditionalAction.action(requestWithW)) mustBe Status.OK
+      status(conditionalAction.action(requestWithR)) mustBe Status.FORBIDDEN
+
     }
   }
 }

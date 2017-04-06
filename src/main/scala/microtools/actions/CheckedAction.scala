@@ -1,8 +1,6 @@
 package microtools.actions
 
-import microtools.models.RequestContext
-import microtools.{BusinessCondition, BusinessTry}
-import microtools.models.{Problem, Problems}
+import microtools.models.{Problem, Problems, RequestContext}
 import play.api.http.Status
 import play.api.mvc.{ActionBuilder, Request, RequestHeader, Result}
 import play.mvc.Http.HeaderNames
@@ -14,8 +12,9 @@ import scala.concurrent.Future
   */
 object CheckedAction {
 
-  case class CheckedAction(requirements: BusinessCondition[RequestHeader]*)
-      extends ActionBuilder[Request] {
+  case class RequestCondition(condition: RequestHeader => Boolean, problem: Problem)
+
+  case class CheckedAction(requirements: RequestCondition*) extends ActionBuilder[Request] {
     override def invokeBlock[A](request: Request[A],
                                 block: (Request[A]) => Future[Result]): Future[Result] = {
       requirements
@@ -29,11 +28,11 @@ object CheckedAction {
     }
   }
 
-  val RequireInternal = BusinessCondition[RequestHeader](
+  val RequireInternal = RequestCondition(
     rh => rh.headers.get("x-zone").contains("internal"),
     Problems.FORBIDDEN.withDetails("Only internal requests are allowed"))
 
-  val RequireTLS = BusinessCondition[RequestHeader](
+  val RequireTLS = RequestCondition(
     rh =>
       rh.secure || rh.headers
         .get(HeaderNames.X_FORWARDED_PROTO)
