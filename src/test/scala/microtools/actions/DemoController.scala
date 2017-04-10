@@ -1,5 +1,6 @@
 package microtools.actions
 
+import microtools.BusinessTry
 import microtools.logging.LoggingContext
 import microtools.models._
 import play.api.mvc.{Action, AnyContent, Controller}
@@ -9,7 +10,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class DemoController(implicit ec: ExecutionContext) extends Controller with AuthActions {
   // This is something provided by a dao of some kind
   private def isOwnerOf(resourceId: String): ScopeRequirement.AccessCheck = {
-    case (CustomerSubject(customer), _) => resourceId.endsWith(customer)
+    case (CustomerSubject(customer), _) => BusinessTry.success(resourceId.endsWith(customer))
   }
 
   // This is something that should be centralized in a trait
@@ -18,18 +19,19 @@ class DemoController(implicit ec: ExecutionContext) extends Controller with Auth
   private def isCustomerService: ScopeRequirement.AccessCheckWithLogging =
     new ScopeRequirement.AccessCheckWithLogging {
       override def check(subject: Subject, organization: Organization)(
-          implicit loggingContext: LoggingContext): Boolean = {
+          implicit loggingContext: LoggingContext,
+          ec: ExecutionContext): BusinessTry[Boolean] = {
         val contextValues = loggingContext.contextValues.toMap
         log.info(s"Flow Id: ${contextValues.getOrElse("flowId", "unknown")}")
         (subject, organization) match {
           case (ServiceSubject("customer"), _) =>
             log.info(
               s"Customer Service check was successful for subject $subject and organization $organization")
-            true
+            BusinessTry.success(true)
           case _ =>
             log.info(
               s"Customer Service check was unsuccessful for subject $subject and organization $organization")
-            false
+            BusinessTry.success(false)
         }
       }
     }

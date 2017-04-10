@@ -3,21 +3,25 @@ package microtools.actions
 import microtools.{BusinessCondition, BusinessTry}
 import microtools.logging.LoggingContext
 import microtools.models._
+
+import scala.concurrent.ExecutionContext
 import scala.language.implicitConversions
 
 trait ScopeRequirement {
   def appliesTo(scopes: Scopes): Boolean
 
   def checkAccess(subject: Subject, organization: Organization)(
-      implicit loggingContext: LoggingContext): Boolean
+      implicit loggingContext: LoggingContext,
+      ec: ExecutionContext): BusinessTry[Boolean]
 }
 
 object ScopeRequirement {
   trait AccessCheckWithLogging {
     def check(subject: Subject, organization: Organization)(
-        implicit loggingContext: LoggingContext): Boolean
+        implicit loggingContext: LoggingContext,
+        ec: ExecutionContext): BusinessTry[Boolean]
   }
-  type AccessCheck = PartialFunction[(Subject, Organization), Boolean]
+  type AccessCheck = PartialFunction[(Subject, Organization), BusinessTry[Boolean]]
 
   val wildcardScope = "*"
 
@@ -27,8 +31,12 @@ object ScopeRequirement {
         left.appliesTo(scopes) && right.appliesTo(scopes)
 
       override def checkAccess(subject: Subject, organization: Organization)(
-          implicit loggingContext: LoggingContext): Boolean =
-        left.checkAccess(subject, organization) && right.checkAccess(subject, organization)
+          implicit loggingContext: LoggingContext,
+          ec: ExecutionContext): BusinessTry[Boolean] =
+        for {
+          leftAllowed  <- left.checkAccess(subject, organization)
+          rightAllowed <- right.checkAccess(subject, organization)
+        } yield leftAllowed && rightAllowed
     }
 
   def or(left: ScopeRequirement, right: ScopeRequirement): ScopeRequirement =
@@ -37,15 +45,20 @@ object ScopeRequirement {
         left.appliesTo(scopes) || right.appliesTo(scopes)
 
       override def checkAccess(subject: Subject, organization: Organization)(
-          implicit loggingContext: LoggingContext): Boolean =
-        left.checkAccess(subject, organization) || right.checkAccess(subject, organization)
+          implicit loggingContext: LoggingContext,
+          ec: ExecutionContext): BusinessTry[Boolean] =
+        for {
+          leftAllowed  <- left.checkAccess(subject, organization)
+          rightAllowed <- right.checkAccess(subject, organization)
+        } yield leftAllowed || rightAllowed
     }
 
   def require(scope: String)(pf: AccessCheck): ScopeRequirement = {
     val accessCheck = new AccessCheckWithLogging {
       override def check(subject: Subject, organization: Organization)(
-          implicit loggingContext: LoggingContext) = {
-        pf.lift((subject, organization)).getOrElse(false)
+          implicit loggingContext: LoggingContext,
+          ec: ExecutionContext): BusinessTry[Boolean] = {
+        pf.lift((subject, organization)).getOrElse(BusinessTry.success(false))
       }
     }
     require(scope, accessCheck)
@@ -57,7 +70,8 @@ object ScopeRequirement {
         scopes.contains(wildcardScope) || scopes.contains(scope)
 
       override def checkAccess(subject: Subject, organization: Organization)(
-          implicit loggingContext: LoggingContext): Boolean =
+          implicit loggingContext: LoggingContext,
+          ec: ExecutionContext): BusinessTry[Boolean] =
         accessCheck.check(subject, organization)
     }
 
@@ -70,17 +84,21 @@ object ScopeRequirement {
 
   implicit def asBusinessCondition[T](scopeRequirement: ScopeRequirement)(
       implicit authRequestContext: AuthRequestContext,
-      serviceName: ServiceName): BusinessCondition[T] = new BusinessCondition[T] {
+      serviceName: ServiceName,
+      ec: ExecutionContext): BusinessCondition[T] = new BusinessCondition[T] {
     override def apply[R <: T](value: R): BusinessTry[R] = {
       val authScopes: Scopes = authRequestContext.scopes.forService(serviceName)
 
       if (!scopeRequirement.appliesTo(authScopes)) {
         BusinessTry.failure(Problems.FORBIDDEN.withDetails("Insufficient scopes"))
-      } else if (!scopeRequirement.checkAccess(authRequestContext.subject,
-                                               authRequestContext.organization)) {
-        BusinessTry.failure(Problems.FORBIDDEN.withDetails("Access to resource denied"))
       } else {
-        BusinessTry.success(value)
+        scopeRequirement
+          .checkAccess(authRequestContext.subject, authRequestContext.organization)
+          .flatMap {
+            case allowed if !allowed =>
+              BusinessTry.failure(Problems.FORBIDDEN.withDetails("Access to resource denied"))
+            case _ => BusinessTry.success(value)
+          }
       }
     }
   }

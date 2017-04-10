@@ -1,5 +1,7 @@
 package microtools.actions
 
+import microtools.BusinessTry
+
 abstract class StandardScopeRequirements {
 
   def checkedReadWithLogging(
@@ -23,9 +25,9 @@ abstract class StandardScopeRequirements {
   def checkedSelf(block: ScopeRequirement.AccessCheck): ScopeRequirement =
     ScopeRequirement.require("S")(block)
 
-  val read  = checkedRead { case _  => true }
-  val write = checkedWrite { case _ => true }
-  val self  = checkedSelf { case _  => true }
+  val read  = checkedRead { case _  => BusinessTry.success(true) }
+  val write = checkedWrite { case _ => BusinessTry.success(true) }
+  val self  = checkedSelf { case _  => BusinessTry.success(true) }
 }
 
 object StandardScopeRequirements extends StandardScopeRequirements
