@@ -10,6 +10,13 @@ import play.api.libs.json._
   * Missing or alternative json formats.
   */
 trait JsonFormats {
+  case class AnyValFormat[S, T <: AnyVal](anyValApply: S => T)(anyValUnapply: T => Option[S])(
+      implicit format: Format[S])
+      extends Format[T] {
+    def reads(json: JsValue): JsResult[T] = json.validate[S].map(anyValApply)
+    def writes(value: T): JsValue         = Json.toJson(anyValUnapply(value))
+  }
+
   def enumReads[E <: Enumeration](enum: E,
                                   default: Option[E#Value] = None,
                                   normalize: String => String = identity): Reads[E#Value] =
