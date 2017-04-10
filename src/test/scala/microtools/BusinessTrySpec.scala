@@ -254,5 +254,27 @@ class BusinessTrySpec extends WordSpec with MockFactory with MustMatchers with S
 
       result mustEqual "fourth result"
     }
+    "should be recoverable" in {
+      val BusinessSuccess(result) = BusinessTry
+        .failure[String](Problem.forStatus(100, "test"))
+        .recover {
+          case Problem(100, _, _, _) => "success"
+        }
+        .awaitResult
+
+      result must equal("success")
+    }
+
+    "should not recover if partial function doesn't match" in {
+      val BusinessFailure(result) = BusinessTry
+        .failure[String](Problem.forStatus(100, "test"))
+        .recover {
+          case Problem(101, _, _, _) => "success"
+        }
+        .awaitResult
+
+      result.code must equal(100)
+    }
   }
+
 }

@@ -77,6 +77,14 @@ sealed trait BusinessTry[+R] {
       }
     }
   }
+
+  def recoverWith[U >: R](f: PartialFunction[Problem, BusinessTry[U]])(
+      implicit ec: ExecutionContext): BusinessTry[U]
+
+  def recover[U >: R](f: PartialFunction[Problem, U])(
+      implicit ec: ExecutionContext): BusinessTry[U] = {
+    recoverWith(f.andThen(BusinessTry.success))
+  }
 }
 
 /**
@@ -179,6 +187,10 @@ case class BusinessSuccess[R](result: R) extends DecidedBusinessTry[R] {
 
   override def awaitResult(implicit timeout: Timeout): DecidedBusinessTry[R] =
     this
+
+  override def recoverWith[U >: R](f: PartialFunction[Problem, BusinessTry[U]])(
+      implicit ec: ExecutionContext): BusinessTry[U] =
+    this
 }
 
 case class BusinessFailure[R](problem: Problem) extends DecidedBusinessTry[R] {
@@ -210,6 +222,11 @@ case class BusinessFailure[R](problem: Problem) extends DecidedBusinessTry[R] {
 
   override def awaitResult(implicit timeout: Timeout): DecidedBusinessTry[R] =
     this
+
+  override def recoverWith[U >: R](f: PartialFunction[Problem, BusinessTry[U]])(
+      implicit ec: ExecutionContext): BusinessTry[U] =
+    if (f isDefinedAt problem) f(problem) else this
+
 }
 
 case class FutureBusinessTry[R](futureTry: Future[BusinessTry[R]]) extends BusinessTry[R] {
@@ -247,4 +264,9 @@ case class FutureBusinessTry[R](futureTry: Future[BusinessTry[R]]) extends Busin
     }
     this
   }
+
+  override def recoverWith[U >: R](f: PartialFunction[Problem, BusinessTry[U]])(
+      implicit ec: ExecutionContext): BusinessTry[U] =
+    FutureBusinessTry(futureTry.map(_.recoverWith(f)))
+
 }
