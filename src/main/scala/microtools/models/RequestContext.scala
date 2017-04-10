@@ -20,7 +20,9 @@ object RequestContext {
   def static(staticFlowId: String): RequestContext = new RequestContext {
     override def flowId: String = staticFlowId
 
-    override def contextValues: Seq[(String, String)] = Seq.empty
+    override lazy val contextValues: Seq[(String, String)] = Seq(
+      "flow_id" -> flowId
+    )
 
     override def enableBusinessDebug: Boolean = false
 
