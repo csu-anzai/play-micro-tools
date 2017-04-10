@@ -5,6 +5,7 @@ import java.time.format.DateTimeFormatter
 
 import play.api.data.validation.ValidationError
 import play.api.libs.json._
+import _root_.shapeless.{Generic, ::, HNil, HList}
 
 /**
   * Missing or alternative json formats.
@@ -16,6 +17,12 @@ trait JsonFormats {
     def reads(json: JsValue): JsResult[T] = json.validate[S].map(anyValApply)
     def writes(value: T): JsValue         = Json.toJson(anyValUnapply(value))
   }
+
+  implicit def formatAnyVal[T <: AnyVal, L <: HList, S](implicit gen: Generic.Aux[T, L],
+                                                        ev1: (S :: HNil) =:= L,
+                                                        ev2: L =:= (S :: HNil),
+                                                        format: Format[S]): Format[T] =
+    AnyValFormat[S, T](s => gen.from(ev1(s :: HNil)))(t => Some(gen.to(t).head))
 
   def enumReads[E <: Enumeration](enum: E,
                                   default: Option[E#Value] = None,

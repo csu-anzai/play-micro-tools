@@ -1,5 +1,7 @@
 package microtools.models
 
+import play.api.libs.json._
+
 sealed trait Organization extends Any {
   def maybeId: Option[String]
 }
@@ -18,6 +20,11 @@ object Organization {
     case Some(id) => GenericOrganization(id)
     case None     => NoOrganization
   }
+
+  implicit val jsonReads: Reads[Organization] = __.readNullable[String].map(apply)
+
+  implicit val jsonWrites: Writes[Organization] =
+    Writes[Organization](_.maybeId.map(JsString).getOrElse(JsNull))
 }
 
 case class Token(token: String) extends AnyVal {

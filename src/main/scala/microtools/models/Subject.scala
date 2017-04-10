@@ -1,5 +1,7 @@
 package microtools.models
 
+import play.api.libs.json.{JsString, Reads, Writes, __}
+
 sealed trait Subject extends Any
 
 case class AdminSubject(adminUser: String) extends AnyVal with Subject {
@@ -30,4 +32,8 @@ object Subject {
     case subject if subject.startsWith("company/")  => CompanySubject(subject.drop(8))
     case subject                                    => GenericSubject(subject)
   }
+
+  implicit val jsonReads: Reads[Subject] = __.read[String].map(apply)
+
+  implicit val jsonWrites: Writes[Subject] = Writes[Subject](subject => JsString(subject.toString))
 }
