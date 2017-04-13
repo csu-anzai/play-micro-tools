@@ -53,7 +53,7 @@ libraryDependencies ++= Seq(
   "com.typesafe.play"        %% "play"                        % playVersion % Provided,
   "com.typesafe.play"        %% "play-ws"                     % playVersion % Provided,
   "com.chuusai"              %% "shapeless"                   % "2.3.2" % Provided,
-  "com.github.etaty"         %% "rediscala"                   % "1.6.0" % Provided,
+  "com.github.etaty"         %% "rediscala"                   % "1.8.0" % Provided,
   "io.dropwizard.metrics"    % "metrics-core"                 % metricsVersion,
   "io.dropwizard.metrics"    % "metrics-jvm"                  % metricsVersion,
   "io.dropwizard.metrics"    % "metrics-json"                 % metricsVersion,
