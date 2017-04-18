@@ -25,7 +25,10 @@ case class Problem(
   }
 
   def withDetails(details: String): Problem =
-    this.copy(details = Some(JsString(details)))
+    withDetails(JsString(details))
+
+  def withDetails(details: JsValue): Problem =
+    this.copy(details = Some(details))
 }
 
 object Problem extends WithContextAwareLogger {
