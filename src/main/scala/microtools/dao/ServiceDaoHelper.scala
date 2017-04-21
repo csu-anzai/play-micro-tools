@@ -1,10 +1,10 @@
 package microtools.dao
 
-import microtools.models.ExtraHeaders
-import play.api.Logger
+import microtools.logging.{WithContextAwareLogger}
+import microtools.models.{ExtraHeaders, RequestContext}
 import play.mvc.Http.HeaderNames
 
-trait ServiceDaoHelper {
+trait ServiceDaoHelper { self: WithContextAwareLogger =>
 
   def serviceEndpoint: String
   def authScopeHeader: String
@@ -16,10 +16,18 @@ trait ServiceDaoHelper {
     else
       (serviceEndpoint, "http")
 
-  def handleError(ex: String => Exception)(errorMessage: String): Nothing = {
-    Logger.error(errorMessage)
+  def logError(ex: String => Exception)(errorMessage: String)(
+      implicit ctx: RequestContext): Nothing = {
+    log.error(errorMessage)
     throw ex(errorMessage)
   }
+
+  @deprecated(
+    "handleError() is a lie and misleads people reading your code, please use logError() instead which does the same thing and has the same signature",
+    "0.1-89"
+  )
+  def handleError(ex: String => Exception)(errorMessage: String)(
+      implicit ctx: RequestContext): Nothing = logError(ex)(errorMessage)
 
   def headers: Seq[(String, String)] =
     Seq(ExtraHeaders.AUTH_SUBJECT_HEADER -> s"service/$serviceName",
