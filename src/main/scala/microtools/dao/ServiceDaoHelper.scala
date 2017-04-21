@@ -27,7 +27,7 @@ trait ServiceDaoHelper { self: WithContextAwareLogger =>
     "0.1-89"
   )
   def handleError(ex: String => Exception)(errorMessage: String)(
-      implicit ctx: RequestContext): Nothing = logError(ex)(errorMessage)
+      implicit ctx: RequestContext): Nothing = logAndThrowError(ex)(errorMessage)
 
   def headers: Seq[(String, String)] =
     Seq(ExtraHeaders.AUTH_SUBJECT_HEADER -> s"service/$serviceName",
