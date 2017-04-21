@@ -16,14 +16,14 @@ trait ServiceDaoHelper { self: WithContextAwareLogger =>
     else
       (serviceEndpoint, "http")
 
-  def logError(ex: String => Exception)(errorMessage: String)(
+  def logAndThrowError(ex: String => Exception)(errorMessage: String)(
       implicit ctx: RequestContext): Nothing = {
     log.error(errorMessage)
     throw ex(errorMessage)
   }
 
   @deprecated(
-    "handleError() is a lie and misleads people reading your code, please use logError() instead which does the same thing and has the same signature",
+    "handleError() is a lie and misleads people reading your code, please use logAndThrowError() instead which does the same thing and has the same signature",
     "0.1-89"
   )
   def handleError(ex: String => Exception)(errorMessage: String)(
