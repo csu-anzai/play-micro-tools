@@ -157,6 +157,13 @@ object BusinessTry {
       case Some(value) => success(value)
       case None        => failure(problem)
     }
+
+  def fromTry[T](`try`: Try[T])(errorHandler: Throwable => Problem): BusinessTry[T] = {
+    `try` match {
+      case Success(t) => BusinessTry.success(t)
+      case Failure(e) => BusinessTry.failure(errorHandler(e))
+    }
+  }
 }
 
 case class BusinessSuccess[R](result: R) extends DecidedBusinessTry[R] {

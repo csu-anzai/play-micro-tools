@@ -9,6 +9,8 @@ import play.api.libs.json.Json
 import play.api.mvc.{Result, Results}
 import play.mvc.Http.Status
 import play.api.test.Helpers._
+import scala.util.Try
+import scala.util.Failure
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Future, Promise}
@@ -59,6 +61,22 @@ class BusinessTrySpec extends WordSpec with MockFactory with MustMatchers with S
         successful.withCondition(aCondition).awaitResult
 
       problem mustBe Problems.BAD_REQUEST
+    }
+
+    "be lifted from success try" in {
+      val successTry = Try("gegenbauer")
+      val BusinessSuccess(success) = BusinessTry.fromTry(successTry) {
+        case _ => Problems.BAD_REQUEST
+      }
+      success mustEqual "gegenbauer"
+    }
+
+    "be lifted from failure try" in {
+      val failureTry = Failure(new RuntimeException("Who you gonna call? Bauerbusters!"))
+      val BusinessFailure(problem) = BusinessTry.fromTry(failureTry) {
+        case _ => Problems.BAD_REQUEST
+      }
+      problem mustEqual Problems.BAD_REQUEST
     }
 
     "fold" in {
