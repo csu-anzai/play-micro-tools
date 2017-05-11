@@ -26,7 +26,8 @@ object WireTag {
         }
       case _ =>
         throw new RuntimeException(
-          s"could not convert $durationString to Duration. Expected a number followed by s (seconds), m (minutes), h (hours)")
+          s"could not convert $durationString to Duration. Expected a number followed by s (seconds), m (minutes), h (hours)"
+        )
     }
   }
 

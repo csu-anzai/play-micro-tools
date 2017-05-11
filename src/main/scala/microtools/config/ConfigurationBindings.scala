@@ -3,7 +3,7 @@ package microtools.config
 import java.time.Duration
 
 import play.api.Configuration
-import play.api.inject.{Binding, Module}
+import play.api.inject.{ Binding, Module }
 
 import scala.util.Try
 
@@ -36,7 +36,8 @@ trait ConfigurationBindings { self: Module =>
     Seq(
       bind[BinableMapStringString]
         .qualifiedWith(name)
-        .toInstance(new BinableMapStringString(map)))
+        .toInstance(new BinableMapStringString(map))
+    )
   }
 
   def bindKey(config: Configuration, key: String): Seq[Binding[_]] = {

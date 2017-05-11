@@ -6,8 +6,8 @@ import scala.util.parsing.combinator.Parsers
 import scala.util.parsing.input.CharSequenceReader
 
 /**
-  * RFC 6901 json pointer to JsPath
-  */
+ * RFC 6901 json pointer to JsPath
+ */
 object JsonPointer {
 
   private object PathParser extends Parsers {
@@ -24,7 +24,8 @@ object JsonPointer {
     private val number: Parser[PathNode] = digit.+ ^^ (chs => IdxPathNode(chs.mkString.toInt))
 
     private val string: Parser[PathNode] = (escapedSlash | escapedTilde | notSeparator).* ^^ (
-        chs => KeyPathNode(chs.mkString))
+      chs => KeyPathNode(chs.mkString)
+    )
 
     private val part: Parser[PathNode] = '/' ~> (number | string)
 

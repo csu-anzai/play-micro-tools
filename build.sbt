@@ -1,4 +1,6 @@
-import org.scalafmt.bootstrap.ScalafmtBootstrap
+import com.typesafe.sbt.SbtScalariform
+import com.typesafe.sbt.SbtScalariform.ScalariformKeys
+import scalariform.formatter.preferences._
 
 name := "play-micro-tools"
 
@@ -71,11 +73,17 @@ libraryDependencies ++= Seq(
   "org.mockito"              % "mockito-core"                 % "1.10.19" % Test
 )
 
-val scalafmtTask = taskKey[Unit]("Scala fmt")
+/** scalariform */
+ScalariformKeys.preferences := ScalariformKeys.preferences.value
+      .setPreference(RewriteArrowSymbols, false)
+      .setPreference(AlignArguments, true)
+      .setPreference(DoubleIndentClassDeclaration, true)
+      .setPreference(AlignSingleLineCaseStatements, true)
+      .setPreference(SpacesAroundMultiImports, true)
+      .setPreference(AlignParameters, true)
 
-scalafmtTask := {
-  org.scalafmt.bootstrap.ScalafmtBootstrap.main(Seq("--non-interactive"))
-  ()
-}
-
-(compile in Compile) := { (compile in Compile) dependsOn scalafmtTask }.value
+excludeFilter in scalariformFormat := (excludeFilter in scalariformFormat).value ||
+  "Routes.scala" ||
+  "ReverseRoutes.scala" ||
+  "JavaScriptReverseRoutes.scala" ||
+  "RoutesPrefix.scala"

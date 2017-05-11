@@ -4,14 +4,16 @@ import javax.inject.Inject
 
 import akka.stream.Materializer
 import com.codahale.metrics.MetricRegistry
-import play.api.mvc.{Filter, RequestHeader, Result}
+import play.api.mvc.{ Filter, RequestHeader, Result }
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 import scala.util.Success
 
-class MetricsFilter @Inject()(metricRegistry: MetricRegistry)(
-    implicit ec: ExecutionContext,
-    override implicit val mat: Materializer)
+class MetricsFilter @Inject() (metricRegistry: MetricRegistry)(
+  implicit
+  ec:                        ExecutionContext,
+  override implicit val mat: Materializer
+)
     extends Filter {
   private val successTimer = metricRegistry.timer("play.requests.success")
   private val clientErrorMeter =
@@ -20,7 +22,7 @@ class MetricsFilter @Inject()(metricRegistry: MetricRegistry)(
     metricRegistry.meter("play.requests.serverError")
 
   override def apply(f: (RequestHeader) => Future[Result])(rh: RequestHeader): Future[Result] = {
-    val timeCtx      = successTimer.time()
+    val timeCtx = successTimer.time()
     val futureResult = f(rh)
 
     futureResult.onComplete {

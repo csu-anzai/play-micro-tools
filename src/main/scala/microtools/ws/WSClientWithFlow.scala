@@ -1,8 +1,8 @@
 package microtools.ws
 
-import microtools.models.{AuthRequestContext, ExtraHeaders, RequestContext}
+import microtools.models.{ AuthRequestContext, ExtraHeaders, RequestContext }
 import play.api.http.HeaderNames
-import play.api.libs.ws.{WSClient, WSRequest}
+import play.api.libs.ws.{ WSClient, WSRequest }
 
 class WSClientWithFlow(val underlying: WSClient) {
 

@@ -39,10 +39,11 @@ object RequestContext {
         .getOrElse(
           request.headers
             .get(ExtraHeaders.FLOW_ID_HEADER)
-            .getOrElse(UUID.randomUUID().toString))
+            .getOrElse(UUID.randomUUID().toString)
+        )
 
     override def contextValues: Seq[(String, String)] = Seq(
-      "flow_id"     -> flowId,
+      "flow_id" -> flowId,
       "request_uri" -> request.uri
     )
 
@@ -54,7 +55,8 @@ object RequestContext {
           request.headers
             .get(ExtraHeaders.DEBUG_HEADER)
             .flatMap(s => Try(s.toBoolean).toOption)
-            .getOrElse(false))
+            .getOrElse(false)
+        )
 
     override def ipAddress =
       request.headers.get(HeaderNames.X_FORWARDED_FOR).getOrElse(request.remoteAddress)

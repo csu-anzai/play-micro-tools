@@ -2,10 +2,10 @@ package microtools
 
 import microtools.hateoas.BusinessResult
 import microtools.logging.LoggingContext
-import microtools.models.{Problem, Problems}
-import play.api.libs.json.{Json, Writes}
+import microtools.models.{ Problem, Problems }
+import play.api.libs.json.{ Json, Writes }
 import play.api.mvc.Results.Status
-import play.api.mvc.{Result, Results}
+import play.api.mvc.{ Result, Results }
 
 trait ResultConverter[-R] {
   def onSuccess(result: R): Result

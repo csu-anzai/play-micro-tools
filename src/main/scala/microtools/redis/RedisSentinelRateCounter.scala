@@ -6,21 +6,23 @@ import akka.actor.ActorSystem
 import microtools.actions.RateCounter
 import redis.SentinelMonitoredRedisClientMasterSlaves
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ ExecutionContext, Future }
 
-class RedisSentinelRateCounter(sentinels: String, master: String)(implicit ec: ExecutionContext,
+class RedisSentinelRateCounter(sentinels: String, master: String)(implicit
+  ec: ExecutionContext,
                                                                   system: ActorSystem)
     extends RateCounter {
   import RedisSentinelRateCounter._
 
   lazy val client = SentinelMonitoredRedisClientMasterSlaves(
     sentinels.split(',').map(_.trim).map(parseSentinelHost),
-    master)
+    master
+  )
 
   override def incrementAndGet(key: String, storeFor: Duration): Future[Int] = {
     try {
       val transaction = client.multi()
-      val count       = transaction.incr(key)
+      val count = transaction.incr(key)
       transaction.expire(key, storeFor.getSeconds)
       transaction.exec()
 

@@ -1,7 +1,7 @@
 package microtools.models
 
 import java.time.format.DateTimeFormatter
-import java.time.{DateTimeException, Instant}
+import java.time.{ DateTimeException, Instant }
 
 import play.api.data.validation.ValidationError
 import play.api.libs.json._
@@ -16,7 +16,8 @@ trait Protocol {
           } catch {
             case _: NoSuchElementException =>
               JsError(
-                s"Enumeration expected of type: '${enum.getClass}', but it does not appear to contain the value: '$s'")
+                s"Enumeration expected of type: '${enum.getClass}', but it does not appear to contain the value: '$s'"
+              )
           }
         }
         case _ => JsError("String value expected")
@@ -47,13 +48,17 @@ trait Protocol {
             JsError(
               Seq(
                 JsPath() ->
-                  Seq(ValidationError("error.expected.date.isoformat"))))
+                  Seq(ValidationError("error.expected.date.isoformat"))
+              )
+            )
         }
       case _ =>
         JsError(
           Seq(
             JsPath() ->
-              Seq(ValidationError("error.expected.date"))))
+              Seq(ValidationError("error.expected.date"))
+          )
+        )
     }
   }
 }

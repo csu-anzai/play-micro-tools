@@ -16,7 +16,8 @@ object Helper {
         rh.headers
           .get(ExtraHeaders.DEBUG_HEADER)
           .flatMap(s => Try(s.toBoolean).toOption)
-          .getOrElse(false))
+          .getOrElse(false)
+      )
 
   def getOrCreateFlowId(rh: RequestHeader): String =
     rh.cookies
@@ -25,7 +26,8 @@ object Helper {
       .getOrElse(
         rh.headers
           .get(ExtraHeaders.FLOW_ID_HEADER)
-          .getOrElse(generateFlowId()))
+          .getOrElse(generateFlowId())
+      )
 
   def generateFlowId(): String = UUID.randomUUID().toString
 }

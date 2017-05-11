@@ -3,7 +3,7 @@ package microtools.wire
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import play.api.inject.ApplicationLifecycle
-import play.api.{Configuration, Environment}
+import play.api.{ Configuration, Environment }
 
 import scala.concurrent.ExecutionContext
 

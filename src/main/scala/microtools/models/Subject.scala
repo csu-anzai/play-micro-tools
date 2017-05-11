@@ -1,6 +1,6 @@
 package microtools.models
 
-import play.api.libs.json.{JsString, Reads, Writes, __}
+import play.api.libs.json.{ JsString, Reads, Writes, __ }
 
 sealed trait Subject extends Any
 

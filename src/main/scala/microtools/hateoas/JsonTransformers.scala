@@ -4,7 +4,9 @@ import play.api.libs.json._
 
 object JsonTransformers {
   def addHAL(json: JsValue, actions: Seq[BusinessAction])(
-      implicit linkBuilder: LinkBuilder): JsValue = {
+    implicit
+    linkBuilder: LinkBuilder
+  ): JsValue = {
     if (actions.isEmpty) json
     else
       json.transform(jsonHAL(actions)) match {
