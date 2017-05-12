@@ -1,26 +1,24 @@
 package microtools.filters
 
-import javax.inject.{ Inject, Named, Singleton }
+import javax.inject.{Inject, Named, Singleton}
 
 import akka.stream.Materializer
 import microtools.logging.WithContextAwareLogger
 import microtools.models.RequestContext
 import play.api.http.HeaderNames
-import play.api.mvc.{ Filter, RequestHeader, Result, Results }
+import play.api.mvc.{Filter, RequestHeader, Result, Results}
 
 import scala.concurrent.Future
 
 @Singleton
-class RedirectHttpsFilter @Inject() (@Named("base.url") baseUrl: String)(
-  implicit
-  override val mat: Materializer
-)
-    extends Filter
+class RedirectHttpsFilter @Inject()(@Named("base.url") baseUrl: String)(
+    implicit override val mat: Materializer
+) extends Filter
     with Results
     with WithContextAwareLogger {
 
   override def apply(nextFilter: RequestHeader => Future[Result])(
-    rh: RequestHeader
+      rh: RequestHeader
   ): Future[Result] = {
 
     implicit val requestContext = RequestContext.forRequest(rh)

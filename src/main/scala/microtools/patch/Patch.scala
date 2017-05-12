@@ -1,14 +1,14 @@
 package microtools.patch
 
 import microtools.patch.JsonPointer._
-import microtools.{ BusinessTry, JsonFormats }
+import microtools.{BusinessTry, JsonFormats}
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json._
 
 /**
- * RFC6902 kind of patch operation.
- */
+  * RFC6902 kind of patch operation.
+  */
 sealed trait Patch {
   def path: JsPath
   def apply(json: JsValue): BusinessTry[JsValue] =
@@ -71,8 +71,8 @@ object Patch extends JsonFormats {
     }
 
   private val patchWrite: OWrites[Patch] = OWrites {
-    case Remove(path)         => Json.obj("op" -> "remove", "path" -> path)
-    case Add(path, value)     => Json.obj("op" -> "add", "path" -> path, "value" -> value)
+    case Remove(path)         => Json.obj("op" -> "remove", "path"  -> path)
+    case Add(path, value)     => Json.obj("op" -> "add", "path"     -> path, "value" -> value)
     case Replace(path, value) => Json.obj("op" -> "replace", "path" -> path, "value" -> value)
   }
 

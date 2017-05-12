@@ -1,7 +1,7 @@
 package microtools.shapeless
 
 import play.api.libs.json._
-import shapeless.{ ::, HList, HNil, Lazy }
+import shapeless.{::, HList, HNil, Lazy}
 
 trait ShapelessListJson {
   implicit val hNilWrites: Writes[HNil] = Writes[HNil](_ => JsNull)
@@ -9,9 +9,8 @@ trait ShapelessListJson {
   implicit val hNilReads: Reads[HNil] = Reads(_ => JsSuccess(HNil))
 
   implicit def hListArrayWrites[H, T <: HList](
-    implicit
-    hWrites: Lazy[Writes[H]],
-    tWrites: Writes[T]
+      implicit hWrites: Lazy[Writes[H]],
+      tWrites: Writes[T]
   ): Writes[H :: T] = Writes[H :: T] {
     case head :: tail =>
       val h = hWrites.value.writes(head)
@@ -25,9 +24,8 @@ trait ShapelessListJson {
   }
 
   implicit def hListArrayReads[H, T <: HList](
-    implicit
-    hReads: Lazy[Reads[H]],
-    tReads: Reads[T]
+      implicit hReads: Lazy[Reads[H]],
+      tReads: Reads[T]
   ): Reads[H :: T] = Reads[H :: T] { json =>
     (json.head.validate(hReads.value), json.tail.validate(tReads)) match {
       case (JsSuccess(h, _), JsSuccess(t, _))   => JsSuccess(h :: t)

@@ -1,7 +1,3 @@
-import com.typesafe.sbt.SbtScalariform
-import com.typesafe.sbt.SbtScalariform.ScalariformKeys
-import scalariform.formatter.preferences._
-
 name := "play-micro-tools"
 
 organization := "de.21re"
@@ -73,17 +69,7 @@ libraryDependencies ++= Seq(
   "org.mockito"              % "mockito-core"                 % "1.10.19" % Test
 )
 
-/** scalariform */
-ScalariformKeys.preferences := ScalariformKeys.preferences.value
-      .setPreference(RewriteArrowSymbols, false)
-      .setPreference(AlignArguments, true)
-      .setPreference(DoubleIndentClassDeclaration, true)
-      .setPreference(AlignSingleLineCaseStatements, true)
-      .setPreference(SpacesAroundMultiImports, true)
-      .setPreference(AlignParameters, true)
-
-excludeFilter in scalariformFormat := (excludeFilter in scalariformFormat).value ||
-  "Routes.scala" ||
-  "ReverseRoutes.scala" ||
-  "JavaScriptReverseRoutes.scala" ||
-  "RoutesPrefix.scala"
+enablePlugins(ScalafmtPlugin)
+scalafmtVersion := "0.6.8"
+(compile in Compile) := { (compile in Compile) dependsOn (scalafmt in Compile).toTask }.value
+(compile in Test) := { (compile in Test) dependsOn (scalafmt in Test).toTask }.value

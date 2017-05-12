@@ -5,11 +5,11 @@ import java.time.Instant
 
 import microtools.models.Problem
 import org.asynchttpclient.cookie.DateParser
-import play.api.http.{ HeaderNames, Status }
-import play.api.libs.json.{ JsSuccess, JsValue }
+import play.api.http.{HeaderNames, Status}
+import play.api.libs.json.{JsSuccess, JsValue}
 import play.api.libs.ws.WSResponse
 
-import scala.util.{ Success, Try }
+import scala.util.{Success, Try}
 
 object WSResponseStatus {
   def unapply(response: WSResponse): Option[(Int, JsValue)] = {
@@ -57,8 +57,7 @@ object WSResponseCreated {
           else
             None
         (URI.create(locationUrl), json)
-      }
-    else
+      } else
       None
   }
 }
@@ -73,8 +72,7 @@ object WSResponseAccepted {
           else
             None
         (URI.create(locationUrl), response.allHeaders.getOrElse("link", Seq.empty), json)
-      }
-    else
+      } else
       None
   }
 }
@@ -97,7 +95,7 @@ object WSResponseConflict {
 object WSResponseClientError {
   def unapply(response: WSResponse): Option[Problem] = {
     if (response.status >= Status.BAD_REQUEST &&
-      response.status < Status.INTERNAL_SERVER_ERROR)
+        response.status < Status.INTERNAL_SERVER_ERROR)
       Try(response.json).map(_.validate[Problem]) match {
         case Success(JsSuccess(problem, _)) => Some(problem)
         case _ =>
@@ -106,8 +104,7 @@ object WSResponseClientError {
               .forStatus(response.status, response.statusText)
               .withDetails(response.body)
           )
-      }
-    else
+      } else
       None
   }
 }
@@ -123,8 +120,7 @@ object WSResponseUnprocesssableEntity {
               .forStatus(response.status, response.statusText)
               .withDetails(response.body)
           )
-      }
-    else
+      } else
       None
   }
 }
@@ -140,8 +136,7 @@ object WSResponseServerError {
               .forStatus(response.status, response.statusText)
               .withDetails(response.body)
           )
-      }
-    else
+      } else
       None
   }
 }

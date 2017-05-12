@@ -12,7 +12,7 @@ case object NoOrganization extends Organization {
 
 case class GenericOrganization(id: String) extends AnyVal with Organization {
   override def maybeId: Option[String] = Some(id)
-  override def toString: String = id
+  override def toString: String        = id
 }
 
 object Organization {

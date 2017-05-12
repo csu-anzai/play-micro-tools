@@ -2,12 +2,12 @@ package microtools.actions
 
 import com.codahale.metrics.MetricRegistry
 import microtools.logging.WithContextAwareLogger
-import microtools.models.{ ExtraHeaders, RequestContext }
+import microtools.models.{ExtraHeaders, RequestContext}
 import play.api.mvc._
 import play.mvc.Http.HeaderNames
 
-import scala.concurrent.{ ExecutionContext, Future }
-import scala.util.{ Failure, Success }
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success}
 
 trait TimedActions extends WithContextAwareLogger { self: Controller =>
 
@@ -20,11 +20,11 @@ trait TimedActions extends WithContextAwareLogger { self: Controller =>
 
     new ActionBuilder[TimedRequest] {
       override def invokeBlock[A](
-        request: Request[A],
-        block:   (TimedRequest[A]) => Future[Result]
+          request: Request[A],
+          block: (TimedRequest[A]) => Future[Result]
       ): Future[Result] = {
         val businessDebug = Helper.isBusinessDebug(request)
-        val flowId = Helper.getOrCreateFlowId(request)
+        val flowId        = Helper.getOrCreateFlowId(request)
         val ipAddress = request.headers
           .get(HeaderNames.X_FORWARDED_FOR)
           .getOrElse(request.remoteAddress)
@@ -53,17 +53,17 @@ trait TimedActions extends WithContextAwareLogger { self: Controller =>
 object TimedActions {
 
   class TimedRequest[A](
-    override val enableBusinessDebug: Boolean,
-    override val flowId:              String,
-    override val ipAddress:           String,
-    override val userAgent:           Option[String],
-    requestUri:                       String,
-    request:                          Request[A]
+      override val enableBusinessDebug: Boolean,
+      override val flowId: String,
+      override val ipAddress: String,
+      override val userAgent: Option[String],
+      requestUri: String,
+      request: Request[A]
   ) extends WrappedRequest[A](request)
       with RequestContext {
 
     override def contextValues: Seq[(String, String)] = Seq(
-      "flow_id" -> flowId,
+      "flow_id"     -> flowId,
       "request_uri" -> requestUri
     )
   }

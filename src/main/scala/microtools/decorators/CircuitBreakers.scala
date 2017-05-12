@@ -1,26 +1,23 @@
 package microtools.decorators
 
 import akka.actor.Scheduler
-import akka.pattern.{ CircuitBreaker, CircuitBreakerOpenException }
-import microtools.{ BusinessTry, ProblemException }
-import microtools.logging.{ ContextAwareLogger, LoggingContext }
+import akka.pattern.{CircuitBreaker, CircuitBreakerOpenException}
+import microtools.{BusinessTry, ProblemException}
+import microtools.logging.{ContextAwareLogger, LoggingContext}
 import microtools.models.Problems
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration.FiniteDuration
 
 trait CircuitBreakers {
   def log: ContextAwareLogger
 
   def circuitBreakFuture[T](
-    callId:       String,
-    maxFailures:  Int,
-    callTimeout:  FiniteDuration,
-    resetTimeout: FiniteDuration
-  )(implicit
-    ec: ExecutionContext,
-    ctx: LoggingContext,
-    s:   Scheduler): FutureDecorator[T] = {
+      callId: String,
+      maxFailures: Int,
+      callTimeout: FiniteDuration,
+      resetTimeout: FiniteDuration
+  )(implicit ec: ExecutionContext, ctx: LoggingContext, s: Scheduler): FutureDecorator[T] = {
     val circuitBreaker =
       CircuitBreaker.create(s, maxFailures, callTimeout, resetTimeout)
 
@@ -39,14 +36,11 @@ trait CircuitBreakers {
   }
 
   def circuitBreakTry[T](
-    callId:       String,
-    maxFailures:  Int,
-    callTimeout:  FiniteDuration,
-    resetTimeout: FiniteDuration
-  )(implicit
-    ec: ExecutionContext,
-    ctx: LoggingContext,
-    s:   Scheduler): TryDecorator[T] = {
+      callId: String,
+      maxFailures: Int,
+      callTimeout: FiniteDuration,
+      resetTimeout: FiniteDuration
+  )(implicit ec: ExecutionContext, ctx: LoggingContext, s: Scheduler): TryDecorator[T] = {
     val circuitBreaker =
       CircuitBreaker.create(s, maxFailures, callTimeout, resetTimeout)
 

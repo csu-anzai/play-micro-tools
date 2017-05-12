@@ -1,6 +1,6 @@
 package microtools.metrics
 
-import javax.inject.{ Provider, Singleton }
+import javax.inject.{Provider, Singleton}
 
 import com.codahale.metrics.MetricRegistry
 import com.codahale.metrics.jvm.{

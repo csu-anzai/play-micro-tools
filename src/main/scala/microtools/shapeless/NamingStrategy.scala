@@ -1,6 +1,6 @@
 package microtools.shapeless
 
-import play.api.libs.json.{ JsObject, JsPath, JsValue }
+import play.api.libs.json.{JsObject, JsPath, JsValue}
 
 trait NamingStrategy[T] {
   def nameFor(t: T): JsObject

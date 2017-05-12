@@ -1,7 +1,7 @@
 package microtools.models
 
 import java.time.format.DateTimeFormatter
-import java.time.{ DateTimeException, Instant }
+import java.time.{DateTimeException, Instant}
 
 import play.api.data.validation.ValidationError
 import play.api.libs.json._

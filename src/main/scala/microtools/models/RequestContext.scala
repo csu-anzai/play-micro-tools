@@ -43,7 +43,7 @@ object RequestContext {
         )
 
     override def contextValues: Seq[(String, String)] = Seq(
-      "flow_id" -> flowId,
+      "flow_id"     -> flowId,
       "request_uri" -> request.uri
     )
 

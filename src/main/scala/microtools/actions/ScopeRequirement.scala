@@ -1,6 +1,6 @@
 package microtools.actions
 
-import microtools.{ BusinessCondition, BusinessTry }
+import microtools.{BusinessCondition, BusinessTry}
 import microtools.logging.LoggingContext
 import microtools.models._
 
@@ -11,18 +11,16 @@ trait ScopeRequirement {
   def appliesTo(scopes: Scopes): Boolean
 
   def checkAccess(subject: Subject, organization: Organization)(
-    implicit
-    loggingContext: LoggingContext,
-    ec:             ExecutionContext
+      implicit loggingContext: LoggingContext,
+      ec: ExecutionContext
   ): BusinessTry[Boolean]
 }
 
 object ScopeRequirement {
   trait AccessCheckWithLogging {
     def check(subject: Subject, organization: Organization)(
-      implicit
-      loggingContext: LoggingContext,
-      ec:             ExecutionContext
+        implicit loggingContext: LoggingContext,
+        ec: ExecutionContext
     ): BusinessTry[Boolean]
   }
   type AccessCheck = PartialFunction[(Subject, Organization), BusinessTry[Boolean]]
@@ -35,12 +33,11 @@ object ScopeRequirement {
         left.appliesTo(scopes) && right.appliesTo(scopes)
 
       override def checkAccess(subject: Subject, organization: Organization)(
-        implicit
-        loggingContext: LoggingContext,
-        ec:             ExecutionContext
+          implicit loggingContext: LoggingContext,
+          ec: ExecutionContext
       ): BusinessTry[Boolean] =
         for {
-          leftAllowed <- left.checkAccess(subject, organization)
+          leftAllowed  <- left.checkAccess(subject, organization)
           rightAllowed <- right.checkAccess(subject, organization)
         } yield leftAllowed && rightAllowed
     }
@@ -51,12 +48,11 @@ object ScopeRequirement {
         left.appliesTo(scopes) || right.appliesTo(scopes)
 
       override def checkAccess(subject: Subject, organization: Organization)(
-        implicit
-        loggingContext: LoggingContext,
-        ec:             ExecutionContext
+          implicit loggingContext: LoggingContext,
+          ec: ExecutionContext
       ): BusinessTry[Boolean] =
         for {
-          leftAllowed <- left.checkAccess(subject, organization)
+          leftAllowed  <- left.checkAccess(subject, organization)
           rightAllowed <- right.checkAccess(subject, organization)
         } yield leftAllowed || rightAllowed
     }
@@ -64,9 +60,8 @@ object ScopeRequirement {
   def require(scope: String)(pf: AccessCheck): ScopeRequirement = {
     val accessCheck = new AccessCheckWithLogging {
       override def check(subject: Subject, organization: Organization)(
-        implicit
-        loggingContext: LoggingContext,
-        ec:             ExecutionContext
+          implicit loggingContext: LoggingContext,
+          ec: ExecutionContext
       ): BusinessTry[Boolean] = {
         pf.lift((subject, organization)).getOrElse(BusinessTry.success(false))
       }
@@ -80,9 +75,8 @@ object ScopeRequirement {
         scopes.contains(wildcardScope) || scopes.contains(scope)
 
       override def checkAccess(subject: Subject, organization: Organization)(
-        implicit
-        loggingContext: LoggingContext,
-        ec:             ExecutionContext
+          implicit loggingContext: LoggingContext,
+          ec: ExecutionContext
       ): BusinessTry[Boolean] =
         accessCheck.check(subject, organization)
     }
@@ -95,10 +89,9 @@ object ScopeRequirement {
   }
 
   implicit def asBusinessCondition[T](scopeRequirement: ScopeRequirement)(
-    implicit
-    authRequestContext: AuthRequestContext,
-    serviceName:        ServiceName,
-    ec:                 ExecutionContext
+      implicit authRequestContext: AuthRequestContext,
+      serviceName: ServiceName,
+      ec: ExecutionContext
   ): BusinessCondition[T] = new BusinessCondition[T] {
     override def apply[R <: T](value: R): BusinessTry[R] = {
       val authScopes: Scopes = authRequestContext.scopes.forService(serviceName)

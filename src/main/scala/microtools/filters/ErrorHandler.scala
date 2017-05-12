@@ -3,19 +3,19 @@ package microtools.filters
 import javax.inject.Inject
 
 import microtools.logging.WithContextAwareLogger
-import microtools.models.{ ExtraHeaders, Problem, Problems, RequestContext }
+import microtools.models.{ExtraHeaders, Problem, Problems, RequestContext}
 import play.api.Environment
 import play.api.http.HttpErrorHandler
-import play.api.mvc.{ RequestHeader, Result }
-import scala.concurrent.{ ExecutionContext, Future }
+import play.api.mvc.{RequestHeader, Result}
+import scala.concurrent.{ExecutionContext, Future}
 
-class ErrorHandler @Inject() (implicit env: Environment, ec: ExecutionContext)
+class ErrorHandler @Inject()(implicit env: Environment, ec: ExecutionContext)
     extends HttpErrorHandler
     with WithContextAwareLogger {
   override def onClientError(
-    request:    RequestHeader,
-    statusCode: Int,
-    message:    String
+      request: RequestHeader,
+      statusCode: Int,
+      message: String
   ): Future[Result] = {
     implicit val requestContext = RequestContext.forRequest(request)
 

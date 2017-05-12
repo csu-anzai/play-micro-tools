@@ -3,7 +3,7 @@ package microtools.config
 import java.time.Duration
 
 import play.api.Configuration
-import play.api.inject.{ Binding, Module }
+import play.api.inject.{Binding, Module}
 
 import scala.util.Try
 

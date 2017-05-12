@@ -1,8 +1,8 @@
 package microtools.hateoas
 
 import play.api.http.HeaderNames
-import play.api.libs.json.{ Json, Writes }
-import play.api.mvc.{ Result, Results }
+import play.api.libs.json.{Json, Writes}
+import play.api.mvc.{Result, Results}
 
 trait BusinessResult {
   def asResult: Result
@@ -10,9 +10,8 @@ trait BusinessResult {
 
 object BusinessResult {
   def ok[D](data: D, allowesActions: Seq[BusinessAction] = Seq.empty, etag: Option[String] = None)(
-    implicit
-    linkBuilder: LinkBuilder,
-    writes:      Writes[D]
+      implicit linkBuilder: LinkBuilder,
+      writes: Writes[D]
   ): BusinessResult =
     new BusinessResult {
       override def asResult: Result = {
@@ -32,13 +31,12 @@ object BusinessResult {
     }
 
   def created[D](
-    selfAction:     BusinessAction,
-    data:           D,
-    allowesActions: Seq[BusinessAction] = Seq.empty
+      selfAction: BusinessAction,
+      data: D,
+      allowesActions: Seq[BusinessAction] = Seq.empty
   )(
-    implicit
-    linkBuilder: LinkBuilder,
-    writes:      Writes[D]
+      implicit linkBuilder: LinkBuilder,
+      writes: Writes[D]
   ): BusinessResult =
     new BusinessResult {
       override def asResult: Result = {

@@ -1,7 +1,7 @@
 package microtools.dao
 
-import microtools.logging.{ WithContextAwareLogger }
-import microtools.models.{ ExtraHeaders, RequestContext }
+import microtools.logging.{WithContextAwareLogger}
+import microtools.models.{ExtraHeaders, RequestContext}
 import play.mvc.Http.HeaderNames
 
 trait ServiceDaoHelper { self: WithContextAwareLogger =>
@@ -17,8 +17,7 @@ trait ServiceDaoHelper { self: WithContextAwareLogger =>
       (serviceEndpoint, "http")
 
   def logAndThrowError(ex: String => Exception)(errorMessage: String)(
-    implicit
-    ctx: RequestContext
+      implicit ctx: RequestContext
   ): Nothing = {
     log.error(errorMessage)
     throw ex(errorMessage)
@@ -29,14 +28,13 @@ trait ServiceDaoHelper { self: WithContextAwareLogger =>
     "0.1-89"
   )
   def handleError(ex: String => Exception)(errorMessage: String)(
-    implicit
-    ctx: RequestContext
+      implicit ctx: RequestContext
   ): Nothing = logAndThrowError(ex)(errorMessage)
 
   def headers: Seq[(String, String)] =
     Seq(
       ExtraHeaders.AUTH_SUBJECT_HEADER -> s"service/$serviceName",
-      authScopeHeader -> "R",
-      HeaderNames.X_FORWARDED_PROTO -> forwardProto
+      authScopeHeader                  -> "R",
+      HeaderNames.X_FORWARDED_PROTO    -> forwardProto
     )
 }

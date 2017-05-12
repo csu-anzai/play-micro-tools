@@ -6,7 +6,7 @@ import com.codahale.metrics.MetricRegistry
 import com.codahale.metrics.json.MetricsModule
 import com.fasterxml.jackson.databind.ObjectMapper
 import play.api.http.HeaderNames
-import play.api.mvc.{ Action, AnyContent, Controller }
+import play.api.mvc.{Action, AnyContent, Controller}
 
 trait MetricsJsonAction { self: Controller =>
 
