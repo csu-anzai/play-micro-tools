@@ -9,6 +9,9 @@ class WireTag[T](val name: String, val default: String) {
   implicit val self: this.type = this
 }
 
+/** Wire tags which can not be given by the environment */
+class FixedWireTag[T](override val default: String) extends WireTag[T]("<Not given via Env>", default)
+
 object WireTag {
   private def findEnvOrSysProp(name: String): Option[String] =
     sys.props.get(name).orElse(sys.env.get(name)).filter(_.nonEmpty)
@@ -48,5 +51,4 @@ object WireTag {
 
   def givenUrl[TAG <: WireTag[URL]](implicit tag: TAG): URL @@ TAG =
     new URL(findEnvOrSysProp(tag.name).getOrElse(tag.default)).taggedWith[TAG]
-
 }
