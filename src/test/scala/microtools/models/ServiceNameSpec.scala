@@ -8,12 +8,14 @@ class ServiceNameSpec extends FlatSpec with Matchers {
   "Service name" should "get it's name by WireTag" in {
     val givenServiceName = "TestServiceName"
 
-    implicit object MyServiceName extends FixedWireTag[ServiceName](givenServiceName)
+    object MyServiceName extends FixedWireTag[ServiceName](givenServiceName)
 
-    ServiceName().name shouldBe givenServiceName
+    import MyServiceName.self
+
+    implicitly[ServiceName].name shouldBe givenServiceName
   }
 
   it should "not compile without a defined WireTag" in {
-    "ServiceName()" shouldNot compile
+    "implicitly[ServiceName]" shouldNot compile
   }
 }
