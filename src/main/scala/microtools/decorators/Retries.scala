@@ -21,8 +21,8 @@ trait Retries {
     new FutureDecorator[T] {
       override def apply(block: => Future[T]): Future[T] = {
         Retries.materialize(block).recoverWith {
-          case e if errorHandler.isDefinedAt(e, maxRetries) =>
-            errorHandler.apply(e, maxRetries)
+          case e if errorHandler.isDefinedAt((e, maxRetries)) =>
+            errorHandler.apply((e, maxRetries))
           case e if maxRetries > 0 =>
             log.warn(s"Retrying on ${e.getMessage}")
             after(delay, s)(retryFuture(maxRetries - 1, delay, errorHandler).apply(block))
@@ -49,8 +49,8 @@ trait Retries {
           Retries
             .materialize(block.asFuture)
             .recoverWith {
-              case e if errorHandler.isDefinedAt(e, maxRetries) =>
-                errorHandler.apply(e, maxRetries).asFuture
+              case e if errorHandler.isDefinedAt((e, maxRetries)) =>
+                errorHandler.apply((e, maxRetries)).asFuture
               case e if maxRetries > 0 =>
                 log.warn(s"Retrying on ${e.getMessage}")
                 after(delay, s)(
@@ -64,9 +64,8 @@ trait Retries {
             }
             .map {
               case Left(success) => BusinessTry.success(success)
-              case Right(problem) if problemHandler.isDefinedAt(problem, maxRetries) =>
-                problemHandler.apply(problem, maxRetries)
-              case Right(problem) => BusinessTry.failure(problem)
+              case Right(problem) =>
+                problemHandler.lift((problem, maxRetries)).getOrElse(BusinessTry.failure(problem))
             }
         )
       }

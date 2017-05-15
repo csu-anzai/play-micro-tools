@@ -2,10 +2,6 @@ package microtools.models
 
 import play.api.mvc.Headers
 
-case class ServiceName(name: String) extends AnyVal {
-  override def toString: String = name
-}
-
 case class Scopes(scopes: Set[String]) extends AnyVal {
   def contains(scope: String): Boolean = scopes.contains(scope)
 }

@@ -38,30 +38,6 @@ object Patch extends JsonFormats {
   private def stringToJsPath(path: String): JsPath =
     JsonPointer.jsPathFormat.reads(JsString(path)).get
 
-  @deprecated(
-    """
-      |Use microtools.patch Add, Remove etc. case classes here instead.
-      |Example:
-      | previously:
-      |  Patch(PatchOperation.REPLACE, "/some/path/0", Some(value))
-      | now:
-      |  Replace(__ / "some" / "path" / 0, value)
-      | (with import play.api.libs.json.__)
-      |""".stripMargin,
-    "0.1-40"
-  )
-  def apply(op: PatchOperation.Type, path: String, value: Option[JsValue]): Patch = {
-    val jsPath = stringToJsPath(path)
-    op match {
-      case PatchOperation.ADD =>
-        Add(jsPath, value.getOrElse(sys.error("value is required for add")))
-      case PatchOperation.REPLACE =>
-        Replace(jsPath, value.getOrElse(sys.error("value is required for replace")))
-      case PatchOperation.REMOVE =>
-        Remove(jsPath)
-    }
-  }
-
   val patchRead: Reads[Patch] =
     (__ \ "op").read[String].flatMap {
       case "remove"    => path.map(Remove)
