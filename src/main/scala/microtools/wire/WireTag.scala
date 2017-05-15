@@ -10,7 +10,8 @@ class WireTag[T](val name: String, val default: String) {
 }
 
 /** Wire tags which can not be given by the environment */
-class FixedWireTag[T](override val default: String) extends WireTag[T]("<Not given via Env>", default)
+class FixedWireTag[T](override val default: String)
+    extends WireTag[T]("<Not given via Env>", default)
 
 object WireTag {
   private def findEnvOrSysProp(name: String): Option[String] =
