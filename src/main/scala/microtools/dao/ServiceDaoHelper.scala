@@ -4,6 +4,7 @@ import microtools.logging.{WithContextAwareLogger}
 import microtools.models.{ExtraHeaders, RequestContext}
 import play.mvc.Http.HeaderNames
 
+@deprecated("Use WSClientWithFlow instead", "0.1-103")
 trait ServiceDaoHelper { self: WithContextAwareLogger =>
 
   def serviceEndpoint: String
