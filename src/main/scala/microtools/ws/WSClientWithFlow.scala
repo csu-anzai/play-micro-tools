@@ -18,10 +18,9 @@ class WSClientWithFlow(val underlying: WSClient) {
         s"http:${rawUrl.drop(6)}" -> ForwardProto.HTTPS
       else rawUrl                 -> ForwardProto.HTTP
 
-    val headers = Seq(HeaderNames.X_FORWARDED_PROTO -> forwardProto.toString())
     underlying
       .url(url)
-      .withHeaders(ExtraHeaders.FLOW_ID_HEADER -> ctx.flowId)
+      .withHeaders(ExtraHeaders.FLOW_ID_HEADER -> ctx.flowId, HeaderNames.X_FORWARDED_PROTO -> forwardProto.toString)
   }
 
   def urlWithAuthFromContext(rawUrl: String)(implicit ctx: AuthRequestContext): WSRequest = {
