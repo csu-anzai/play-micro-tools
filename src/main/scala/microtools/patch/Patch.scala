@@ -1,18 +1,32 @@
 package microtools.patch
 
+import microtools.models.Problems
 import microtools.patch.JsonPointer._
 import microtools.{BusinessTry, JsonFormats}
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json._
 
+case class PatchWhitelist(allowed: Seq[JsPath]) extends AnyVal
+
 /**
   * RFC6902 kind of patch operation.
   */
 sealed trait Patch {
   def path: JsPath
-  def apply(json: JsValue): BusinessTry[JsValue] =
+  @deprecated(
+    "UNCHECKED PATCH APPLICATIONS ARE HUGE SECURITY LIABILITY, please use `patch.apply(JsValue, PatchWhitelist)` instead to specify which paths are ok to patch (hint: not all, usually not the id or the owner etc..)",
+    "20170531v0114"
+  )
+  def apply(json: JsValue): BusinessTry[JsValue] = {
     BusinessTry.transformJson(json, transformation)
+  }
+  def apply(json: JsValue, ev: PatchWhitelist): BusinessTry[JsValue] = {
+    if (ev.allowed contains path)
+      BusinessTry.transformJson(json, transformation)
+    else
+      BusinessTry.failure(Problems.FORBIDDEN.withDetails(s"patch operation not allowed on $path"))
+  }
 
   def transformation: Reads[_ <: JsValue]
 }
@@ -57,4 +71,5 @@ object Patch extends JsonFormats {
   private lazy val value = __.\("value").read[JsValue]
 
   implicit val patchFormat: OFormat[Patch] = OFormat(patchRead, patchWrite)
+
 }

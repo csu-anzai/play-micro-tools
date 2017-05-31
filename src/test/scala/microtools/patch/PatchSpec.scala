@@ -1,10 +1,12 @@
 package microtools.patch
 
-import microtools.BusinessSuccess
+import microtools.{BusinessFailure, BusinessSuccess}
 import org.scalatest.{Assertion, MustMatchers, WordSpec}
 import play.api.libs.json.{JsNumber, Json, _}
+import play.api.http.Status._
 
 class PatchSpec extends WordSpec with MustMatchers {
+  val whitelist = PatchWhitelist(Seq(__ \ "f2", __ \ "f1", __ \ "person" \ "address"))
   "Patch" should {
     "be able to replace a simple value" in {
       val source = Json.obj(
@@ -18,7 +20,7 @@ class PatchSpec extends WordSpec with MustMatchers {
 
       val patch =
         Replace(__ \ "f2", JsNumber(5678))
-      val BusinessSuccess(result) = patch(source)
+      val BusinessSuccess(result) = patch(source, whitelist)
 
       result mustBe Json.obj(
         "f1" -> "field1",
@@ -28,6 +30,24 @@ class PatchSpec extends WordSpec with MustMatchers {
           "s2" -> "sub2"
         )
       )
+    }
+
+    "not be able to operate if json path is not on whitelist" in {
+      val source = Json.obj(
+        "f1"               -> "field1",
+        "f2"               -> 1234,
+        "not-on-whitelist" -> "gegenbauer",
+        "f3" -> Json.obj(
+          "s1" -> "sub1",
+          "s2" -> "sub2"
+        )
+      )
+
+      val patch =
+        Replace(__ \ "not-on-whitelist", JsString("bowerfeind"))
+      val BusinessFailure(problem) = patch(source, whitelist)
+
+      problem.code mustEqual FORBIDDEN
     }
 
     "be able to mix fields with array index" in {
@@ -41,7 +61,7 @@ class PatchSpec extends WordSpec with MustMatchers {
                           Json.obj(
                             "street" -> "Somewhere"
                           ))
-      val BusinessSuccess(result) = patch(source)
+      val BusinessSuccess(result) = patch(source, whitelist)
 
       result mustBe Json.obj(
         "person" -> Json.obj(
@@ -64,7 +84,7 @@ class PatchSpec extends WordSpec with MustMatchers {
       )
 
       val patch                   = Add(__ \ "f1", JsNumber(5678))
-      val BusinessSuccess(result) = patch(source)
+      val BusinessSuccess(result) = patch(source, whitelist)
 
       result mustBe Json.obj(
         "f1" -> Json.arr("elem1", "elem2", 5678),
@@ -87,7 +107,7 @@ class PatchSpec extends WordSpec with MustMatchers {
       )
 
       val patch                   = Remove(__ \ "f2")
-      val BusinessSuccess(result) = patch(source)
+      val BusinessSuccess(result) = patch(source, whitelist)
 
       result mustBe Json.obj(
         "f1" -> "field1",
