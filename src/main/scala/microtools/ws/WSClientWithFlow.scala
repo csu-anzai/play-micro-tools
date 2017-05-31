@@ -20,7 +20,8 @@ class WSClientWithFlow(val underlying: WSClient) {
 
     underlying
       .url(url)
-      .withHeaders(ExtraHeaders.FLOW_ID_HEADER -> ctx.flowId, HeaderNames.X_FORWARDED_PROTO -> forwardProto.toString)
+      .withHeaders(ExtraHeaders.FLOW_ID_HEADER   -> ctx.flowId,
+                   HeaderNames.X_FORWARDED_PROTO -> forwardProto.toString)
   }
 
   def urlWithAuthFromContext(rawUrl: String)(implicit ctx: AuthRequestContext): WSRequest = {

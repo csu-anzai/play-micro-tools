@@ -8,6 +8,12 @@ trait BusinessCondition[-T] {
 }
 
 object BusinessCondition {
+  def identity[T]: BusinessCondition[T] =
+    new BusinessCondition[T] {
+      override def apply[R <: T](value: R): BusinessTry[R] =
+        BusinessTry.success(value)
+    }
+
   def apply[T](condition: T => Boolean, problem: Problem): BusinessCondition[T] =
     new BusinessCondition[T] {
       override def apply[R <: T](value: R): BusinessTry[R] =
