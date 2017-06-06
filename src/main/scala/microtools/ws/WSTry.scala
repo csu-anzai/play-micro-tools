@@ -10,6 +10,7 @@ import play.api.libs.json.Reads
 import play.api.libs.ws.{StreamedResponse, WSResponse}
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.control.NonFatal
 import scala.util.{Success, Try}
 
 trait WSTry {
@@ -45,7 +46,18 @@ trait WSTry {
                                                           reads: Reads[T]): BusinessTry[T] =
     BusinessTry.future(futureResponse.map {
       case response if response.status == Status.OK =>
-        BusinessTry.validateJson[T](response.json)
+        try {
+          BusinessTry.validateJson[T](response.json)
+        } catch {
+          case NonFatal(e) =>
+            log.error(
+              s"Json parsing (not validation) blew up although the HTTP status code from the response was ok! For reference, the raw json body is '${response.body}'",
+              e
+            )
+            BusinessTry.failure(
+              Problems.FAILED_DEPENDENCY.withDetails(
+                "JSON parsing (not validation) from remote ok response failed"))
+        }
       case response =>
         notTheExpectedResponse("ok", response)
     })
