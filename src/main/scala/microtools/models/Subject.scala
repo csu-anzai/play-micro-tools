@@ -2,10 +2,17 @@ package microtools.models
 
 import play.api.libs.json._
 
+import scala.reflect.ClassTag
+
 sealed trait Subject extends Any
 
 case class AdminSubject(adminUser: String) extends AnyVal with Subject {
   override def toString: String = s"admin/$adminUser"
+}
+
+object AdminSubject {
+  implicit val customerSubjectFormat: Format[AdminSubject] =
+    Subject.jsonFormat[AdminSubject]
 }
 
 case class CustomerSubject(customerId: String) extends AnyVal with Subject {
@@ -13,18 +20,26 @@ case class CustomerSubject(customerId: String) extends AnyVal with Subject {
 }
 
 object CustomerSubject {
-  implicit val customerSubjectFormat: Format[CustomerSubject] = Format(Subject.jsonReads.flatMap {
-    case cs: CustomerSubject => Reads.pure(cs)
-    case s                   => Reads(_ => JsError(s"Expected CustomerSubject but got $s"))
-  }, Subject.jsonWrites)
+  implicit val customerSubjectFormat: Format[CustomerSubject] =
+    Subject.jsonFormat[CustomerSubject]
 }
 
 case class CompanySubject(companyId: String) extends AnyVal with Subject {
   override def toString: String = s"company/$companyId"
 }
 
+object CompanySubject {
+  implicit val customerSubjectFormat: Format[CompanySubject] =
+    Subject.jsonFormat[CompanySubject]
+}
+
 case class ServiceSubject(serviceName: String) extends AnyVal with Subject {
   override def toString: String = s"service/$serviceName"
+}
+
+object ServiceSubject {
+  implicit val customerSubjectFormat: Format[ServiceSubject] =
+    Subject.jsonFormat[ServiceSubject]
 }
 
 case class GenericSubject(subject: String) extends AnyVal with Subject {
@@ -43,4 +58,20 @@ object Subject {
   implicit val jsonReads: Reads[Subject] = __.read[String].map(apply)
 
   implicit val jsonWrites: Writes[Subject] = Writes[Subject](subject => JsString(subject.toString))
+
+  private[models] implicit def jsonFormat[T <: Subject](
+      implicit ClassTag: ClassTag[T]): Format[T] = {
+    def reads: Reads[T] = {
+      Subject.jsonReads.flatMap {
+        case ClassTag(cs) => Reads.pure(cs)
+        case s =>
+          val name = ClassTag.runtimeClass.getSimpleName
+          Reads(_ => {
+            JsError(s"Expected $name but got $s")
+          })
+      }
+    }
+
+    Format(reads, jsonWrites)
+  }
 }

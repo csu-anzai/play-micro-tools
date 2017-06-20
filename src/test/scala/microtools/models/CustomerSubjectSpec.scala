@@ -2,13 +2,17 @@ package microtools.models
 
 import org.scalacheck.Arbitrary.arbString
 import org.scalacheck.Prop.forAll
+import org.scalacheck.Prop.BooleanOperators
 import org.scalacheck.{Arbitrary, Properties}
-import org.scalatest.prop.Whenever
-import play.api.libs.json.{JsString, Json}
+import play.api.libs.json.{JsError, JsString, Json}
 
-class CustomerSubjectSpec extends Properties("CustomerProperties") with Whenever {
+class CustomerSubjectSpec extends Properties("CustomerSubjectProperties") {
   implicit val arbCustomerSubject: Arbitrary[CustomerSubject] = Arbitrary(
     Arbitrary.arbString.arbitrary.map(CustomerSubject(_)))
+
+  property("JSON format") = {
+    Json.toJson(CustomerSubject("XYC3299")) == JsString("customer/XYC3299")
+  }
 
   property("JSON serialization") = forAll { customerSubject: CustomerSubject =>
     val jsValue      = Json.toJson(customerSubject)
@@ -17,9 +21,10 @@ class CustomerSubjectSpec extends Properties("CustomerProperties") with Whenever
     customerSubject == deserialized
   }
 
-  /*property("Proper error messages for invalid JSON") = forAll { s: String =>
-    whenever(!s.startsWith("customer")) {
-      JsString(s).validate[CustomerSubject].isError
+  property("Proper error messages for invalid JSON") = forAll { s: String =>
+    (!s.startsWith("customer") && s.nonEmpty) ==> {
+      val error = JsString(s).validate[CustomerSubject].asInstanceOf[JsError]
+      error.toString contains "CustomerSubject"
     }
-  }*/
+  }
 }
