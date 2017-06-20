@@ -6,8 +6,6 @@ import shapeless.{:+:, ::, CNil, Coproduct, Generic, HList, HNil, Inl, Inr, Lazy
 
 object SubjectSpec extends Properties("Subject") {
   object derive {
-    implicit def arbString: Arbitrary[String] = Arbitrary.arbString
-
     implicit def hlistGen[H](implicit arb: Arbitrary[H]): Arbitrary[H :: HNil] =
       Arbitrary[H :: HNil](arb.arbitrary.map(_ :: HNil))
 
@@ -29,7 +27,7 @@ object SubjectSpec extends Properties("Subject") {
     val arb: Arbitrary[Subject] = deriveGen
   }
 
-  implicit val arbSubject = derive.arb
+  implicit val arbSubject: Arbitrary[Subject] = derive.arb
 
   property("any subject can be serialized and deserialized") = forAll { expected: Subject =>
     val asString = expected.toString
