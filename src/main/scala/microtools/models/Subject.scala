@@ -1,6 +1,6 @@
 package microtools.models
 
-import play.api.libs.json.{JsString, Reads, Writes, __}
+import play.api.libs.json._
 
 sealed trait Subject extends Any
 
@@ -10,6 +10,13 @@ case class AdminSubject(adminUser: String) extends AnyVal with Subject {
 
 case class CustomerSubject(customerId: String) extends AnyVal with Subject {
   override def toString: String = s"customer/$customerId"
+}
+
+object CustomerSubject {
+  implicit val customerSubjectFormat: Format[CustomerSubject] = Format(Subject.jsonReads.flatMap {
+    case cs: CustomerSubject => Reads.pure(cs)
+    case s                   => Reads(_ => JsError(s"Expected CustomerSubject but got $s"))
+  }, Subject.jsonWrites)
 }
 
 case class CompanySubject(companyId: String) extends AnyVal with Subject {
