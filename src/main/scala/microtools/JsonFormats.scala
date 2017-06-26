@@ -97,3 +97,15 @@ trait JsonFormats {
     }
   }
 }
+
+object JsonFormats {
+  private class WrapperFormat[S, T](wrap: S => T)(unwrap: T => Option[S])(
+      implicit format: Format[S]
+  ) extends Format[T] {
+    def reads(json: JsValue): JsResult[T] = json.validate[S].map(wrap)
+    def writes(value: T): JsValue         = Json.toJson(unwrap(value))
+  }
+
+  def wrapperFormat[T, S: Format](implicit gen: Generic.Aux[T, S :: HNil]): Format[T] =
+    new WrapperFormat[S, T](s => gen.from(s :: HNil))(t => Some(gen.to(t).head))
+}

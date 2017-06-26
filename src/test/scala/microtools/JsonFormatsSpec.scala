@@ -26,4 +26,13 @@ class JsonFormatsSpec extends WordSpec with MustMatchers with GeneratorDrivenPro
       }
     }
   }
+
+  "JsonFormat.wrapperFormat" should {
+    "build a JSON Format for any wrapper case class" in {
+      case class MyWrapper(count: Int)
+      implicit val format = JsonFormats.wrapperFormat[MyWrapper, Int]
+      JsNumber(5).as[MyWrapper] must be(MyWrapper(5))
+      Json.toJson(MyWrapper(12)) must be(JsNumber(12))
+    }
+  }
 }
