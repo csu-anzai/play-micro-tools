@@ -11,12 +11,8 @@ import _root_.shapeless.{Generic, ::, HNil, HList}
   * Missing or alternative json formats.
   */
 trait JsonFormats {
-  case class AnyValFormat[S, T <: AnyVal](anyValApply: S => T)(anyValUnapply: T => Option[S])(
-      implicit format: Format[S]
-  ) extends Format[T] {
-    def reads(json: JsValue): JsResult[T] = json.validate[S].map(anyValApply)
-    def writes(value: T): JsValue         = Json.toJson(anyValUnapply(value))
-  }
+  val AnyValFormat = JsonFormats.WrapperFormat
+  type AnyValFormat[T, S <: AnyVal] = JsonFormats.WrapperFormat[T, S]
 
   implicit def formatAnyVal[T <: AnyVal, L <: HList, S](implicit gen: Generic.Aux[T, L],
                                                         ev1: (S :: HNil) =:= L,
@@ -99,7 +95,7 @@ trait JsonFormats {
 }
 
 object JsonFormats {
-  private class WrapperFormat[S, T](wrap: S => T)(unwrap: T => Option[S])(
+  case class WrapperFormat[S, T](wrap: S => T)(unwrap: T => Option[S])(
       implicit format: Format[S]
   ) extends Format[T] {
     def reads(json: JsValue): JsResult[T] = json.validate[S].map(wrap)
