@@ -25,29 +25,16 @@ trait JsonFormats {
       default: Option[E#Value] = None,
       normalize: String => String = identity
   ): Reads[E#Value] =
-    new Reads[E#Value] {
-      def reads(json: JsValue): JsResult[E#Value] = json match {
-        case JsString(s) => {
-          try {
-            JsSuccess(enum.withName(normalize(s)))
-          } catch {
-            case _: NoSuchElementException =>
-              default
-                .map(JsSuccess(_))
-                .getOrElse(
-                  JsError(
-                    Seq(JsPath() ->
-                      Seq(ValidationError("error.invalid.enum.value"))))
-                )
-          }
+    implicitly[Reads[String]].flatMap { s =>
+      Reads { _ =>
+        try {
+          JsSuccess(enum.withName(normalize(s)))
+        } catch {
+          case _: NoSuchElementException =>
+            default
+              .map(JsSuccess(_))
+              .getOrElse(JsError(ValidationError("error.invalid.enum.value")))
         }
-        case _ =>
-          JsError(
-            Seq(
-              JsPath() ->
-                Seq(ValidationError("error.expected.string"))
-            )
-          )
       }
     }
 
