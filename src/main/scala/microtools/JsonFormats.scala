@@ -7,18 +7,25 @@ import play.api.data.validation.ValidationError
 import play.api.libs.json._
 import _root_.shapeless.{Generic, ::, HNil, HList}
 
-/**
-  * Missing or alternative json formats.
-  */
-trait JsonFormats {
-  val AnyValFormat = JsonFormats.WrapperFormat
-  type AnyValFormat[T, S <: AnyVal] = JsonFormats.WrapperFormat[T, S]
+case class AnyValFormat[S, T <: AnyVal](anyValApply: S => T)(anyValUnapply: T => Option[S])(
+    implicit format: Format[S]
+) extends Format[T] {
+  def reads(json: JsValue): JsResult[T] = json.validate[S].map(anyValApply)
+  def writes(value: T): JsValue         = Json.toJson(anyValUnapply(value))
+}
 
+trait AutoJsonFormats {
   implicit def formatAnyVal[T <: AnyVal, L <: HList, S](implicit gen: Generic.Aux[T, L],
                                                         ev1: (S :: HNil) =:= L,
                                                         ev2: L =:= (S :: HNil),
                                                         format: Format[S]): Format[T] =
     AnyValFormat[S, T](s => gen.from(ev1(s :: HNil)))(t => Some(gen.to(t).head))
+}
+
+/**
+  * Missing or alternative json formats.
+  */
+trait JsonFormats {
 
   def enumReads[E <: Enumeration](
       enum: E,
@@ -82,13 +89,7 @@ trait JsonFormats {
 }
 
 object JsonFormats {
-  case class WrapperFormat[S, T](wrap: S => T)(unwrap: T => Option[S])(
-      implicit format: Format[S]
-  ) extends Format[T] {
-    def reads(json: JsValue): JsResult[T] = json.validate[S].map(wrap)
-    def writes(value: T): JsValue         = Json.toJson(unwrap(value))
-  }
 
-  def wrapperFormat[T, S: Format](implicit gen: Generic.Aux[T, S :: HNil]): Format[T] =
-    new WrapperFormat[S, T](s => gen.from(s :: HNil))(t => Some(gen.to(t).head))
+  def wrapperFormat[T <: AnyVal, S: Format](implicit gen: Generic.Aux[T, S :: HNil]): Format[T] =
+    new AnyValFormat[S, T](s => gen.from(s :: HNil))(t => Some(gen.to(t).head))
 }
