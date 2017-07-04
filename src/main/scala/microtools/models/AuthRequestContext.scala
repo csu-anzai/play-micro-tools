@@ -43,9 +43,4 @@ trait AuthRequestContext extends RequestContext {
   def scopes: ScopesByService
 
   def token: Token
-
-  override def contextValues: Seq[(String, String)] = super.contextValues ++ Seq(
-    "subject"      -> subject.toString,
-    "organization" -> organization.toString
-  )
 }
