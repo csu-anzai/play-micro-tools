@@ -65,8 +65,8 @@ object AuthActions {
   ) extends WrappedRequest[A](request)
       with AuthRequestContext {
     override def contextValues: Seq[(String, String)] = Seq(
-      "flow_id"           -> flowId,
-      "request_uri"       -> requestUri,
+      "flow_id"      -> flowId,
+      "request_uri"  -> requestUri,
       "subject"      -> subject.toString,
       "organization" -> organization.toString
     )
