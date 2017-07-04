@@ -9,7 +9,7 @@ version := {
 scalaVersion := "2.11.8"
 
 scalacOptions ++= Seq(
-  "-deprecation"
+  "-deprecation", "-feature"
 )
 
 shellPrompt := { state ⇒
