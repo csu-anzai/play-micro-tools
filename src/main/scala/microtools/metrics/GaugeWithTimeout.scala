@@ -9,8 +9,8 @@ import scala.concurrent.duration.Duration
 class GaugeWithTimeout[T](initialValue: T, timeoutValue: T, timeout: Duration) extends Gauge[T] {
   import GaugeWithTimeout._
 
-  private val state: AtomicReference[State] =
-    new AtomicReference[State](InitialState(initialValue))
+  private val state: AtomicReference[State[T]] =
+    new AtomicReference[State[T]](InitialState(initialValue))
 
   override def getValue: T = state.get().getValue
 
