@@ -58,9 +58,9 @@ object RequestContext {
             .getOrElse(false)
         )
 
-    override def ipAddress =
+    override def ipAddress: String =
       request.headers.get(HeaderNames.X_FORWARDED_FOR).getOrElse(request.remoteAddress)
 
-    override def userAgent = request.headers.get(HeaderNames.USER_AGENT)
+    override def userAgent: Option[String] = request.headers.get(HeaderNames.USER_AGENT)
   }
 }

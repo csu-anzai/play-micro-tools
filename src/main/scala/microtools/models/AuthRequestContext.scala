@@ -8,6 +8,8 @@ sealed trait Organization extends Any {
 
 case object NoOrganization extends Organization {
   override def maybeId: Option[String] = None
+
+  override def toString: String = "<no organization>"
 }
 
 case class GenericOrganization(id: String) extends AnyVal with Organization {
