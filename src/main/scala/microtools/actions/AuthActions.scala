@@ -67,8 +67,8 @@ object AuthActions {
     override def contextValues: Seq[(String, String)] = Seq(
       "flow_id"           -> flowId,
       "request_uri"       -> requestUri,
-      "auth_subject"      -> subject.toString,
-      "auth_organization" -> organization.toString
+      "subject"      -> subject.toString,
+      "organization" -> organization.toString
     )
   }
 }
