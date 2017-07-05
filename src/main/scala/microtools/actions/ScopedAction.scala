@@ -104,6 +104,6 @@ case class AdminScopedAction(scopeRequirement: ScopeRequirement)(implicit servic
             requestUri = request.uri,
             request = request
           ))
-      case _ => BusinessTry.failure(Problems.FORBIDDEN.withDetails("Only services are allowed"))
+      case _ => BusinessTry.failure(Problems.FORBIDDEN.withDetails("Only admins are allowed"))
     }
 }
