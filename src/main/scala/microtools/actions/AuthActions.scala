@@ -59,6 +59,24 @@ object AuthActions {
 
   type AdminAuthRequest[A] = GenericAuthRequest[A, AdminSubject, NoOrganization.type]
 
+  def forRequest[A, S <: Subject, O <: Organization](
+      request: AuthRequest[A],
+      subject: S,
+      organization: O): GenericAuthRequest[A, S, O] = {
+    new GenericAuthRequest[A, S, O](
+      enableBusinessDebug = request.enableBusinessDebug,
+      flowId = request.flowId,
+      subject = subject,
+      organization = organization,
+      scopes = request.scopes,
+      token = request.token,
+      ipAddress = request.ipAddress,
+      userAgent = request.userAgent,
+      requestUri = request.uri,
+      request = request
+    )
+  }
+
   class GenericAuthRequest[A, +Sub <: Subject, +Org <: Organization](
       override val enableBusinessDebug: Boolean,
       override val flowId: String,

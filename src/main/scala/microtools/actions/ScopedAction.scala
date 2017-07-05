@@ -44,19 +44,9 @@ case class CustomerScopedAction(
   def ensureRequestType[A](request: AuthRequest[A]): BusinessTry[CustomerAuthRequest[A]] = {
     (request.subject, request.organization) match {
       case (customer: CustomerSubject, organization: GenericOrganization) =>
-        BusinessTry.success(
-          new CustomerAuthRequest(
-            enableBusinessDebug = request.enableBusinessDebug,
-            flowId = request.flowId,
-            subject = customer,
-            organization = organization,
-            scopes = request.scopes,
-            token = request.token,
-            ipAddress = request.ipAddress,
-            userAgent = request.userAgent,
-            requestUri = request.uri,
-            request = request
-          ))
+        val authRequest: CustomerAuthRequest[A] =
+          AuthActions.forRequest(request, customer, organization)
+        BusinessTry.success(authRequest)
       case _ => BusinessTry.failure(Problems.FORBIDDEN.withDetails("Only customers are allowed"))
     }
   }
@@ -68,19 +58,9 @@ case class ServiceScopedAction(
   override def ensureRequestType[A](request: AuthRequest[A]): BusinessTry[ServiceAuthRequest[A]] =
     request.subject match {
       case service: ServiceSubject =>
-        BusinessTry.success(
-          new ServiceAuthRequest(
-            enableBusinessDebug = request.enableBusinessDebug,
-            flowId = request.flowId,
-            subject = service,
-            organization = NoOrganization,
-            scopes = request.scopes,
-            token = request.token,
-            ipAddress = request.ipAddress,
-            userAgent = request.userAgent,
-            requestUri = request.uri,
-            request = request
-          ))
+        val authRequest: ServiceAuthRequest[A] =
+          AuthActions.forRequest(request, service, NoOrganization)
+        BusinessTry.success(authRequest)
       case _ => BusinessTry.failure(Problems.FORBIDDEN.withDetails("Only services are allowed"))
     }
 }
@@ -91,19 +71,9 @@ case class AdminScopedAction(scopeRequirement: ScopeRequirement)(implicit servic
   override def ensureRequestType[A](request: AuthRequest[A]): BusinessTry[AdminAuthRequest[A]] =
     request.subject match {
       case admin: AdminSubject =>
-        BusinessTry.success(
-          new AdminAuthRequest(
-            enableBusinessDebug = request.enableBusinessDebug,
-            flowId = request.flowId,
-            subject = admin,
-            organization = NoOrganization,
-            scopes = request.scopes,
-            token = request.token,
-            ipAddress = request.ipAddress,
-            userAgent = request.userAgent,
-            requestUri = request.uri,
-            request = request
-          ))
+        val authRequest: AdminAuthRequest[A] =
+          AuthActions.forRequest(request, admin, NoOrganization)
+        BusinessTry.success(authRequest)
       case _ => BusinessTry.failure(Problems.FORBIDDEN.withDetails("Only admins are allowed"))
     }
 }
