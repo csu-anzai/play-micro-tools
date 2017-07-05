@@ -1,5 +1,6 @@
 package microtools.actions
 
+import microtools.models.CustomerSubject
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.language.reflectiveCalls
 
@@ -93,6 +94,7 @@ class ScopedActionSpec extends PlaySpec with MockitoSugar with ScalaFutures with
         def action = (AuthAction andThen CustomerScopedAction(scopeRequirement)).async {
           implicit request =>
             val valueTry = BusinessTry.success("The value")
+            request.subject mustBe a[CustomerSubject]
 
             (for {
               value <- valueTry.withCondition(StandardScopeRequirements.write)
