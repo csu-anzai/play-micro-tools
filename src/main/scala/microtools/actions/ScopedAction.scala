@@ -23,8 +23,8 @@ sealed abstract class BaseScopedAction[R[_] <: AuthRequest[_], P[_] <: AuthReque
 
     ensureRequestType(request)
       .withCondition(scopeRequirement)
-      .flatMap { checked_request =>
-        BusinessTry.futureSuccess(block(checked_request))
+      .flatMap { checkedRequest =>
+        BusinessTry.futureSuccess(block(checkedRequest))
       }
       .asResult
   }
