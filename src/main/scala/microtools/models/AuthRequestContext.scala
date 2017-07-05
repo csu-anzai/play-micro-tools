@@ -44,3 +44,9 @@ trait AuthRequestContext extends RequestContext {
 
   def token: Token
 }
+
+trait GenericAuthRequestContext[+Sub <: Subject, +Org <: Organization] extends AuthRequestContext {
+  def subject: Sub
+
+  def organization: Org
+}

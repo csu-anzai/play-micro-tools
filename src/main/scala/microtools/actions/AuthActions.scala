@@ -51,11 +51,37 @@ trait AuthActions extends WithContextAwareLogger {
 }
 
 object AuthActions {
-  class AuthRequest[A](
+  type AuthRequest[A] = GenericAuthRequest[A, Subject, Organization]
+
+  type CustomerAuthRequest[A] = GenericAuthRequest[A, CustomerSubject, GenericOrganization]
+
+  type ServiceAuthRequest[A] = GenericAuthRequest[A, ServiceSubject, NoOrganization.type]
+
+  type AdminAuthRequest[A] = GenericAuthRequest[A, AdminSubject, NoOrganization.type]
+
+  def forRequest[A, S <: Subject, O <: Organization](
+      request: AuthRequest[A],
+      subject: S,
+      organization: O): GenericAuthRequest[A, S, O] = {
+    new GenericAuthRequest[A, S, O](
+      enableBusinessDebug = request.enableBusinessDebug,
+      flowId = request.flowId,
+      subject = subject,
+      organization = organization,
+      scopes = request.scopes,
+      token = request.token,
+      ipAddress = request.ipAddress,
+      userAgent = request.userAgent,
+      requestUri = request.uri,
+      request = request
+    )
+  }
+
+  class GenericAuthRequest[A, +Sub <: Subject, +Org <: Organization](
       override val enableBusinessDebug: Boolean,
       override val flowId: String,
-      override val subject: Subject,
-      override val organization: Organization,
+      override val subject: Sub,
+      override val organization: Org,
       override val scopes: ScopesByService,
       override val token: Token,
       override val ipAddress: String,
@@ -63,7 +89,7 @@ object AuthActions {
       requestUri: String,
       request: Request[A]
   ) extends WrappedRequest[A](request)
-      with AuthRequestContext {
+      with GenericAuthRequestContext[Sub, Org] {
     override def contextValues: Seq[(String, String)] = Seq(
       "flow_id"      -> flowId,
       "request_uri"  -> requestUri,

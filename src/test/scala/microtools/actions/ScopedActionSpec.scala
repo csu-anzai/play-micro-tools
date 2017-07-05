@@ -1,5 +1,6 @@
 package microtools.actions
 
+import microtools.models.CustomerSubject
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.language.reflectiveCalls
 
@@ -84,6 +85,126 @@ class ScopedActionSpec extends PlaySpec with MockitoSugar with ScalaFutures with
       status(conditionalAction.action(requestWithW)) mustBe Status.OK
       status(conditionalAction.action(requestWithR)) mustBe Status.FORBIDDEN
 
+    }
+  }
+
+  "A Customer scoped action" should {
+    "only allow customer requests" in new WithScopedAction {
+      val conditionalAction = new AuthActions {
+        def action = (AuthAction andThen CustomerScopedAction(scopeRequirement)).async {
+          implicit request =>
+            val valueTry = BusinessTry.success("The value")
+            request.subject mustBe a[CustomerSubject]
+
+            (for {
+              value <- valueTry.withCondition(StandardScopeRequirements.write)
+            } yield Results.Ok(value)).asResult
+        }
+      }
+
+      val nonCustomerWithW = FakeRequest()
+        .withHeaders(
+          ExtraHeaders.AUTH_SUBJECT_HEADER     -> "",
+          ExtraHeaders.AUTH_TOKEN_HEADER       -> "",
+          s"X-Auth-Scopes-${serviceName.name}" -> "W",
+          s"X-Auth-Scopes-${serviceName.name}" -> "X"
+        )
+      val requestWithW = FakeRequest().withHeaders(
+        ExtraHeaders.AUTH_SUBJECT_HEADER      -> "customer/asbc",
+        ExtraHeaders.AUTH_ORGANIZATION_HEADER -> "someorg",
+        ExtraHeaders.AUTH_TOKEN_HEADER        -> "",
+        s"X-Auth-Scopes-${serviceName.name}"  -> "W",
+        s"X-Auth-Scopes-${serviceName.name}"  -> "X"
+      )
+      val requestWithR = FakeRequest().withHeaders(
+        ExtraHeaders.AUTH_SUBJECT_HEADER      -> "customer/asbc",
+        ExtraHeaders.AUTH_ORGANIZATION_HEADER -> "someorg",
+        ExtraHeaders.AUTH_TOKEN_HEADER        -> "",
+        s"X-Auth-Scopes-${serviceName.name}"  -> "R",
+        s"X-Auth-Scopes-${serviceName.name}"  -> "X"
+      )
+
+      status(conditionalAction.action(nonCustomerWithW)) mustBe Status.FORBIDDEN
+      status(conditionalAction.action(requestWithW)) mustBe Status.OK
+      status(conditionalAction.action(requestWithR)) mustBe Status.FORBIDDEN
+    }
+  }
+
+  "A Service scoped action" should {
+    "only allow service requests" in new WithScopedAction {
+      val conditionalAction = new AuthActions {
+        def action = (AuthAction andThen ServiceScopedAction(scopeRequirement)).async {
+          implicit request =>
+            val valueTry = BusinessTry.success("The value")
+
+            (for {
+              value <- valueTry.withCondition(StandardScopeRequirements.write)
+            } yield Results.Ok(value)).asResult
+        }
+      }
+
+      val nonCustomerWithW = FakeRequest()
+        .withHeaders(
+          ExtraHeaders.AUTH_SUBJECT_HEADER     -> "",
+          ExtraHeaders.AUTH_TOKEN_HEADER       -> "",
+          s"X-Auth-Scopes-${serviceName.name}" -> "W",
+          s"X-Auth-Scopes-${serviceName.name}" -> "X"
+        )
+      val requestWithW = FakeRequest().withHeaders(
+        ExtraHeaders.AUTH_SUBJECT_HEADER     -> "service/asbc",
+        ExtraHeaders.AUTH_TOKEN_HEADER       -> "",
+        s"X-Auth-Scopes-${serviceName.name}" -> "W",
+        s"X-Auth-Scopes-${serviceName.name}" -> "X"
+      )
+      val requestWithR = FakeRequest().withHeaders(
+        ExtraHeaders.AUTH_SUBJECT_HEADER     -> "service/asbc",
+        ExtraHeaders.AUTH_TOKEN_HEADER       -> "",
+        s"X-Auth-Scopes-${serviceName.name}" -> "R",
+        s"X-Auth-Scopes-${serviceName.name}" -> "X"
+      )
+
+      status(conditionalAction.action(nonCustomerWithW)) mustBe Status.FORBIDDEN
+      status(conditionalAction.action(requestWithW)) mustBe Status.OK
+      status(conditionalAction.action(requestWithR)) mustBe Status.FORBIDDEN
+    }
+  }
+
+  "An admin scoped action" should {
+    "only allow admin requests" in new WithScopedAction {
+      val conditionalAction = new AuthActions {
+        def action = (AuthAction andThen AdminScopedAction(scopeRequirement)).async {
+          implicit request =>
+            val valueTry = BusinessTry.success("The value")
+
+            (for {
+              value <- valueTry.withCondition(StandardScopeRequirements.write)
+            } yield Results.Ok(value)).asResult
+        }
+      }
+
+      val nonCustomerWithW = FakeRequest()
+        .withHeaders(
+          ExtraHeaders.AUTH_SUBJECT_HEADER     -> "",
+          ExtraHeaders.AUTH_TOKEN_HEADER       -> "",
+          s"X-Auth-Scopes-${serviceName.name}" -> "W",
+          s"X-Auth-Scopes-${serviceName.name}" -> "X"
+        )
+      val requestWithW = FakeRequest().withHeaders(
+        ExtraHeaders.AUTH_SUBJECT_HEADER     -> "admin/asbc",
+        ExtraHeaders.AUTH_TOKEN_HEADER       -> "",
+        s"X-Auth-Scopes-${serviceName.name}" -> "W",
+        s"X-Auth-Scopes-${serviceName.name}" -> "X"
+      )
+      val requestWithR = FakeRequest().withHeaders(
+        ExtraHeaders.AUTH_SUBJECT_HEADER     -> "admin/asbc",
+        ExtraHeaders.AUTH_TOKEN_HEADER       -> "",
+        s"X-Auth-Scopes-${serviceName.name}" -> "R",
+        s"X-Auth-Scopes-${serviceName.name}" -> "X"
+      )
+
+      status(conditionalAction.action(nonCustomerWithW)) mustBe Status.FORBIDDEN
+      status(conditionalAction.action(requestWithW)) mustBe Status.OK
+      status(conditionalAction.action(requestWithR)) mustBe Status.FORBIDDEN
     }
   }
 }
