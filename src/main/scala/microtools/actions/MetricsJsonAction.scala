@@ -5,7 +5,6 @@ import java.util.concurrent.{Callable, Executors, TimeUnit}
 import com.codahale.metrics.MetricRegistry
 import com.codahale.metrics.json.MetricsModule
 import com.fasterxml.jackson.databind.ObjectMapper
-import play.api.http.HeaderNames
 import play.api.mvc.{Action, AnyContent, Controller}
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.util.control.NonFatal
@@ -34,7 +33,7 @@ trait MetricsJsonAction { self: Controller =>
   def metrics: Action[AnyContent] = CheckedAction(RequireInternal).async {
     computeMetrics()
       .map(Ok.apply(_))
-      .map(_.withHeaders(HeaderNames.CONTENT_TYPE -> "application/json"))
+      .map(_.as("application/json"))
   }
 
   class MetricRunner(promise: Promise[String]) extends Runnable {
