@@ -8,25 +8,41 @@ import akka.pattern.after
 import microtools.logging.WithContextAwareLogger
 import microtools.models.RequestContext
 import play.api.http.HeaderNames
-import play.api.mvc.{ActionBuilder, Request, Result, Results}
+import play.api.mvc._
 
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
 
-trait ThrottledActions extends WithContextAwareLogger {
+trait ThrottledActions extends WithContextAwareLogger { self: AbstractController =>
   def rateCounter: RateCounter
 
-  def ThrottledAction(
+  def ThrottledAction(actionId: String,
+                      rateWindow: Duration,
+                      softLimit: Long,
+                      hardLimit: Long,
+                      throttle: Duration = Duration.ofMillis(100))(
+      implicit ec: ExecutionContext,
+      system: ActorSystem): ActionBuilder[Request, AnyContent] =
+    ThrottledAction(actionId,
+                    rateWindow,
+                    softLimit,
+                    hardLimit,
+                    throttle,
+                    self.controllerComponents.parsers.default)
+
+  def ThrottledAction[B](
       actionId: String,
       rateWindow: Duration,
       softLimit: Long,
       hardLimit: Long,
-      throttle: Duration = Duration.ofMillis(100)
-  )(
-      implicit ec: ExecutionContext,
-      system: ActorSystem
-  ): ActionBuilder[Request] =
-    new ActionBuilder[Request] {
+      throttle: Duration,
+      bodyParser: BodyParser[B]
+  )(implicit ec: ExecutionContext, system: ActorSystem): ActionBuilder[Request, B] =
+    new ActionBuilder[Request, B] {
+      override def parser: BodyParser[B] = bodyParser
+
+      override protected def executionContext: ExecutionContext = ec
+
       override def invokeBlock[A](
           request: Request[A],
           block: (Request[A]) => Future[Result]

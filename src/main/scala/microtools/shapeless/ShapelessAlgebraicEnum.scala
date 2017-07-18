@@ -1,11 +1,11 @@
 package microtools.shapeless
 
-import play.api.data.validation.ValidationError
-import play.api.libs.json.{JsError, Json, OWrites, Reads}
+import play.api.libs.json._
 import shapeless.{:+:, CNil, Coproduct, Generic, Inl, Inr, Lazy}
 
 trait ShapelessAlgebraicEnum {
-  implicit val cNilReads: Reads[CNil] = Reads[CNil](_ => JsError(ValidationError("error.invalid")))
+  implicit val cNilReads: Reads[CNil] =
+    Reads[CNil](_ => JsError(JsonValidationError("error.invalid")))
 
   implicit val cNilWrites: OWrites[CNil] = OWrites[CNil](_ => Json.obj())
 

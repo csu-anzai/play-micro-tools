@@ -3,20 +3,21 @@ name := "play-micro-tools"
 organization := "de.21re"
 
 version := {
-  "0.1-" + sys.props.get("BUILD_NUMBER").orElse(sys.env.get("BUILD_NUMBER")).getOrElse("SNAPSHOT")
+  "0.6-" + sys.props.get("BUILD_NUMBER").orElse(sys.env.get("BUILD_NUMBER")).getOrElse("SNAPSHOT")
 }
 
 scalaVersion := "2.11.8"
 
 scalacOptions ++= Seq(
-  "-deprecation", "-feature"
+  "-deprecation",
+  "-feature"
 )
 
 shellPrompt := { state ⇒
   scala.Console.CYAN + "play-µ-tools > " + scala.Console.RESET
 }
 
-val playVersion = "2.5.9"
+val playVersion = "2.6.0"
 
 val metricsVersion = "3.1.2"
 
@@ -43,14 +44,17 @@ mainSourcesScalaStyle := org.scalastyle.sbt.ScalastylePlugin.scalastyle
   .in(Compile)
   .toTask("")
   .value
-(test in Test) := { (test in Test) dependsOn mainSourcesScalaStyle }.value
+(test in Test) := {
+  (test in Test) dependsOn mainSourcesScalaStyle
+}.value
 
 val macWireVersion = "2.2.5"
 
 libraryDependencies ++= Seq(
-  "com.typesafe.play" %% "play"      % playVersion % Provided,
-  "com.typesafe.play" %% "play-ws"   % playVersion % Provided,
-  "com.chuusai"       %% "shapeless" % "2.3.2",
+  "com.typesafe.play" %% "play"        % playVersion % Provided,
+  "com.typesafe.play" %% "play-ws"     % playVersion % Provided,
+  "com.typesafe.play" %% "play-ahc-ws" % playVersion % Provided,
+  "com.chuusai"       %% "shapeless"   % "2.3.2",
   // if you change this make sure to update the actual dependencies too
   // rediscala is provided so that every user of play-micro-tools does not need to depend on it
   "com.github.etaty"         %% "rediscala"                   % "1.8.0" % Provided,
@@ -65,11 +69,15 @@ libraryDependencies ++= Seq(
   "org.scalatest"            %% "scalatest"                   % "3.0.1" % Test,
   "org.scalacheck"           %% "scalacheck"                  % "1.13.4" % Test,
   "org.scalamock"            %% "scalamock-scalatest-support" % "3.4.2" % Test,
-  "org.scalatestplus.play"   %% "scalatestplus-play"          % "2.0.0-M1" % Test,
+  "org.scalatestplus.play"   %% "scalatestplus-play"          % "3.1.0" % Test,
   "org.mockito"              % "mockito-core"                 % "1.10.19" % Test
 )
 
 enablePlugins(ScalafmtPlugin)
 scalafmtVersion := "0.6.8"
-(compile in Compile) := { (compile in Compile) dependsOn (scalafmt in Compile).toTask }.value
-(compile in Test) := { (compile in Test) dependsOn (scalafmt in Test).toTask }.value
+(compile in Compile) := {
+  (compile in Compile) dependsOn (scalafmt in Compile).toTask
+}.value
+(compile in Test) := {
+  (compile in Test) dependsOn (scalafmt in Test).toTask
+}.value

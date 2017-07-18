@@ -3,7 +3,6 @@ package microtools
 import java.time.{DateTimeException, Instant}
 import java.time.format.DateTimeFormatter
 
-import play.api.data.validation.ValidationError
 import play.api.libs.json._
 import _root_.shapeless.{Generic, ::, HNil, HList}
 
@@ -40,7 +39,7 @@ trait JsonFormats {
           case _: NoSuchElementException =>
             default
               .map(JsSuccess(_))
-              .getOrElse(JsError(ValidationError("error.invalid.enum.value")))
+              .getOrElse(JsError(JsonValidationError("error.invalid.enum.value")))
         }
       }
     }
@@ -73,7 +72,7 @@ trait JsonFormats {
             JsError(
               Seq(
                 JsPath() ->
-                  Seq(ValidationError("error.expected.date.isoformat"))
+                  Seq(JsonValidationError("error.expected.date.isoformat"))
               )
             )
         }
@@ -81,7 +80,7 @@ trait JsonFormats {
         JsError(
           Seq(
             JsPath() ->
-              Seq(ValidationError("error.expected.date"))
+              Seq(JsonValidationError("error.expected.date"))
           )
         )
     }

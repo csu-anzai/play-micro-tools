@@ -7,7 +7,8 @@ import microtools.models.{Problem, Problems}
 import microtools.{BusinessFailure, BusinessTry}
 import play.api.http.Status
 import play.api.libs.json.Reads
-import play.api.libs.ws.{StreamedResponse, WSResponse}
+import play.api.libs.ws.ahc.StreamedResponse
+import play.api.libs.ws.WSResponse
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
@@ -21,8 +22,8 @@ trait WSTry {
       ctx: LoggingContext
   ): BusinessTry[Source[ByteString, _]] =
     BusinessTry.future(futureResponse.map {
-      case response if response.headers.status < 300 =>
-        BusinessTry.success(response.body)
+      case response if response.status < 300 =>
+        BusinessTry.success(response.bodyAsSource)
       case response =>
         log.error(s"WS request failed with response=${response.headers}")
         BusinessTry.failure(

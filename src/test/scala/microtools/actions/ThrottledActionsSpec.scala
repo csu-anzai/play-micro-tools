@@ -9,9 +9,11 @@ import org.scalatest.OptionValues
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import play.api.Configuration
+import org.scalatestplus.play.components.OneAppPerSuiteWithComponents
+import play.api.{BuiltInComponentsFromContext, Configuration}
 import play.api.http.Status
-import play.api.mvc.Results
+import play.api.mvc.{AbstractController, EssentialFilter, Results}
+import play.api.routing.Router
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 
@@ -19,13 +21,27 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.language.reflectiveCalls
 
-class ThrottledActionsSpec extends PlaySpec with MockitoSugar with ScalaFutures with OptionValues {
+class ThrottledActionsSpec
+    extends PlaySpec
+    with MockitoSugar
+    with ScalaFutures
+    with OptionValues
+    with OneAppPerSuiteWithComponents {
+  override def components: BuiltInComponentsFromContext =
+    new BuiltInComponentsFromContext(context) {
+      override def router: Router = Router.empty
+
+      override def httpFilters: Seq[EssentialFilter] = Seq.empty
+    }
+
+  trait WithThrottled {}
 
   "Throttle" should {
     implicit val system: ActorSystem = mock[ActorSystem]
     val dao: RateCounter             = mock[RateCounter]
 
-    val classUnderTest = new ThrottledActions {
+    val classUnderTest = new AbstractController(components.controllerComponents)
+    with ThrottledActions {
       override def rateCounter: RateCounter = dao
 
       def throttled =

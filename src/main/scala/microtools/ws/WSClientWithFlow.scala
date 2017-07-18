@@ -20,19 +20,19 @@ class WSClientWithFlow(val underlying: WSClient) {
 
     underlying
       .url(url)
-      .withHeaders(ExtraHeaders.FLOW_ID_HEADER   -> ctx.flowId,
-                   HeaderNames.X_FORWARDED_PROTO -> forwardProto.toString)
+      .withHttpHeaders(ExtraHeaders.FLOW_ID_HEADER   -> ctx.flowId,
+                       HeaderNames.X_FORWARDED_PROTO -> forwardProto.toString)
   }
 
   def urlWithAuthFromContext(rawUrl: String)(implicit ctx: AuthRequestContext): WSRequest = {
     url(rawUrl)
-      .withHeaders(HeaderNames.AUTHORIZATION -> s"Bearer ${ctx.token}")
+      .withHttpHeaders(HeaderNames.AUTHORIZATION -> s"Bearer ${ctx.token}")
   }
 
   def urlWithServiceAuth(rawUrl: String)(implicit serviceName: ServiceName,
                                          ctx: RequestContext): WSRequest = {
     url(rawUrl)
-      .withHeaders(
+      .withHttpHeaders(
         ExtraHeaders.AUTH_SUBJECT_HEADER -> s"service/$serviceName"
       )
   }

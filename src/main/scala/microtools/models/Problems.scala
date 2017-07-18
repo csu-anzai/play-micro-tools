@@ -2,35 +2,35 @@ package microtools.models
 
 import play.api.data.validation.ValidationError
 import play.api.http.Status
-import play.api.libs.json.{JsPath, Json}
+import play.api.libs.json.{JsPath, Json, JsonValidationError}
 
 /**
   * Collection of predefined problems most systems have to deal with.
   */
 object Problems {
-  val BAD_REQUEST = Problem.forStatus(Status.BAD_REQUEST, "Bad request")
+  val BAD_REQUEST: Problem = Problem.forStatus(Status.BAD_REQUEST, "Bad request")
 
-  val UNAUTHORIZED = Problem.forStatus(Status.UNAUTHORIZED, "Unauthorized")
+  val UNAUTHORIZED: Problem = Problem.forStatus(Status.UNAUTHORIZED, "Unauthorized")
 
-  val FORBIDDEN = Problem.forStatus(Status.FORBIDDEN, "Forbidden")
+  val FORBIDDEN: Problem = Problem.forStatus(Status.FORBIDDEN, "Forbidden")
 
-  val CONFLICT = Problem.forStatus(Status.CONFLICT, "Conflict")
+  val CONFLICT: Problem = Problem.forStatus(Status.CONFLICT, "Conflict")
 
-  val NOT_FOUND = Problem.forStatus(Status.NOT_FOUND, "Not found")
+  val NOT_FOUND: Problem = Problem.forStatus(Status.NOT_FOUND, "Not found")
 
-  val GONE = Problem.forStatus(Status.GONE, "Gone")
+  val GONE: Problem = Problem.forStatus(Status.GONE, "Gone")
 
-  val NOT_ACCEPTABLE = Problem.forStatus(Status.NOT_ACCEPTABLE, "Not acceptable")
+  val NOT_ACCEPTABLE: Problem = Problem.forStatus(Status.NOT_ACCEPTABLE, "Not acceptable")
 
-  val FAILED_DEPENDENCY = Problem.forStatus(Status.FAILED_DEPENDENCY, "Failed dependency")
+  val FAILED_DEPENDENCY: Problem = Problem.forStatus(Status.FAILED_DEPENDENCY, "Failed dependency")
 
-  val INTERNAL_SERVER_ERROR =
+  val INTERNAL_SERVER_ERROR: Problem =
     Problem.forStatus(Status.INTERNAL_SERVER_ERROR, "Internal server error")
 
-  val SERVICE_UNAVAILABLE =
+  val SERVICE_UNAVAILABLE: Problem =
     Problem.forStatus(Status.SERVICE_UNAVAILABLE, "Service unavailable")
 
-  def jsonValidationErrors(jsonErrors: Seq[(JsPath, Seq[ValidationError])]): Problem =
+  def jsonValidationErrors(jsonErrors: Seq[(JsPath, Seq[JsonValidationError])]): Problem =
     BAD_REQUEST.copy(details = Some(Json.arr(jsonErrors.map {
       case (path, errors) =>
         Json.obj(
@@ -39,7 +39,7 @@ object Problems {
         )
     })))
 
-  def jsonTransformErrors(jsonErrors: Seq[(JsPath, Seq[ValidationError])]): Problem =
+  def jsonTransformErrors(jsonErrors: Seq[(JsPath, Seq[JsonValidationError])]): Problem =
     NOT_ACCEPTABLE.copy(details = Some(Json.arr(jsonErrors.map {
       case (path, errors) =>
         Json.obj(

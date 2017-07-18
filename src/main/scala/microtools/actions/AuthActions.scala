@@ -7,11 +7,20 @@ import play.mvc.Http.HeaderNames
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait AuthActions extends WithContextAwareLogger {
+trait AuthActions extends WithContextAwareLogger { self: AbstractController =>
+
   import AuthActions._
 
-  def AuthAction(implicit ec: ExecutionContext): ActionBuilder[AuthRequest] =
-    new ActionBuilder[AuthRequest] {
+  def AuthAction(implicit ec: ExecutionContext): ActionBuilder[AuthRequest, AnyContent] =
+    AuthAction(self.controllerComponents.parsers.default)
+
+  def AuthAction[B](bodyParser: BodyParser[B])(
+      implicit ec: ExecutionContext): ActionBuilder[AuthRequest, B] =
+    new ActionBuilder[AuthRequest, B] {
+      override def parser: BodyParser[B] = bodyParser
+
+      override protected def executionContext: ExecutionContext = ec
+
       override def invokeBlock[A](
           request: Request[A],
           block: (AuthRequest[A]) => Future[Result]
@@ -97,4 +106,5 @@ object AuthActions {
       "organization" -> organization.toString
     )
   }
+
 }

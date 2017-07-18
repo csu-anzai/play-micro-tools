@@ -3,11 +3,13 @@ package microtools.actions
 import microtools.BusinessTry
 import microtools.logging.LoggingContext
 import microtools.models._
-import play.api.mvc.{Action, AnyContent, Controller}
+import play.api.mvc._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class DemoController(implicit ec: ExecutionContext) extends Controller with AuthActions {
+class DemoController(controllerComponents: ControllerComponents)(implicit ec: ExecutionContext)
+    extends AbstractController(controllerComponents)
+    with AuthActions {
   // This is something provided by a dao of some kind
   private def isOwnerOf(resourceId: String): ScopeRequirement.AccessCheck = {
     case (CustomerSubject(customer), _) => BusinessTry.success(resourceId.endsWith(customer))

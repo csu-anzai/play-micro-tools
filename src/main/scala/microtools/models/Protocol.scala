@@ -48,7 +48,7 @@ trait Protocol {
             JsError(
               Seq(
                 JsPath() ->
-                  Seq(ValidationError("error.expected.date.isoformat"))
+                  Seq(JsonValidationError("error.expected.date.isoformat"))
               )
             )
         }
@@ -56,7 +56,7 @@ trait Protocol {
         JsError(
           Seq(
             JsPath() ->
-              Seq(ValidationError("error.expected.date"))
+              Seq(JsonValidationError("error.expected.date"))
           )
         )
     }

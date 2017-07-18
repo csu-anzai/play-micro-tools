@@ -9,16 +9,25 @@ import play.mvc.Http.HeaderNames
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
-trait TimedActions extends WithContextAwareLogger { self: Controller =>
+trait TimedActions extends WithContextAwareLogger { self: AbstractController =>
 
   import TimedActions._
 
   def metricRegistry: MetricRegistry
 
-  def TimedAction(actionId: String)(implicit ec: ExecutionContext): ActionBuilder[TimedRequest] = {
+  def TimedAction(actionId: String)(
+      implicit ec: ExecutionContext): ActionBuilder[TimedRequest, AnyContent] =
+    TimedAction(actionId, self.controllerComponents.parsers.default)
+
+  def TimedAction[B](actionId: String, bodyParser: BodyParser[B])(
+      implicit ec: ExecutionContext): ActionBuilder[TimedRequest, B] = {
     val timer = metricRegistry.timer(s"${log.name}.$actionId")
 
-    new ActionBuilder[TimedRequest] {
+    new ActionBuilder[TimedRequest, B] {
+      override def parser: BodyParser[B] = bodyParser
+
+      override protected def executionContext: ExecutionContext = ec
+
       override def invokeBlock[A](
           request: Request[A],
           block: (TimedRequest[A]) => Future[Result]

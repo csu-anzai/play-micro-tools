@@ -4,7 +4,6 @@ import java.net.URI
 import java.time.Instant
 
 import microtools.models.Problem
-import org.asynchttpclient.cookie.DateParser
 import play.api.http.{HeaderNames, Status}
 import play.api.libs.json.{JsSuccess, JsValue}
 import play.api.libs.ws.WSResponse
@@ -36,7 +35,7 @@ object WSResponseOkWithExpires {
       val expiresAt = response
         .header(HeaderNames.EXPIRES)
         .flatMap { expires =>
-          Option(DateParser.parse(expires))
+          HttpDateParser.parse(expires)
         }
         .map(_.toInstant)
 

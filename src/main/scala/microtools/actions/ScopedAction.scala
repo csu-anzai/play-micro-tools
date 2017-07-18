@@ -28,6 +28,8 @@ sealed abstract class BaseScopedAction[R[_] <: AuthRequest[_], P[_] <: AuthReque
       }
       .asResult
   }
+
+  override protected def executionContext: ExecutionContext = ec
 }
 
 case class ScopedAction(scopeRequirement: ScopeRequirement)(implicit serviceName: ServiceName,

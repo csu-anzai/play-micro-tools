@@ -1,34 +1,48 @@
 package microtools.actions
 
-import microtools.models.CustomerSubject
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.language.reflectiveCalls
-
+import microtools.models.{CustomerSubject, ExtraHeaders, ServiceName}
 import microtools.{BusinessCondition, BusinessTry}
-import microtools.models.{ExtraHeaders, ServiceName}
 import org.scalatest.OptionValues
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
+import org.scalatestplus.play.components.OneAppPerSuiteWithComponents
+import play.api.BuiltInComponentsFromContext
 import play.api.http.Status
-import play.api.mvc.Results
+import play.api.mvc.{AbstractController, AnyContentAsEmpty, EssentialFilter, Results}
+import play.api.routing.Router
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 
-class ScopedActionSpec extends PlaySpec with MockitoSugar with ScalaFutures with OptionValues {
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.language.reflectiveCalls
+
+class ScopedActionSpec
+    extends PlaySpec
+    with MockitoSugar
+    with ScalaFutures
+    with OptionValues
+    with OneAppPerSuiteWithComponents {
+
+  override def components: BuiltInComponentsFromContext =
+    new BuiltInComponentsFromContext(context) {
+      override def router: Router = Router.empty
+
+      override def httpFilters: Seq[EssentialFilter] = Seq.empty
+    }
 
   trait WithScopedAction {
 
     implicit val serviceName = ServiceName("scopedActionSpec")
     val scopeRequirement     = StandardScopeRequirements.read or StandardScopeRequirements.write
-    val scopedAction = new AuthActions {
+    val scopedAction = new AbstractController(components.controllerComponents) with AuthActions {
       def action = (AuthAction andThen ScopedAction(scopeRequirement)).async { implicit request =>
         val condition: BusinessCondition[String] = scopeRequirement
         condition("Test").asResult
       }
     }
 
-    def authorizedRequest =
+    def authorizedRequest: FakeRequest[AnyContentAsEmpty.type] =
       FakeRequest()
         .withHeaders(ExtraHeaders.AUTH_SUBJECT_HEADER -> "", ExtraHeaders.AUTH_TOKEN_HEADER -> "")
   }
@@ -71,7 +85,8 @@ class ScopedActionSpec extends PlaySpec with MockitoSugar with ScalaFutures with
       val requestWithR = authorizedRequest.withHeaders(s"X-Auth-Scopes-${serviceName.name}" -> "R",
                                                        s"X-Auth-Scopes-${serviceName.name}" -> "X")
 
-      val conditionalAction = new AuthActions {
+      val conditionalAction = new AbstractController(components.controllerComponents)
+      with AuthActions {
         def action = (AuthAction andThen ScopedAction(scopeRequirement)).async {
           implicit request =>
             val valueTry = BusinessTry.success("The value")
@@ -90,7 +105,8 @@ class ScopedActionSpec extends PlaySpec with MockitoSugar with ScalaFutures with
 
   "A Customer scoped action" should {
     "only allow customer requests" in new WithScopedAction {
-      val conditionalAction = new AuthActions {
+      val conditionalAction = new AbstractController(components.controllerComponents)
+      with AuthActions {
         def action = (AuthAction andThen CustomerScopedAction(scopeRequirement)).async {
           implicit request =>
             val valueTry = BusinessTry.success("The value")
@@ -132,7 +148,8 @@ class ScopedActionSpec extends PlaySpec with MockitoSugar with ScalaFutures with
 
   "A Service scoped action" should {
     "only allow service requests" in new WithScopedAction {
-      val conditionalAction = new AuthActions {
+      val conditionalAction = new AbstractController(components.controllerComponents)
+      with AuthActions {
         def action = (AuthAction andThen ServiceScopedAction(scopeRequirement)).async {
           implicit request =>
             val valueTry = BusinessTry.success("The value")
@@ -171,7 +188,8 @@ class ScopedActionSpec extends PlaySpec with MockitoSugar with ScalaFutures with
 
   "An admin scoped action" should {
     "only allow admin requests" in new WithScopedAction {
-      val conditionalAction = new AuthActions {
+      val conditionalAction = new AbstractController(components.controllerComponents)
+      with AuthActions {
         def action = (AuthAction andThen AdminScopedAction(scopeRequirement)).async {
           implicit request =>
             val valueTry = BusinessTry.success("The value")

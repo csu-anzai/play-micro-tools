@@ -21,16 +21,16 @@ trait ConfigurationBindings { self: Module =>
 
   def bindingsFor(configuration: Configuration, key: String): Seq[Binding[_]] = {
     val configs: Configuration =
-      configuration.getConfig(key).getOrElse(Configuration.empty)
+      configuration.getOptional[Configuration](key).getOrElse(Configuration.empty)
 
     configs.keys.toSeq.flatMap(bindKey(configs, _))
   }
 
   def bindAsMap(configuration: Configuration, name: String, key: String): Seq[Binding[_]] = {
     val configs: Configuration =
-      configuration.getConfig(key).getOrElse(Configuration.empty)
+      configuration.getOptional[Configuration](key).getOrElse(Configuration.empty)
     val map: Map[String, String] = configs.keys
-      .map(key => key -> configs.getString(key).getOrElse(""))
+      .map(key => key -> configs.getOptional[String](key).getOrElse(""))
       .toMap
 
     Seq(
