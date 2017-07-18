@@ -24,7 +24,7 @@ class ScopedActionSpec
     with OptionValues
     with OneAppPerSuiteWithComponents {
 
-  override def components: BuiltInComponentsFromContext =
+  override lazy val components: BuiltInComponentsFromContext =
     new BuiltInComponentsFromContext(context) {
       override def router: Router = Router.empty
 
