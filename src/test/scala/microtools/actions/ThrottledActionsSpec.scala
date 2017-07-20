@@ -51,12 +51,6 @@ class ThrottledActionsSpec
     }
 
     "throttle" should {
-      val rootConfig     = mock[Configuration]
-      val throttleConfig = mock[Configuration]
-
-      when(rootConfig.getConfig(any())).thenReturn(Some(throttleConfig))
-      when(throttleConfig.getInt("calls")).thenReturn(Some(10))
-      when(throttleConfig.getInt("everyNSeconds")).thenReturn(Some(10))
 
       "return ok as long threshold isn't reached" in {
         when(dao.incrementAndGet(any(), any()))
