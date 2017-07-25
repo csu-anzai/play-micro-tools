@@ -138,12 +138,16 @@ object BusinessTry {
   ): BusinessTry[R] =
     FutureBusinessTry(futureResult.map(success).recover(handleProblem.andThen(failure)))
 
-  def forAll[U](tries: TraversableOnce[BusinessTry[U]])(
+  def sequence[U](tries: TraversableOnce[BusinessTry[U]])(
       implicit ec: ExecutionContext
   ): BusinessTry[Seq[U]] =
-    tries.foldLeft[BusinessTry[Seq[U]]](BusinessTry.success(Seq.empty)) { (results, aTry) =>
+    tries.foldLeft[BusinessTry[Seq[U]]](success(Seq.empty)) { (results, aTry) =>
       results.flatMap(rs => aTry.map(result => rs :+ result))
     }
+
+  @deprecated("Use the more common name `sequence` of this operation", since = "0.1-128")
+  def forAll[U](tries: TraversableOnce[BusinessTry[U]])(
+      implicit ec: ExecutionContext): BusinessTry[Seq[U]] = sequence(tries)
 
   def validateJson[T](json: JsValue)(implicit reads: Reads[T]): BusinessTry[T] = {
     json.validate.fold(
