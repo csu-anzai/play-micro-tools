@@ -117,8 +117,8 @@ sealed trait DecidedBusinessTry[+R] extends BusinessTry[R] {
 object BusinessTry {
   def success[R](result: R): BusinessTry[R] = BusinessSuccess(result)
 
-  def failure[R](problem: Problem): BusinessTry[R] =
-    BusinessFailure[R](problem)
+  def failure(problem: Problem): BusinessTry[Nothing] =
+    BusinessFailure(problem)
 
   def futureSuccess[R](futureResult: Future[R])(implicit ec: ExecutionContext): BusinessTry[R] =
     FutureBusinessTry(futureResult.map(success).recover {
@@ -216,40 +216,41 @@ case class BusinessSuccess[R](result: R) extends DecidedBusinessTry[R] {
     this
 }
 
-case class BusinessFailure[R](problem: Problem) extends DecidedBusinessTry[R] {
+case class BusinessFailure(problem: Problem) extends DecidedBusinessTry[Nothing] {
   override def isSuccess: Boolean = false
 
   override def isFailure: Boolean = true
 
-  override def asResult(implicit converter: ResultConverter[R],
+  override def asResult(implicit converter: ResultConverter[Nothing],
                         ec: ExecutionContext,
                         loggingContext: LoggingContext): Future[Result] =
     Future.successful(converter.onProblem(problem))
 
-  override def asFuture(implicit ec: ExecutionContext): Future[Either[R, Problem]] =
+  override def asFuture(implicit ec: ExecutionContext): Future[Either[Nothing, Problem]] =
     Future.successful(Right(problem))
 
-  override def map[U](f: (R) => U)(implicit ec: ExecutionContext): BusinessTry[U] =
-    this.asInstanceOf[BusinessTry[U]]
+  override def map[U](f: (Nothing) => U)(implicit ec: ExecutionContext): BusinessTry[U] =
+    this
 
-  override def flatMap[U](f: (R) => BusinessTry[U])(
+  override def flatMap[U](f: (Nothing) => BusinessTry[U])(
       implicit ec: ExecutionContext
   ): BusinessTry[U] =
-    this.asInstanceOf[BusinessTry[U]]
+    this
 
-  override def withCondition(condition: BusinessCondition[R])(
+  override def withCondition(condition: BusinessCondition[Nothing])(
       implicit ec: ExecutionContext
-  ): BusinessTry[R] = this
+  ): BusinessTry[Nothing] = this
 
-  override def fold[U](onSuccess: (R) => BusinessTry[U], onFailure: (Problem) => BusinessTry[U])(
+  override def fold[U](onSuccess: (Nothing) => BusinessTry[U],
+                       onFailure: (Problem) => BusinessTry[U])(
       implicit ec: ExecutionContext
   ): BusinessTry[U] =
     onFailure(problem)
 
-  override def awaitResult(implicit timeout: Timeout): DecidedBusinessTry[R] =
+  override def awaitResult(implicit timeout: Timeout): DecidedBusinessTry[Nothing] =
     this
 
-  override def recoverWith[U >: R](f: PartialFunction[Problem, BusinessTry[U]])(
+  override def recoverWith[U >: Nothing](f: PartialFunction[Problem, BusinessTry[U]])(
       implicit ec: ExecutionContext
   ): BusinessTry[U] =
     if (f isDefinedAt problem) f(problem) else this
