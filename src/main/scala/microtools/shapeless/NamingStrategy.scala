@@ -9,8 +9,8 @@ trait NamingStrategy[T] {
 }
 
 class ClassNameNamingStrategy(path: JsPath) {
-  val classNameWriter = path.write[String]
-  val classNameReader = path.read[String]
+  private val classNameWriter = path.write[String]
+  private val classNameReader = path.read[String]
 
   implicit def namingFor[T](implicit m: Manifest[T]): NamingStrategy[T] = new NamingStrategy[T] {
     override def nameFor(t: T): JsObject = classNameWriter.writes(m.runtimeClass.getSimpleName)

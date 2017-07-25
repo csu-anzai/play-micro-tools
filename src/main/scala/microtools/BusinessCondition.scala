@@ -44,7 +44,7 @@ object BusinessCondition {
   def all[T](conditions: Seq[BusinessCondition[T]]): BusinessCondition[T] =
     new BusinessCondition[T] {
       override def apply[R <: T](value: R): BusinessTry[R] =
-        BusinessTry.forAll(conditions.map(_.apply(value))).map(_ => value)
+        BusinessTry.sequence(conditions.map(_.apply(value))).map(_ => value)
     }
 
   implicit class BusinessConditionCombinators[T](left: BusinessCondition[T]) {

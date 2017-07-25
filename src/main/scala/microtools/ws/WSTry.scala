@@ -75,7 +75,7 @@ trait WSTry {
 
   private def notTheExpectedResponse(expected: String, response: WSResponse)(
       implicit ec: LoggingContext
-  ): BusinessFailure[Nothing] = {
+  ): BusinessFailure = {
     Try(response.json.as[Problem]) match {
       case Success(problem) =>
         log.error(s"WS request failed with status=${response.status} problem=$problem")

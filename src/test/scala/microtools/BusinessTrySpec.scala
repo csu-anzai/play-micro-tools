@@ -17,7 +17,7 @@ import scala.concurrent.{Future, Promise}
 
 class BusinessTrySpec extends WordSpec with MockFactory with MustMatchers with ScalaFutures {
 
-  implicit val loggingContext = LoggingContext.static()
+  private implicit val loggingContext = LoggingContext.static()
 
   "Successful BusinessTry" should {
     val aResult    = SomeResult(1234, "A successful result")
@@ -65,23 +65,19 @@ class BusinessTrySpec extends WordSpec with MockFactory with MustMatchers with S
 
     "be lifted from success try" in {
       val successTry = Try("gegenbauer")
-      val BusinessSuccess(success) = BusinessTry.fromTry(successTry) {
-        case _ => Problems.BAD_REQUEST
-      }
+      val BusinessSuccess(success) = BusinessTry.fromTry(successTry)(_ => Problems.BAD_REQUEST)
       success mustEqual "gegenbauer"
     }
 
     "be lifted from failure try" in {
       val failureTry = Failure(new RuntimeException("Who you gonna call? Bauerbusters!"))
-      val BusinessFailure(problem) = BusinessTry.fromTry(failureTry) {
-        case _ => Problems.BAD_REQUEST
-      }
+      val BusinessFailure(problem) = BusinessTry.fromTry(failureTry)(_ => Problems.BAD_REQUEST)
       problem mustEqual Problems.BAD_REQUEST
     }
 
     "fold" in {
       val aNewFailure =
-        BusinessTry.failure[SomeResult](Problems.INTERNAL_SERVER_ERROR)
+        BusinessTry.failure(Problems.INTERNAL_SERVER_ERROR)
 
       val onSuccess = mockFunction[SomeResult, BusinessTry[SomeResult]]
       val onFailure = mockFunction[Problem, BusinessTry[SomeResult]]
@@ -274,7 +270,7 @@ class BusinessTrySpec extends WordSpec with MockFactory with MustMatchers with S
     }
     "should be recoverable" in {
       val BusinessSuccess(result) = BusinessTry
-        .failure[String](Problem.forStatus(100, "test"))
+        .failure(Problem.forStatus(100, "test"))
         .recover {
           case Problem(100, _, _, _) => "success"
         }
@@ -285,7 +281,7 @@ class BusinessTrySpec extends WordSpec with MockFactory with MustMatchers with S
 
     "should not recover if partial function doesn't match" in {
       val BusinessFailure(result) = BusinessTry
-        .failure[String](Problem.forStatus(100, "test"))
+        .failure(Problem.forStatus(100, "test"))
         .recover {
           case Problem(101, _, _, _) => "success"
         }

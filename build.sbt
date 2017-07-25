@@ -15,7 +15,7 @@ scalacOptions ++= Seq(
   "-feature"
 )
 
-shellPrompt := { state ⇒
+shellPrompt := { _ ⇒
   scala.Console.CYAN + "play-µ-tools > " + scala.Console.RESET
 }
 
