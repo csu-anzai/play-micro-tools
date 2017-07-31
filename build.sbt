@@ -20,7 +20,7 @@ shellPrompt := { _ ⇒
   scala.Console.CYAN + "play-µ-tools > " + scala.Console.RESET
 }
 
-val playVersion = "2.6.0"
+val playVersion = "2.6.2"
 
 val metricsVersion = "3.1.2"
 
@@ -69,10 +69,10 @@ libraryDependencies ++= Seq(
   "com.softwaremill.macwire" %% "util"                        % macWireVersion,
   "com.softwaremill.macwire" %% "proxy"                       % macWireVersion,
   "ch.qos.logback"           % "logback-classic"              % "1.1.7",
-  "org.scalatest"            %% "scalatest"                   % "3.0.1" % Test,
-  "org.scalacheck"           %% "scalacheck"                  % "1.13.4" % Test,
-  "org.scalamock"            %% "scalamock-scalatest-support" % "3.4.2" % Test,
-  "org.scalatestplus.play"   %% "scalatestplus-play"          % "3.1.0" % Test,
+  "org.scalatest"            %% "scalatest"                   % "3.0.3" % Test,
+  "org.scalacheck"           %% "scalacheck"                  % "1.13.5" % Test,
+  "org.scalamock"            %% "scalamock-scalatest-support" % "3.6.0" % Test,
+  "org.scalatestplus.play"   %% "scalatestplus-play"          % "3.1.1" % Test,
   "org.mockito"              % "mockito-core"                 % "1.10.19" % Test
 )
 
