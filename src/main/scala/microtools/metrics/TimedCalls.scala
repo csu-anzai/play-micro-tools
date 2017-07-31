@@ -1,7 +1,5 @@
 package microtools.metrics
 
-import java.time.Instant
-
 import com.codahale.metrics.{MetricRegistry, Timer}
 import microtools.decorators.{FutureDecorator, TryDecorator}
 import microtools.logging.{ContextAwareLogger, LoggingContext}
@@ -27,7 +25,6 @@ trait TimedCalls {
     new FutureDecorator[T] {
       override def apply(block: => Future[T]): Future[T] = {
         val timeCtx = timer.time()
-        val start   = Instant.now()
         val result  = block
 
         result.onComplete {
@@ -55,7 +52,6 @@ trait TimedCalls {
     new TryDecorator[T] {
       override def apply(block: => BusinessTry[T]): BusinessTry[T] = {
         val timeCtx = timer.time()
-        val start   = Instant.now()
         val result  = block
 
         result.onComplete {

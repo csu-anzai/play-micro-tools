@@ -132,8 +132,7 @@ class BusinessTrySpec extends WordSpec with MockFactory with MustMatchers with S
     }
 
     "not be mapable" in {
-      val aNewResult = "A new result"
-      val mapper     = mockFunction[String, String]
+      val mapper = mockFunction[String, String]
 
       mapper.expects(*).never()
 
@@ -143,8 +142,6 @@ class BusinessTrySpec extends WordSpec with MockFactory with MustMatchers with S
     }
 
     "not be flatMapable" in {
-      val aNewSuccess = BusinessTry.success("A new success")
-
       val mapper = mockFunction[String, BusinessTry[String]]
 
       mapper.expects(*).never()

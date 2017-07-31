@@ -17,7 +17,7 @@ trait CircuitBreakers {
       maxFailures: Int,
       callTimeout: FiniteDuration,
       resetTimeout: FiniteDuration
-  )(implicit ec: ExecutionContext, ctx: LoggingContext, s: Scheduler): FutureDecorator[T] = {
+  )(implicit ctx: LoggingContext, s: Scheduler): FutureDecorator[T] = {
     val circuitBreaker =
       CircuitBreaker.create(s, maxFailures, callTimeout, resetTimeout)
 

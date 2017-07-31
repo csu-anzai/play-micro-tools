@@ -4,14 +4,13 @@ import javax.inject.Inject
 
 import microtools.logging.WithContextAwareLogger
 import microtools.models.{ExtraHeaders, Problem, Problems, RequestContext}
-import play.api.Environment
 import play.api.http.HttpErrorHandler
 import play.api.mvc.{RequestHeader, Result}
-import scala.concurrent.{ExecutionContext, Future}
 
-class ErrorHandler @Inject()(implicit env: Environment, ec: ExecutionContext)
-    extends HttpErrorHandler
-    with WithContextAwareLogger {
+import scala.concurrent.Future
+import scala.concurrent.Future.successful
+
+class ErrorHandler @Inject() extends HttpErrorHandler with WithContextAwareLogger {
   override def onClientError(
       request: RequestHeader,
       statusCode: Int,
@@ -24,9 +23,7 @@ class ErrorHandler @Inject()(implicit env: Environment, ec: ExecutionContext)
     val problem =
       Problem.forStatus(statusCode, "Client error").withDetails(message)
 
-    Future
-      .successful(problem.asResult)
-      .map(resultWithFlowId)
+    successful(resultWithFlowId(problem.asResult))
   }
 
   override def onServerError(request: RequestHeader, exception: Throwable): Future[Result] = {
@@ -37,9 +34,7 @@ class ErrorHandler @Inject()(implicit env: Environment, ec: ExecutionContext)
     val problem =
       Problems.INTERNAL_SERVER_ERROR
 
-    Future
-      .successful(problem.asResult)
-      .map(resultWithFlowId)
+    successful(resultWithFlowId(problem.asResult))
   }
 
   private def resultWithFlowId(result: Result)(implicit requestContext: RequestContext): Result = {

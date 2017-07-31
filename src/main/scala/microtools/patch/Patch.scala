@@ -49,9 +49,6 @@ case class Replace(path: JsPath, value: JsValue) extends Patch {
 }
 
 object Patch extends JsonFormats {
-  private def stringToJsPath(path: String): JsPath =
-    JsonPointer.jsPathFormat.reads(JsString(path)).get
-
   val patchRead: Reads[Patch] =
     (__ \ "op").read[String].flatMap {
       case "remove"    => path.map(Remove)
