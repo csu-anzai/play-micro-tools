@@ -12,7 +12,8 @@ crossScalaVersions := Seq("2.12.3", "2.11.11")
 
 scalacOptions ++= Seq(
   "-deprecation",
-  "-feature"
+  "-feature",
+  if (scalaVersion.value >= "2.12") "-Ywarn-unused:imports" else ""
 )
 
 shellPrompt := { _ ⇒

@@ -1,6 +1,6 @@
 package microtools.actions
 
-import java.util.concurrent.{Callable, Executors, TimeUnit}
+import java.util.concurrent.{Executors, TimeUnit}
 
 import com.codahale.metrics.MetricRegistry
 import com.codahale.metrics.json.MetricsModule

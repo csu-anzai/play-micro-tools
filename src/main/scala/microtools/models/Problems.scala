@@ -1,6 +1,5 @@
 package microtools.models
 
-import play.api.data.validation.ValidationError
 import play.api.http.Status
 import play.api.libs.json.{JsPath, Json, JsonValidationError}
 

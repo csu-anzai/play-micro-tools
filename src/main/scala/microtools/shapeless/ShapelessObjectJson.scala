@@ -1,9 +1,8 @@
 package microtools.shapeless
 
-import play.api.data.validation.ValidationError
 import play.api.libs.json._
 import shapeless.labelled.{FieldType, field}
-import shapeless.{:+:, ::, CNil, Coproduct, Generic, HList, HNil, Inl, Inr, Lazy, Witness}
+import shapeless.{::, HList, HNil, Lazy, Witness}
 
 trait ShapelessObjectJson {
   implicit val hNilWrites: OWrites[HNil] = OWrites[HNil](_ => Json.obj())

@@ -10,9 +10,9 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.components.OneAppPerSuiteWithComponents
-import play.api.{BuiltInComponentsFromContext, Configuration}
+import play.api.BuiltInComponentsFromContext
 import play.api.http.Status
-import play.api.mvc.{AbstractController, EssentialFilter, Results}
+import play.api.mvc._
 import play.api.routing.Router
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -44,7 +44,7 @@ class ThrottledActionsSpec
     with ThrottledActions {
       override def rateCounter: RateCounter = dao
 
-      def throttled =
+      def throttled: Action[AnyContent] =
         ThrottledAction("test", Duration.ofMinutes(1), 5, 10).apply {
           Results.Ok("Ok")
         }
