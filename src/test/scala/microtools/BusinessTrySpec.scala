@@ -64,13 +64,13 @@ class BusinessTrySpec extends WordSpec with MockFactory with MustMatchers with S
     }
 
     "be lifted from success try" in {
-      val successTry = Try("gegenbauer")
+      val successTry               = Try("gegenbauer")
       val BusinessSuccess(success) = BusinessTry.fromTry(successTry)(_ => Problems.BAD_REQUEST)
       success mustEqual "gegenbauer"
     }
 
     "be lifted from failure try" in {
-      val failureTry = Failure(new RuntimeException("Who you gonna call? Bauerbusters!"))
+      val failureTry               = Failure(new RuntimeException("Who you gonna call? Bauerbusters!"))
       val BusinessFailure(problem) = BusinessTry.fromTry(failureTry)(_ => Problems.BAD_REQUEST)
       problem mustEqual Problems.BAD_REQUEST
     }
@@ -268,7 +268,7 @@ class BusinessTrySpec extends WordSpec with MockFactory with MustMatchers with S
 
       result mustEqual "fourth result"
     }
-    "should be recoverable" in {
+    "be recoverable" in {
       val BusinessSuccess(result) = BusinessTry
         .failure(Problem.forStatus(100, "test"))
         .recover {
