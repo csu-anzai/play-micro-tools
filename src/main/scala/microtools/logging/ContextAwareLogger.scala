@@ -181,7 +181,7 @@ class ContextAwareLogger(logger: Logger) {
   def error(message: => String, extraValues: (String, String)*)(
       implicit loggingContext: LoggingContext
   ): Unit =
-    withLoggingContext() {
+    withLoggingContext(extraValues) {
       if (logger.isErrorEnabled) logger.error(message)
     }
 
@@ -193,7 +193,7 @@ class ContextAwareLogger(logger: Logger) {
     */
   def error(message: => String, error: => Throwable, extraValues: (String, String)*)(
       implicit loggingContext: LoggingContext
-  ): Unit = withLoggingContext() {
+  ): Unit = withLoggingContext(extraValues) {
     if (logger.isErrorEnabled) logger.error(message, error)
   }
 
