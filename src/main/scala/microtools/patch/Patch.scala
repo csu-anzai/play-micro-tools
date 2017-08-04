@@ -36,16 +36,25 @@ case class Remove(path: JsPath) extends Patch {
     path.json.prune
 }
 case class Add(path: JsPath, value: JsValue) extends Patch {
-  override def transformation: Reads[_ <: JsValue] =
-    path.json.update(Reads {
-      case arr: JsArray => JsSuccess(arr :+ value)
-      case JsNull       => JsSuccess(value)
-      case _            => JsError("error.patch.add.value.exists")
-    })
+  override def transformation: Reads[_ <: JsValue] = {
+    new Reads[JsValue] {
+      override def reads(json: JsValue): JsResult[JsValue] = {
+        if (path(json).isEmpty) {
+          json.validate(__.json.update(path.json.put(value)))
+        } else {
+          json.validate(path.json.update(Reads {
+            case arr: JsArray => JsSuccess(arr :+ value)
+            case JsNull       => JsSuccess(value)
+            case _            => JsError("error.patch.add.value.exists")
+          }))
+        }
+      }
+    }
+  }
 }
 case class Replace(path: JsPath, value: JsValue) extends Patch {
   override def transformation: Reads[_ <: JsValue] =
-    (__.read[JsObject] and path.json.put(value)).reduce
+    (path.json.prune and path.json.put(value)).reduce
 }
 
 object Patch extends JsonFormats {
