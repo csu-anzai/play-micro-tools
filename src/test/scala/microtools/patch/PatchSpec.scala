@@ -6,7 +6,8 @@ import play.api.libs.json.{JsNumber, Json, _}
 import play.api.http.Status._
 
 class PatchSpec extends WordSpec with MustMatchers {
-  val whitelist = PatchWhitelist(Seq(__ \ "f2", __ \ "f1", __ \ "person" \ "address"))
+  val whitelist = PatchWhitelist(
+    Seq(__ \ "f2", __ \ "f1", __ \ "person" \ "address", __ \ "f3", __ \ "f3" \ "s1"))
   "Patch" should {
     "be able to replace a simple value" in {
       val source = Json.obj(
@@ -29,6 +30,85 @@ class PatchSpec extends WordSpec with MustMatchers {
           "s1" -> "sub1",
           "s2" -> "sub2"
         )
+      )
+    }
+
+    "be able to replace a nested value" in {
+      val source = Json.obj(
+        "f1" -> "field1",
+        "f2" -> 1234,
+        "f3" -> Json.obj(
+          "s1" -> "sub1",
+          "s2" -> "sub2"
+        )
+      )
+
+      val patch =
+        Replace(__ \ "f3" \ "s1", JsString("sub_new"))
+      val BusinessSuccess(result) = patch(source, whitelist)
+
+      result mustBe Json.obj(
+        "f1" -> "field1",
+        "f2" -> 1234,
+        "f3" -> Json.obj(
+          "s1" -> "sub_new",
+          "s2" -> "sub2"
+        )
+      )
+    }
+
+    "be able to replace a nested object" in {
+      val source = Json.obj(
+        "f1" -> "field1",
+        "f2" -> 1234,
+        "f3" -> Json.obj(
+          "s1" -> "sub1",
+          "s2" -> "sub2"
+        )
+      )
+
+      val patch =
+        Replace(__ \ "f3", Json.obj("s3" -> JsString("sub3")))
+      val BusinessSuccess(result) = patch(source, whitelist)
+
+      result mustBe Json.obj(
+        "f1" -> "field1",
+        "f2" -> 1234,
+        "f3" -> Json.obj(
+          "s3" -> "sub3"
+        )
+      )
+    }
+
+    "be able to add a new value" in {
+      val source = Json.obj(
+        "f1" -> "field1",
+        "f3" -> JsNull
+      )
+
+      val patch =
+        Add(__ \ "f3", JsString("meep"))
+      val BusinessSuccess(result) = patch(source, whitelist)
+
+      result mustBe Json.obj(
+        "f1" -> "field1",
+        "f3" -> "meep"
+      )
+
+    }
+
+    "be able to add a new key/value pair" in {
+      val source = Json.obj(
+        "f1" -> "field1"
+      )
+
+      val patch =
+        Add(__ \ "f3", JsString("meep"))
+      val BusinessSuccess(result) = patch(source, whitelist)
+
+      result mustBe Json.obj(
+        "f1" -> "field1",
+        "f3" -> "meep"
       )
     }
 
@@ -94,6 +174,21 @@ class PatchSpec extends WordSpec with MustMatchers {
           "s2" -> "sub2"
         )
       )
+    }
+
+    "be able to remove a non-existing field" in {
+      val source = Json.obj(
+        "f1" -> "field1",
+        "f3" -> Json.obj(
+          "s1" -> "sub1",
+          "s2" -> "sub2"
+        )
+      )
+
+      val patch                   = Remove(__ \ "f2")
+      val BusinessSuccess(result) = patch(source, whitelist)
+
+      result mustBe source
     }
 
     "be able to remove a field" in {
