@@ -30,7 +30,9 @@ object ScopeRequirement {
   val noScope = new ScopeRequirement {
     override def appliesTo(scopes: Scopes): Boolean = true
 
-    override def checkAccess(subject: Subject, organization: Organization)(implicit loggingContext: LoggingContext, ec: ExecutionContext): BusinessTry[Boolean] = BusinessTry.success(true)
+    override def checkAccess(subject: Subject, organization: Organization)(
+        implicit loggingContext: LoggingContext,
+        ec: ExecutionContext): BusinessTry[Boolean] = BusinessTry.success(true)
   }
 
   def and(left: ScopeRequirement, right: ScopeRequirement): ScopeRequirement =
