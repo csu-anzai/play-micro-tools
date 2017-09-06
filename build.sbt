@@ -8,23 +8,16 @@ version := {
 
 scalaVersion := "2.12.3"
 
-crossScalaVersions := Seq("2.12.3", "2.11.11")
+crossScalaVersions := Seq("2.12.3")
 
 scalacOptions ++= Seq(
   "-deprecation",
-  "-feature"
+  "-feature",
+  "-Ywarn-unused:imports",
+  "-Ywarn-unused:params",
+  "-Ywarn-unused:locals",
+  "-Ywarn-unused:privates"
 )
-
-scalacOptions ++= {
-  if (scalaVersion.value >= "2.12")
-    Seq(
-      "-Ywarn-unused:imports",
-      "-Ywarn-unused:params",
-      "-Ywarn-unused:locals",
-      "-Ywarn-unused:privates"
-    )
-  else Seq()
-}
 
 shellPrompt := { _ ⇒
   scala.Console.CYAN + "play-µ-tools > " + scala.Console.RESET

@@ -2,7 +2,7 @@
 gen.init()
 
 publish = false
-if(env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'v0.6') {
+if(env.BRANCH_NAME == 'master') {
     publish = true
 }
 
