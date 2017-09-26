@@ -9,6 +9,8 @@ import play.api.mvc.Result
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
+class BusinessTryFailedException(problem: Problem) extends RuntimeException(problem.toString)
+
 /**
   * BusinnesTry is a useful variant of `scala.util.Try` and `scala.concurrent.Future`.
   * The main idea is, that a `BusinessTry` has three states: Successful, Failure/Problem and Exception.
@@ -58,6 +60,10 @@ sealed trait BusinessTry[+R] {
     asResult(converter, ec, loggingContext)
 
   def asFuture(implicit ec: ExecutionContext): Future[Either[R, Problem]]
+
+  def asFutureSuccess(implicit ec: ExecutionContext): Future[R]
+
+  def mapProblem(f: Problem => Problem)(implicit ec: ExecutionContext): BusinessTry[R]
 
   def map[U](f: R => U)(implicit ec: ExecutionContext): BusinessTry[U]
 
@@ -195,6 +201,12 @@ case class BusinessSuccess[R](result: R) extends DecidedBusinessTry[R] {
   override def asFuture(implicit ec: ExecutionContext): Future[Either[R, Problem]] =
     Future.successful(Left(result))
 
+  override def asFutureSuccess(implicit ec: ExecutionContext): Future[R] =
+    Future.successful(result)
+
+  override def mapProblem(f: Problem => Problem)(implicit ec: ExecutionContext): BusinessTry[R] =
+    this
+
   override def map[U](f: (R) => U)(implicit ec: ExecutionContext): BusinessTry[U] =
     BusinessSuccess(f(result))
 
@@ -233,6 +245,13 @@ case class BusinessFailure(problem: Problem) extends DecidedBusinessTry[Nothing]
   override def asFuture(implicit ec: ExecutionContext): Future[Either[Nothing, Problem]] =
     Future.successful(Right(problem))
 
+  override def asFutureSuccess(implicit ec: ExecutionContext): Future[Nothing] =
+    Future.failed(new BusinessTryFailedException(problem))
+
+  override def mapProblem(f: Problem => Problem)(
+      implicit ec: ExecutionContext): BusinessTry[Nothing] =
+    BusinessFailure(f(problem))
+
   override def map[U](f: (Nothing) => U)(implicit ec: ExecutionContext): BusinessTry[U] =
     this
 
@@ -269,6 +288,12 @@ case class FutureBusinessTry[R](futureTry: Future[BusinessTry[R]]) extends Busin
 
   override def asFuture(implicit ec: ExecutionContext): Future[Either[R, Problem]] =
     futureTry.flatMap(_.asFuture)
+
+  override def asFutureSuccess(implicit ec: ExecutionContext): Future[R] =
+    futureTry.flatMap(_.asFutureSuccess)
+
+  override def mapProblem(f: Problem => Problem)(implicit ec: ExecutionContext): BusinessTry[R] =
+    FutureBusinessTry[R](futureTry.map(_.mapProblem(f)))
 
   override def map[U](f: (R) => U)(implicit ec: ExecutionContext): BusinessTry[U] =
     FutureBusinessTry[U](futureTry.map(_.map(f)))

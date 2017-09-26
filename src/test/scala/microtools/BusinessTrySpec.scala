@@ -131,6 +131,11 @@ class BusinessTrySpec extends WordSpec with MockFactory with MustMatchers with S
       failure.awaitResult.isFailure mustBe true
     }
 
+    "map errors" in {
+      val BusinessFailure(problem) = failure.mapProblem(p => p.copy(code = 1)).awaitResult
+      problem.code must equal(1)
+    }
+
     "not be mapable" in {
       val mapper = mockFunction[String, String]
 
@@ -194,9 +199,23 @@ class BusinessTrySpec extends WordSpec with MockFactory with MustMatchers with S
       result.isSuccess mustBe true
       result.isFailure mustBe false
     }
+
+    "convert to failed futures" in {
+      an[BusinessTryFailedException] must be thrownBy await(
+        BusinessTry
+          .wrap(Future.successful(()))
+          .withCondition(BusinessCondition(_ => false, Problems.BAD_REQUEST))
+          .asFutureSuccess)
+    }
+
   }
 
   "BusinessTry" should {
+    "convert to failed futures" in {
+      an[BusinessTryFailedException] must be thrownBy await(
+        BusinessTry.failure(Problems.BAD_REQUEST).asFutureSuccess)
+    }
+
     "wrap and handle Problems" in {
 
       val promise = Promise[String]
