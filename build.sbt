@@ -47,13 +47,11 @@ bintrayCredentialsFile := {
 }
 
 lazy val mainSourcesScalaStyle = taskKey[Unit]("mainSourcesScalaStyle")
-mainSourcesScalaStyle := org.scalastyle.sbt.ScalastylePlugin.scalastyle
+mainSourcesScalaStyle := org.scalastyle.sbt.ScalastylePlugin.autoImport.scalastyle
   .in(Compile)
   .toTask("")
   .value
-(test in Test) := {
-  (test in Test) dependsOn mainSourcesScalaStyle
-}.value
+(test in Test) := { (test in Test) dependsOn mainSourcesScalaStyle }.value
 
 val macWireVersion = "2.2.5"
 
