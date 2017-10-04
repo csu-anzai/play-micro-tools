@@ -66,8 +66,10 @@ class ContextAwareLogger(logger: Logger) {
     * @param message the message to log
     */
   def trace(message: => String)(implicit loggingContext: LoggingContext): Unit =
-    withLoggingContext() {
-      if (logger.isTraceEnabled) logger.trace(message)
+    if (logger.isTraceEnabled) {
+      withLoggingContext() {
+        logger.trace(message)
+      }
     }
 
   /**
@@ -78,8 +80,10 @@ class ContextAwareLogger(logger: Logger) {
     */
   def trace(message: => String, error: => Throwable)(
       implicit loggingContext: LoggingContext
-  ): Unit = withLoggingContext() {
-    if (logger.isTraceEnabled) logger.trace(message, error)
+  ): Unit = if (logger.isTraceEnabled) {
+    withLoggingContext() {
+      logger.trace(message, error)
+    }
   }
 
   /**
@@ -88,8 +92,10 @@ class ContextAwareLogger(logger: Logger) {
     * @param message the message to log
     */
   def debug(message: => String)(implicit loggingContext: LoggingContext): Unit =
-    withLoggingContext() {
-      if (logger.isDebugEnabled) logger.debug(message)
+    if (logger.isDebugEnabled) {
+      withLoggingContext() {
+        logger.debug(message)
+      }
     }
 
   /**
@@ -100,8 +106,10 @@ class ContextAwareLogger(logger: Logger) {
     */
   def debug(message: => String, error: => Throwable)(
       implicit loggingContext: LoggingContext
-  ): Unit = withLoggingContext() {
-    if (logger.isDebugEnabled) logger.debug(message, error)
+  ): Unit = if (logger.isDebugEnabled) {
+    withLoggingContext() {
+      logger.debug(message, error)
+    }
   }
 
   /**
@@ -112,8 +120,10 @@ class ContextAwareLogger(logger: Logger) {
   def debug(message: => String, extraValues: (String, String)*)(
       implicit loggingContext: LoggingContext
   ): Unit =
-    withLoggingContext(extraValues) {
-      if (logger.isDebugEnabled) logger.debug(message)
+    if (logger.isDebugEnabled) {
+      withLoggingContext(extraValues) {
+        logger.debug(message)
+      }
     }
 
   /**
@@ -122,8 +132,10 @@ class ContextAwareLogger(logger: Logger) {
     * @param message the message to log
     */
   def businessDebug(message: => String)(implicit loggingContext: LoggingContext): Unit =
-    withLoggingContext() {
-      if (isBusinessDebugEnabled) logger.info(message)
+    if (isBusinessDebugEnabled) {
+      withLoggingContext() {
+        logger.info(message)
+      }
     }
 
   /**
@@ -134,8 +146,10 @@ class ContextAwareLogger(logger: Logger) {
   def info(message: => String, extraValues: (String, String)*)(
       implicit loggingContext: LoggingContext
   ): Unit =
-    withLoggingContext(extraValues) {
-      if (logger.isInfoEnabled) logger.info(message)
+    if (logger.isInfoEnabled) {
+      withLoggingContext(extraValues) {
+        logger.info(message)
+      }
     }
 
   /**
@@ -147,8 +161,10 @@ class ContextAwareLogger(logger: Logger) {
   def info(message: => String, error: => Throwable, extraValues: (String, String)*)(
       implicit loggingContext: LoggingContext
   ): Unit =
-    withLoggingContext(extraValues) {
-      if (logger.isInfoEnabled) logger.info(message, error)
+    if (logger.isInfoEnabled) {
+      withLoggingContext(extraValues) {
+        logger.info(message, error)
+      }
     }
 
   /**
@@ -157,8 +173,10 @@ class ContextAwareLogger(logger: Logger) {
     * @param message the message to log
     */
   def warn(message: => String)(implicit loggingContext: LoggingContext): Unit =
-    withLoggingContext() {
-      if (logger.isWarnEnabled) logger.warn(message)
+    if (logger.isWarnEnabled) {
+      withLoggingContext() {
+        logger.warn(message)
+      }
     }
 
   /**
@@ -169,9 +187,12 @@ class ContextAwareLogger(logger: Logger) {
     */
   def warn(message: => String, error: => Throwable)(
       implicit loggingContext: LoggingContext
-  ): Unit = withLoggingContext() {
-    if (logger.isWarnEnabled) logger.warn(message, error)
-  }
+  ): Unit =
+    if (logger.isWarnEnabled) {
+      withLoggingContext() {
+        logger.warn(message, error)
+      }
+    }
 
   /**
     * Logs a message with the `ERROR` level.
@@ -181,8 +202,10 @@ class ContextAwareLogger(logger: Logger) {
   def error(message: => String, extraValues: (String, String)*)(
       implicit loggingContext: LoggingContext
   ): Unit =
-    withLoggingContext(extraValues) {
-      if (logger.isErrorEnabled) logger.error(message)
+    if (logger.isErrorEnabled) {
+      withLoggingContext(extraValues) {
+        logger.error(message)
+      }
     }
 
   /**
@@ -193,8 +216,10 @@ class ContextAwareLogger(logger: Logger) {
     */
   def error(message: => String, error: => Throwable, extraValues: (String, String)*)(
       implicit loggingContext: LoggingContext
-  ): Unit = withLoggingContext(extraValues) {
-    if (logger.isErrorEnabled) logger.error(message, error)
+  ): Unit = if (logger.isErrorEnabled) {
+    withLoggingContext(extraValues) {
+      logger.error(message, error)
+    }
   }
 
   /**
