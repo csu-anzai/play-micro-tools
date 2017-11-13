@@ -4,6 +4,7 @@ import microtools.{BusinessFailure, BusinessSuccess}
 import org.scalatest.{Assertion, MustMatchers, WordSpec}
 import play.api.libs.json.{JsNumber, Json, _}
 import play.api.http.Status._
+import Patch.applyPatches
 
 class PatchSpec extends WordSpec with MustMatchers {
   val whitelist = PatchWhitelist(
@@ -228,5 +229,53 @@ class PatchSpec extends WordSpec with MustMatchers {
         jsObject.as[Patch] mustBe patch
       }
     }
+  }
+
+  "Apply Patches" should {
+    "not change object" in {
+      val source = Json.obj(
+        "f1" -> "field1",
+        "f2" -> 1234
+      )
+
+      val BusinessSuccess(patched) = applyPatches(List.empty, whitelist)(source)
+
+      patched mustBe source
+    }
+
+    "apply a single patch" in {
+      val source = Json.obj(
+        "f1" -> "field1",
+        "f2" -> 1234
+      )
+
+      val BusinessSuccess(patched) = applyPatches(List(Remove(__ \ "f1")), whitelist)(source)
+
+      patched mustBe (source - "f1")
+    }
+
+    "apply multiple patches" in {
+      val source = Json.obj(
+        "f1" -> "field1",
+        "f2" -> 1234
+      )
+
+      val BusinessSuccess(patched) =
+        applyPatches(List(Remove(__ \ "f1"), Replace(__ \ "f2", JsString(""))), whitelist)(source)
+
+      patched mustBe (source - "f1" + ("f2" -> JsString("")))
+    }
+
+    "propagate errors" in {
+
+      val source = Json.obj(
+        "f1" -> "field1"
+      )
+
+      val failure = applyPatches(List(Replace(__ \ "unknown", JsString(""))), whitelist)(source)
+
+      failure mustBe a[BusinessFailure]
+    }
+
   }
 }

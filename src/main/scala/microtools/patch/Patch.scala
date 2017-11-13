@@ -2,7 +2,7 @@ package microtools.patch
 
 import microtools.models.Problems
 import microtools.patch.JsonPointer._
-import microtools.{BusinessTry, JsonFormats}
+import microtools._
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json._
@@ -18,14 +18,14 @@ sealed trait Patch {
     "UNCHECKED PATCH APPLICATIONS ARE HUGE SECURITY LIABILITY, please use `patch.apply(JsValue, PatchWhitelist)` instead to specify which paths are ok to patch (hint: not all, usually not the id or the owner etc..)",
     "20170531v0114"
   )
-  def apply(json: JsValue): BusinessTry[JsValue] = {
+  def apply(json: JsValue): DecidedBusinessTry[JsValue] = {
     BusinessTry.transformJson(json, transformation)
   }
-  def apply(json: JsValue, ev: PatchWhitelist): BusinessTry[JsValue] = {
+  def apply(json: JsValue, ev: PatchWhitelist): DecidedBusinessTry[JsValue] = {
     if (ev.allowed contains path)
       BusinessTry.transformJson(json, transformation)
     else
-      BusinessTry.failure(Problems.FORBIDDEN.withDetails(s"patch operation not allowed on $path"))
+      BusinessFailure(Problems.FORBIDDEN.withDetails(s"patch operation not allowed on $path"))
   }
 
   def transformation: Reads[_ <: JsValue]
@@ -77,5 +77,16 @@ object Patch extends JsonFormats {
   private lazy val value = __.\("value").read[JsValue]
 
   implicit val patchFormat: OFormat[Patch] = OFormat(patchRead, patchWrite)
+
+  def applyPatches[T: Format](patches: TraversableOnce[Patch], whiteList: PatchWhitelist)(
+      entity: T): DecidedBusinessTry[T] = {
+    patches.foldLeft[DecidedBusinessTry[JsValue]](BusinessSuccess(Json.toJson(entity))) {
+      case (fail: BusinessFailure, _)     => fail
+      case (BusinessSuccess(json), patch) => patch.apply(json, whiteList)
+    } match {
+      case fail: BusinessFailure => fail
+      case BusinessSuccess(json) => BusinessTry.validateJson[T](json)
+    }
+  }
 
 }

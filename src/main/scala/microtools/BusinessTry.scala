@@ -155,10 +155,10 @@ object BusinessTry {
   def forAll[U](tries: TraversableOnce[BusinessTry[U]])(
       implicit ec: ExecutionContext): BusinessTry[Seq[U]] = sequence(tries)
 
-  def validateJson[T](json: JsValue)(implicit reads: Reads[T]): BusinessTry[T] = {
+  def validateJson[T](json: JsValue)(implicit reads: Reads[T]): DecidedBusinessTry[T] = {
     json.validate.fold(
-      jsonErrors => failure(Problems.jsonValidationErrors(jsonErrors)),
-      success
+      jsonErrors => BusinessFailure(Problems.jsonValidationErrors(jsonErrors)),
+      BusinessSuccess(_)
     )
   }
 
