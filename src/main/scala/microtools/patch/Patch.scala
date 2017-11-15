@@ -6,7 +6,6 @@ import microtools._
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json._
-import scala.annotation.tailrec
 
 case class PatchWhitelist(allowed: Seq[JsPath]) extends AnyVal
 
@@ -19,24 +18,11 @@ sealed trait Patch {
     "UNCHECKED PATCH APPLICATIONS ARE HUGE SECURITY LIABILITY, please use `patch.apply(JsValue, PatchWhitelist)` instead to specify which paths are ok to patch (hint: not all, usually not the id or the owner etc..)",
     "20170531v0114"
   )
-  def apply(json: JsValue): DecidedBusinessTry[JsValue] = {
+  def apply(json: JsValue): DecidedBusinessTry[JsValue] =
     BusinessTry.transformJson(json, transformation)
-  }
-
-  @tailrec
-  private def sameAncestor[T](reference: List[T], path: List[T]): Boolean = {
-    if (path.length < reference.length || path.isEmpty)
-      false
-    else if (path == reference)
-      true
-    else sameAncestor(reference, path.reverse.tail.reverse)
-  }
 
   def apply(json: JsValue, ev: PatchWhitelist): DecidedBusinessTry[JsValue] = {
-    if (ev.allowed.exists {
-          case JsPath(nodes) if sameAncestor(nodes, path.path) => true
-          case _                                               => false
-        })
+    if (ev.allowed.exists(allowed => path.path.startsWith(allowed.path)))
       BusinessTry.transformJson(json, transformation)
     else
       BusinessFailure(Problems.FORBIDDEN.withDetails(s"patch operation not allowed on $path"))
@@ -51,17 +37,15 @@ case class Remove(path: JsPath) extends Patch {
 }
 case class Add(path: JsPath, value: JsValue) extends Patch {
   override def transformation: Reads[_ <: JsValue] = {
-    new Reads[JsValue] {
-      override def reads(json: JsValue): JsResult[JsValue] = {
-        if (path(json).isEmpty) {
-          json.validate(__.json.update(path.json.put(value)))
-        } else {
-          json.validate(path.json.update(Reads {
-            case arr: JsArray => JsSuccess(arr :+ value)
-            case JsNull       => JsSuccess(value)
-            case _            => JsError("error.patch.add.value.exists")
-          }))
-        }
+    Reads[JsValue] { json =>
+      if (path(json).isEmpty) {
+        json.validate(__.json.update(path.json.put(value)))
+      } else {
+        json.validate(path.json.update(Reads {
+          case arr: JsArray => JsSuccess(arr :+ value)
+          case JsNull       => JsSuccess(value)
+          case _            => JsError("error.patch.add.value.exists")
+        }))
       }
     }
   }
@@ -96,7 +80,7 @@ object Patch extends JsonFormats {
       entity: T): DecidedBusinessTry[T] = {
     patches.foldLeft[DecidedBusinessTry[JsValue]](BusinessSuccess(Json.toJson(entity))) {
       case (fail: BusinessFailure, _)     => fail
-      case (BusinessSuccess(json), patch) => patch.apply(json, whiteList)
+      case (BusinessSuccess(json), patch) => patch(json, whiteList)
     } match {
       case fail: BusinessFailure => fail
       case BusinessSuccess(json) => BusinessTry.validateJson[T](json)

@@ -5,16 +5,17 @@ import org.scalatest.{Assertion, MustMatchers, WordSpec}
 import play.api.libs.json.{JsNumber, Json, _}
 import play.api.http.Status._
 import Patch.applyPatches
+import play.api.libs.json.Json.obj
 
 class PatchSpec extends WordSpec with MustMatchers {
   val whitelist = PatchWhitelist(
     Seq(__ \ "f2", __ \ "f1", __ \ "person" \ "address", __ \ "f3", __ \ "f3" \ "s1"))
   "Patch" should {
     "be able to replace a simple value" in {
-      val source = Json.obj(
+      val source = obj(
         "f1" -> "field1",
         "f2" -> 1234,
-        "f3" -> Json.obj(
+        "f3" -> obj(
           "s1" -> "sub1",
           "s2" -> "sub2"
         )
@@ -24,10 +25,10 @@ class PatchSpec extends WordSpec with MustMatchers {
         Replace(__ \ "f2", JsNumber(5678))
       val BusinessSuccess(result) = patch(source, whitelist)
 
-      result mustBe Json.obj(
+      result mustBe obj(
         "f1" -> "field1",
         "f2" -> 5678,
-        "f3" -> Json.obj(
+        "f3" -> obj(
           "s1" -> "sub1",
           "s2" -> "sub2"
         )
@@ -36,10 +37,10 @@ class PatchSpec extends WordSpec with MustMatchers {
 
     "be able to replace a nested value when the upper path is whitelisted" in {
 
-      val source = Json.obj(
+      val source = obj(
         "f1" -> "field1",
         "f2" -> 1234,
-        "f3" -> Json.obj(
+        "f3" -> obj(
           "s1" -> "sub1",
           "s2" -> "sub2"
         )
@@ -50,21 +51,36 @@ class PatchSpec extends WordSpec with MustMatchers {
         Replace(__ \ "f3" \ "s2", JsString("spxsnezre"))
       val BusinessSuccess(result) = patch(source, whitelist)
 
-      result mustBe Json.obj(
+      result mustBe obj(
         "f1" -> "field1",
         "f2" -> 1234,
-        "f3" -> Json.obj(
+        "f3" -> obj(
           "s1" -> "sub1",
           "s2" -> "spxsnezre"
         )
       )
     }
 
+    "be not be able to replace a nested value when the upper path is whitelisted" in {
+
+      val whitelist = PatchWhitelist(Seq(__ \ "foo" \ "bar"))
+
+      val source = obj(
+        "foo" -> obj("bar" -> true, "no" -> "un touchable")
+      )
+
+      // s2 is not on the whitelist but f3 is
+      val patch =
+        Replace(__ \ "for" \ "no", JsString(""))
+
+      patch(source, whitelist) mustBe a[BusinessFailure]
+    }
+
     "be able to replace a nested value" in {
-      val source = Json.obj(
+      val source = obj(
         "f1" -> "field1",
         "f2" -> 1234,
-        "f3" -> Json.obj(
+        "f3" -> obj(
           "s1" -> "sub1",
           "s2" -> "sub2"
         )
@@ -74,10 +90,10 @@ class PatchSpec extends WordSpec with MustMatchers {
         Replace(__ \ "f3" \ "s1", JsString("sub_new"))
       val BusinessSuccess(result) = patch(source, whitelist)
 
-      result mustBe Json.obj(
+      result mustBe obj(
         "f1" -> "field1",
         "f2" -> 1234,
-        "f3" -> Json.obj(
+        "f3" -> obj(
           "s1" -> "sub_new",
           "s2" -> "sub2"
         )
@@ -85,30 +101,30 @@ class PatchSpec extends WordSpec with MustMatchers {
     }
 
     "be able to replace a nested object" in {
-      val source = Json.obj(
+      val source = obj(
         "f1" -> "field1",
         "f2" -> 1234,
-        "f3" -> Json.obj(
+        "f3" -> obj(
           "s1" -> "sub1",
           "s2" -> "sub2"
         )
       )
 
       val patch =
-        Replace(__ \ "f3", Json.obj("s3" -> JsString("sub3")))
+        Replace(__ \ "f3", obj("s3" -> JsString("sub3")))
       val BusinessSuccess(result) = patch(source, whitelist)
 
-      result mustBe Json.obj(
+      result mustBe obj(
         "f1" -> "field1",
         "f2" -> 1234,
-        "f3" -> Json.obj(
+        "f3" -> obj(
           "s3" -> "sub3"
         )
       )
     }
 
     "be able to add a new value" in {
-      val source = Json.obj(
+      val source = obj(
         "f1" -> "field1",
         "f3" -> JsNull
       )
@@ -117,7 +133,7 @@ class PatchSpec extends WordSpec with MustMatchers {
         Add(__ \ "f3", JsString("meep"))
       val BusinessSuccess(result) = patch(source, whitelist)
 
-      result mustBe Json.obj(
+      result mustBe obj(
         "f1" -> "field1",
         "f3" -> "meep"
       )
@@ -125,7 +141,7 @@ class PatchSpec extends WordSpec with MustMatchers {
     }
 
     "be able to add a new key/value pair" in {
-      val source = Json.obj(
+      val source = obj(
         "f1" -> "field1"
       )
 
@@ -133,18 +149,18 @@ class PatchSpec extends WordSpec with MustMatchers {
         Add(__ \ "f3", JsString("meep"))
       val BusinessSuccess(result) = patch(source, whitelist)
 
-      result mustBe Json.obj(
+      result mustBe obj(
         "f1" -> "field1",
         "f3" -> "meep"
       )
     }
 
     "not be able to operate if json path is not on whitelist" in {
-      val source = Json.obj(
+      val source = obj(
         "f1"               -> "field1",
         "f2"               -> 1234,
         "not-on-whitelist" -> "gegenbauer",
-        "f3" -> Json.obj(
+        "f3" -> obj(
           "s1" -> "sub1",
           "s2" -> "sub2"
         )
@@ -158,22 +174,22 @@ class PatchSpec extends WordSpec with MustMatchers {
     }
 
     "be able to mix fields with array index" in {
-      val source = Json.obj(
-        "person" -> Json.obj(
+      val source = obj(
+        "person" -> obj(
           "name" -> "current"
         )
       )
 
       val patch = Replace(__ \ "person" \ "address",
-                          Json.obj(
+                          obj(
                             "street" -> "Somewhere"
                           ))
       val BusinessSuccess(result) = patch(source, whitelist)
 
-      result mustBe Json.obj(
-        "person" -> Json.obj(
+      result mustBe obj(
+        "person" -> obj(
           "name" -> "current",
-          "address" -> Json.obj(
+          "address" -> obj(
             "street" -> "Somewhere"
           )
         )
@@ -181,10 +197,10 @@ class PatchSpec extends WordSpec with MustMatchers {
     }
 
     "be able to add elements to an array" in {
-      val source = Json.obj(
+      val source = obj(
         "f1" -> Json.arr("elem1", "elem2"),
         "f2" -> 1234,
-        "f3" -> Json.obj(
+        "f3" -> obj(
           "s1" -> "sub1",
           "s2" -> "sub2"
         )
@@ -193,10 +209,10 @@ class PatchSpec extends WordSpec with MustMatchers {
       val patch                   = Add(__ \ "f1", JsNumber(5678))
       val BusinessSuccess(result) = patch(source, whitelist)
 
-      result mustBe Json.obj(
+      result mustBe obj(
         "f1" -> Json.arr("elem1", "elem2", 5678),
         "f2" -> 1234,
-        "f3" -> Json.obj(
+        "f3" -> obj(
           "s1" -> "sub1",
           "s2" -> "sub2"
         )
@@ -204,9 +220,9 @@ class PatchSpec extends WordSpec with MustMatchers {
     }
 
     "be able to remove a non-existing field" in {
-      val source = Json.obj(
+      val source = obj(
         "f1" -> "field1",
-        "f3" -> Json.obj(
+        "f3" -> obj(
           "s1" -> "sub1",
           "s2" -> "sub2"
         )
@@ -219,10 +235,10 @@ class PatchSpec extends WordSpec with MustMatchers {
     }
 
     "be able to remove a field" in {
-      val source = Json.obj(
+      val source = obj(
         "f1" -> "field1",
         "f2" -> 1234,
-        "f3" -> Json.obj(
+        "f3" -> obj(
           "s1" -> "sub1",
           "s2" -> "sub2"
         )
@@ -231,9 +247,9 @@ class PatchSpec extends WordSpec with MustMatchers {
       val patch                   = Remove(__ \ "f2")
       val BusinessSuccess(result) = patch(source, whitelist)
 
-      result mustBe Json.obj(
+      result mustBe obj(
         "f1" -> "field1",
-        "f3" -> Json.obj(
+        "f3" -> obj(
           "s1" -> "sub1",
           "s2" -> "sub2"
         )
@@ -242,13 +258,13 @@ class PatchSpec extends WordSpec with MustMatchers {
 
     "(de-)serialize according to the RFC-6902" in {
 
-      assertSame(Remove(__ \ "f2"), Json.obj("op" -> "remove", "path" -> "/f2"))
+      assertSame(Remove(__ \ "f2"), obj("op" -> "remove", "path" -> "/f2"))
 
       assertSame(Add(__ \ "f2", JsBoolean(true)),
-                 Json.obj("op" -> "add", "path" -> "/f2", "value" -> true))
+                 obj("op" -> "add", "path" -> "/f2", "value" -> true))
 
       assertSame(Replace(__ \ "f2", JsBoolean(true)),
-                 Json.obj("op" -> "replace", "path" -> "/f2", "value" -> true))
+                 obj("op" -> "replace", "path" -> "/f2", "value" -> true))
 
       def assertSame(patch: Patch, jsObject: JsObject): Assertion = {
         Json.toJson(patch) mustBe jsObject
@@ -259,7 +275,7 @@ class PatchSpec extends WordSpec with MustMatchers {
 
   "Apply Patches" should {
     "not change object" in {
-      val source = Json.obj(
+      val source = obj(
         "f1" -> "field1",
         "f2" -> 1234
       )
@@ -270,7 +286,7 @@ class PatchSpec extends WordSpec with MustMatchers {
     }
 
     "apply a single patch" in {
-      val source = Json.obj(
+      val source = obj(
         "f1" -> "field1",
         "f2" -> 1234
       )
@@ -281,7 +297,7 @@ class PatchSpec extends WordSpec with MustMatchers {
     }
 
     "apply multiple patches" in {
-      val source = Json.obj(
+      val source = obj(
         "f1" -> "field1",
         "f2" -> 1234
       )
@@ -294,7 +310,7 @@ class PatchSpec extends WordSpec with MustMatchers {
 
     "propagate errors" in {
 
-      val source = Json.obj(
+      val source = obj(
         "f1" -> "field1"
       )
 
