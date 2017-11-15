@@ -6,6 +6,7 @@ import microtools._
 import play.api.libs.functional.syntax._
 import play.api.libs.json.Reads._
 import play.api.libs.json._
+import scala.annotation.tailrec
 
 case class PatchWhitelist(allowed: Seq[JsPath]) extends AnyVal
 
@@ -21,8 +22,21 @@ sealed trait Patch {
   def apply(json: JsValue): DecidedBusinessTry[JsValue] = {
     BusinessTry.transformJson(json, transformation)
   }
+
+  @tailrec
+  private def sameAncestor[T](reference: List[T], path: List[T]): Boolean = {
+    if (path.length < reference.length || path.isEmpty)
+      false
+    else if (path == reference)
+      true
+    else sameAncestor(reference, path.reverse.tail.reverse)
+  }
+
   def apply(json: JsValue, ev: PatchWhitelist): DecidedBusinessTry[JsValue] = {
-    if (ev.allowed contains path)
+    if (ev.allowed.exists {
+          case JsPath(nodes) if sameAncestor(nodes, path.path) => true
+          case _                                               => false
+        })
       BusinessTry.transformJson(json, transformation)
     else
       BusinessFailure(Problems.FORBIDDEN.withDetails(s"patch operation not allowed on $path"))

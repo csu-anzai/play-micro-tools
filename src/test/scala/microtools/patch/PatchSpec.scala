@@ -34,6 +34,32 @@ class PatchSpec extends WordSpec with MustMatchers {
       )
     }
 
+    "be able to replace a nested value when the upper path is whitelisted" in {
+
+      val source = Json.obj(
+        "f1" -> "field1",
+        "f2" -> 1234,
+        "f3" -> Json.obj(
+          "s1" -> "sub1",
+          "s2" -> "sub2"
+        )
+      )
+
+      // s2 is not on the whitelist but f3 is
+      val patch =
+        Replace(__ \ "f3" \ "s2", JsString("spxsnezre"))
+      val BusinessSuccess(result) = patch(source, whitelist)
+
+      result mustBe Json.obj(
+        "f1" -> "field1",
+        "f2" -> 1234,
+        "f3" -> Json.obj(
+          "s1" -> "sub1",
+          "s2" -> "spxsnezre"
+        )
+      )
+    }
+
     "be able to replace a nested value" in {
       val source = Json.obj(
         "f1" -> "field1",
