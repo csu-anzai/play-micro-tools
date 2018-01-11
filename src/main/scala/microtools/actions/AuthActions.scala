@@ -2,6 +2,7 @@ package microtools.actions
 
 import microtools.logging.WithContextAwareLogger
 import microtools.models._
+import play.api.mvc.Results.Unauthorized
 import play.api.mvc._
 import play.mvc.Http.HeaderNames
 
@@ -57,6 +58,43 @@ trait AuthActions extends WithContextAwareLogger { self: AbstractController =>
         }
       }
     }
+
+  def BasicAuthAction(credentials: BasicAuthCredentials)(
+      implicit ec: ExecutionContext): ActionBuilder[Request, AnyContent] =
+    BasicAuthAction(credentials, self.controllerComponents.parsers.default)
+
+  def BasicAuthAction[B](credentials: BasicAuthCredentials, bodyParser: BodyParser[B])(
+      implicit ec: ExecutionContext): ActionBuilder[Request, B] =
+    new ActionBuilder[Request, B] {
+      override def parser: BodyParser[B] = bodyParser
+
+      override protected def executionContext: ExecutionContext = ec
+
+      override def invokeBlock[A](request: Request[A],
+                                  block: Request[A] => Future[Result]): Future[Result] = {
+        request.headers.get("Authorization") match {
+          case Some(authHeader) =>
+            if (userIsAuthenticated(request, authHeader, credentials)) block(request)
+            else Future.successful(UNAUTHORIZED_BASIC_AUTH)
+          case None => Future.successful(UNAUTHORIZED_BASIC_AUTH)
+        }
+      }
+    }
+
+  private def userIsAuthenticated[A](request: Request[A],
+                                     authHeader: String,
+                                     credentials: BasicAuthCredentials): Boolean = {
+    authHeader.split("""\s""") match {
+      case Array("Basic", userAndPass) => userAndPass == credentials.asBase64String
+      case Array("Bearer", _) =>
+        implicit val requestContext: RequestContext = RequestContext.forRequest(request)
+
+        log.warn("Received a Bearer token, please inspect your proxy setup")
+
+        false
+      case _ => false
+    }
+  }
 }
 
 object AuthActions {
@@ -107,4 +145,6 @@ object AuthActions {
     )
   }
 
+  val UNAUTHORIZED_BASIC_AUTH: Result =
+    Unauthorized.withHeaders("WWW-Authenticate" -> """Basic realm="Secured"""")
 }
