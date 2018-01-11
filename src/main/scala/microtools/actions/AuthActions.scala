@@ -1,5 +1,7 @@
 package microtools.actions
 
+import java.nio.charset.StandardCharsets
+
 import microtools.logging.WithContextAwareLogger
 import microtools.models._
 import play.api.mvc.Results.Unauthorized
@@ -146,5 +148,7 @@ object AuthActions {
   }
 
   val UNAUTHORIZED_BASIC_AUTH: Result =
-    Unauthorized.withHeaders("WWW-Authenticate" -> """Basic realm="Secured"""")
+    Unauthorized.withHeaders(
+      "WWW-Authenticate" -> s"""Basic realm="Secured", charset="${StandardCharsets.UTF_8
+        .name()}"""")
 }
