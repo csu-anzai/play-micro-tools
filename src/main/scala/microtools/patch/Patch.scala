@@ -32,8 +32,14 @@ sealed trait Patch {
 }
 
 case class Remove(path: JsPath) extends Patch {
-  override def transformation: Reads[JsObject] =
-    path.json.prune
+  override def transformation: Reads[JsValue] =
+    Reads[JsValue] { json =>
+      if (path(json).isEmpty) {
+        JsSuccess(json)
+      } else {
+        json.validate((path.json.prune))
+      }
+    }
 }
 case class Add(path: JsPath, value: JsValue) extends Patch {
   override def transformation: Reads[_ <: JsValue] = {
@@ -52,7 +58,13 @@ case class Add(path: JsPath, value: JsValue) extends Patch {
 }
 case class Replace(path: JsPath, value: JsValue) extends Patch {
   override def transformation: Reads[_ <: JsValue] =
-    (path.json.prune and path.json.put(value)).reduce
+    Reads[JsValue] { json =>
+      if (path(json).isEmpty) {
+        json.validate(__.json.update(path.json.put(value)))
+      } else {
+        json.validate((path.json.prune and path.json.put(value)).reduce)
+      }
+    }
 }
 
 object Patch extends JsonFormats {

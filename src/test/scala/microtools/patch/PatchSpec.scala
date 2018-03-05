@@ -9,7 +9,7 @@ import play.api.libs.json.Json.obj
 
 class PatchSpec extends WordSpec with MustMatchers {
   val whitelist = PatchWhitelist(
-    Seq(__ \ "f2", __ \ "f1", __ \ "person" \ "address", __ \ "f3", __ \ "f3" \ "s1"))
+    Seq(__ \ "f2", __ \ "f1", __ \ "person" \ "address", __ \ "f3", __ \ "f3" \ "s1", __ \ "f4"))
   "Patch" should {
     "be able to replace a simple value" in {
       val source = obj(
@@ -293,7 +293,9 @@ class PatchSpec extends WordSpec with MustMatchers {
 
       val BusinessSuccess(patched) = applyPatches(List(Remove(__ \ "f1")), whitelist)(source)
 
-      patched mustBe (source - "f1")
+      patched mustBe obj(
+        "f2" -> 1234
+      )
     }
 
     "apply multiple patches" in {
@@ -317,6 +319,61 @@ class PatchSpec extends WordSpec with MustMatchers {
       val failure = applyPatches(List(Replace(__ \ "unknown", JsString(""))), whitelist)(source)
 
       failure mustBe a[BusinessFailure]
+    }
+
+    "add nested field with replace" in {
+
+      val source = obj(
+        "f1" -> "field1",
+        "f2" -> 1234,
+        "f3" -> obj(
+          "s1" -> "sub1",
+          "s2" -> "sub2"
+        )
+      )
+
+      // s2 is not on the whitelist but f3 is
+      val patch =
+        Replace(__ \ "f4" \ "s2", JsString("spxsnezre"))
+      val BusinessSuccess(result) = patch(source, whitelist)
+
+      result mustBe obj(
+        "f1" -> "field1",
+        "f2" -> 1234,
+        "f3" -> obj(
+          "s1" -> "sub1",
+          "s2" -> "sub2"
+        ),
+        "f4" -> obj(
+          "s2" -> "spxsnezre"
+        )
+      )
+    }
+
+    "remove non existing nested field" in {
+
+      val source = obj(
+        "f1" -> "field1",
+        "f2" -> 1234,
+        "f3" -> obj(
+          "s1" -> "sub1",
+          "s2" -> "sub2"
+        )
+      )
+
+      // s2 is not on the whitelist but f3 is
+      val patch =
+        Remove(__ \ "f4" \ "f5")
+      val BusinessSuccess(result) = patch(source, whitelist)
+
+      result mustBe obj(
+        "f1" -> "field1",
+        "f2" -> 1234,
+        "f3" -> obj(
+          "s1" -> "sub1",
+          "s2" -> "sub2"
+        )
+      )
     }
 
   }
