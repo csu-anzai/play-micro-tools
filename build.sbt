@@ -24,7 +24,7 @@ shellPrompt := { _ ⇒
   scala.Console.CYAN + "play-µ-tools > " + scala.Console.RESET
 }
 
-val playVersion = "2.6.2"
+val playVersion = "2.6.12"
 
 val metricsVersion = "3.1.2"
 
