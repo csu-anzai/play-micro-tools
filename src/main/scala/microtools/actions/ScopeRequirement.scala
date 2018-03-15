@@ -10,7 +10,7 @@ import scala.language.implicitConversions
 trait ScopeRequirement {
   def appliesTo(scopes: Scopes): Boolean
 
-  def checkAccess(subject: Subject, organization: Organization)(
+  def checkAccess(scopes: Scopes, subject: Subject, organization: Organization)(
       implicit loggingContext: LoggingContext,
       ec: ExecutionContext
   ): BusinessTry[Boolean]
@@ -30,7 +30,7 @@ object ScopeRequirement {
   val noScope = new ScopeRequirement {
     override def appliesTo(scopes: Scopes): Boolean = true
 
-    override def checkAccess(subject: Subject, organization: Organization)(
+    override def checkAccess(scopes: Scopes, subject: Subject, organization: Organization)(
         implicit loggingContext: LoggingContext,
         ec: ExecutionContext): BusinessTry[Boolean] = BusinessTry.success(true)
   }
@@ -40,13 +40,13 @@ object ScopeRequirement {
       override def appliesTo(scopes: Scopes): Boolean =
         left.appliesTo(scopes) && right.appliesTo(scopes)
 
-      override def checkAccess(subject: Subject, organization: Organization)(
+      override def checkAccess(scopes: Scopes, subject: Subject, organization: Organization)(
           implicit loggingContext: LoggingContext,
           ec: ExecutionContext
       ): BusinessTry[Boolean] =
         for {
-          leftAllowed  <- left.checkAccess(subject, organization)
-          rightAllowed <- right.checkAccess(subject, organization)
+          leftAllowed  <- left.checkAccess(scopes, subject, organization)
+          rightAllowed <- right.checkAccess(scopes, subject, organization)
         } yield leftAllowed && rightAllowed
     }
 
@@ -55,14 +55,19 @@ object ScopeRequirement {
       override def appliesTo(scopes: Scopes): Boolean =
         left.appliesTo(scopes) || right.appliesTo(scopes)
 
-      override def checkAccess(subject: Subject, organization: Organization)(
+      override def checkAccess(scopes: Scopes, subject: Subject, organization: Organization)(
           implicit loggingContext: LoggingContext,
           ec: ExecutionContext
-      ): BusinessTry[Boolean] =
+      ): BusinessTry[Boolean] = {
+        val leftApplies  = left.appliesTo(scopes)
+        val rightApplies = right.appliesTo(scopes)
         for {
-          leftAllowed  <- left.checkAccess(subject, organization)
-          rightAllowed <- right.checkAccess(subject, organization)
+          leftAllowed <- if (leftApplies) left.checkAccess(scopes, subject, organization)
+          else BusinessTry.success(false)
+          rightAllowed <- if (rightApplies) right.checkAccess(scopes, subject, organization)
+          else BusinessTry.success(false)
         } yield leftAllowed || rightAllowed
+      }
     }
 
   def require(scope: String)(pf: AccessCheck): ScopeRequirement = {
@@ -82,7 +87,7 @@ object ScopeRequirement {
       override def appliesTo(scopes: Scopes): Boolean =
         scopes.contains(wildcardScope) || scopes.contains(scope)
 
-      override def checkAccess(subject: Subject, organization: Organization)(
+      override def checkAccess(scopes: Scopes, subject: Subject, organization: Organization)(
           implicit loggingContext: LoggingContext,
           ec: ExecutionContext
       ): BusinessTry[Boolean] =
@@ -108,7 +113,7 @@ object ScopeRequirement {
         BusinessTry.failure(Problems.FORBIDDEN.withDetails("Insufficient scopes"))
       } else {
         scopeRequirement
-          .checkAccess(authRequestContext.subject, authRequestContext.organization)
+          .checkAccess(authScopes, authRequestContext.subject, authRequestContext.organization)
           .flatMap {
             case allowed if !allowed =>
               BusinessTry.failure(Problems.FORBIDDEN.withDetails("Access to resource denied"))
