@@ -14,6 +14,8 @@ trait RequestContext extends LoggingContext {
   def ipAddress: String
 
   def userAgent: Option[String]
+
+  def organization: Organization
 }
 
 object RequestContext {
@@ -29,6 +31,8 @@ object RequestContext {
     override def ipAddress = ""
 
     override def userAgent = None
+
+    override def organization = NoOrganization
   }
 
   def forRequest(request: RequestHeader): RequestContext = new RequestContext {
@@ -60,6 +64,9 @@ object RequestContext {
 
     override def ipAddress: String =
       request.headers.get(HeaderNames.X_FORWARDED_FOR).getOrElse(request.remoteAddress)
+
+    override def organization =
+      Organization(request.headers.get(ExtraHeaders.AUTH_ORGANIZATION_HEADER))
 
     override def userAgent: Option[String] = request.headers.get(HeaderNames.USER_AGENT)
   }

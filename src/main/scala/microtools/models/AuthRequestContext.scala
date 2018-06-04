@@ -38,8 +38,6 @@ case class Token(token: String) extends AnyVal {
 trait AuthRequestContext extends RequestContext {
   def subject: Subject
 
-  def organization: Organization
-
   def scopes: ScopesByService
 
   def token: Token
@@ -48,5 +46,5 @@ trait AuthRequestContext extends RequestContext {
 trait GenericAuthRequestContext[+Sub <: Subject, +Org <: Organization] extends AuthRequestContext {
   def subject: Sub
 
-  def organization: Org
+  override def organization: Org
 }
