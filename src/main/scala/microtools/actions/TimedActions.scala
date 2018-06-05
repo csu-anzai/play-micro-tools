@@ -2,7 +2,7 @@ package microtools.actions
 
 import com.codahale.metrics.MetricRegistry
 import microtools.logging.WithContextAwareLogger
-import microtools.models.{ExtraHeaders, RequestContext, Organization}
+import microtools.models.{ExtraHeaders, RequestContext, Organization, Subject}
 import play.api.mvc._
 import play.mvc.Http.HeaderNames
 
@@ -40,6 +40,8 @@ trait TimedActions extends WithContextAwareLogger { self: AbstractController =>
         val userAgent = request.headers.get(HeaderNames.USER_AGENT)
         val organization =
           Organization(request.headers.get(ExtraHeaders.AUTH_ORGANIZATION_HEADER))
+        val maybeSubject =
+          request.headers.get(ExtraHeaders.AUTH_SUBJECT_HEADER).map(Subject.apply)
 
         implicit val meteredRequest =
           new TimedRequest(businessDebug,
@@ -47,6 +49,7 @@ trait TimedActions extends WithContextAwareLogger { self: AbstractController =>
                            ipAddress,
                            userAgent,
                            organization,
+                           maybeSubject,
                            request.uri,
                            request)
         val timeCtx = timer.time()
@@ -75,6 +78,7 @@ object TimedActions {
       override val ipAddress: String,
       override val userAgent: Option[String],
       override val organization: Organization,
+      override val maybeSubject: Option[Subject],
       requestUri: String,
       request: Request[A]
   ) extends WrappedRequest[A](request)

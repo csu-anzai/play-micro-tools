@@ -16,6 +16,8 @@ trait RequestContext extends LoggingContext {
   def userAgent: Option[String]
 
   def organization: Organization
+
+  def maybeSubject: Option[Subject]
 }
 
 object RequestContext {
@@ -33,6 +35,8 @@ object RequestContext {
     override def userAgent = None
 
     override def organization = NoOrganization
+
+    override def maybeSubject = None
   }
 
   def forRequest(request: RequestHeader): RequestContext = new RequestContext {
@@ -67,6 +71,9 @@ object RequestContext {
 
     override def organization =
       Organization(request.headers.get(ExtraHeaders.AUTH_ORGANIZATION_HEADER))
+
+    override def maybeSubject =
+      request.headers.get(ExtraHeaders.AUTH_SUBJECT_HEADER).map(Subject.apply)
 
     override def userAgent: Option[String] = request.headers.get(HeaderNames.USER_AGENT)
   }

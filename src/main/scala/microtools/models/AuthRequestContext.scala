@@ -47,4 +47,5 @@ trait GenericAuthRequestContext[+Sub <: Subject, +Org <: Organization] extends A
   def subject: Sub
 
   override def organization: Org
+  override def maybeSubject: Option[Subject] = Option(subject)
 }
