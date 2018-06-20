@@ -1,5 +1,6 @@
 package microtools.actions
 
+import microtools.logging.WithContextAwareLogger
 import microtools.models.BasicAuthCredentials
 import org.scalatest.OptionValues
 import org.scalatest.concurrent.ScalaFutures
@@ -22,6 +23,7 @@ class BasicAuthActionSpec
     with MockitoSugar
     with ScalaFutures
     with OptionValues
+    with WithContextAwareLogger
     with OneAppPerSuiteWithComponents {
 
   override lazy val components: BuiltInComponentsFromContext =
@@ -36,7 +38,8 @@ class BasicAuthActionSpec
 
     val basicAuthAction = new AbstractController(components.controllerComponents)
     with AuthActions {
-      def action = (BasicAuthAction(credentials) andThen Action).async { implicit request =>
+      def action = BasicAuthAction(credentials).async { implicit request =>
+        log.info("onhreybirfgurfzryybspbpxvagurzbeavat")
         Future.successful(Ok)
       }
     }

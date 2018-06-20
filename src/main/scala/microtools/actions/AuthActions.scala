@@ -1,8 +1,7 @@
 package microtools.actions
 
 import java.nio.charset.StandardCharsets
-
-import microtools.logging.WithContextAwareLogger
+import microtools.logging.{LoggingContext, WithContextAwareLogger}
 import microtools.models._
 import play.api.mvc.Results.Unauthorized
 import play.api.mvc._
@@ -62,21 +61,22 @@ trait AuthActions extends WithContextAwareLogger { self: AbstractController =>
     }
 
   def BasicAuthAction(credentials: BasicAuthCredentials)(
-      implicit ec: ExecutionContext): ActionBuilder[Request, AnyContent] =
+      implicit ec: ExecutionContext): ActionBuilder[BasicAuthRequest, AnyContent] =
     BasicAuthAction(credentials, self.controllerComponents.parsers.default)
 
   def BasicAuthAction[B](credentials: BasicAuthCredentials, bodyParser: BodyParser[B])(
-      implicit ec: ExecutionContext): ActionBuilder[Request, B] =
-    new ActionBuilder[Request, B] {
+      implicit ec: ExecutionContext): ActionBuilder[BasicAuthRequest, B] =
+    new ActionBuilder[BasicAuthRequest, B] {
       override def parser: BodyParser[B] = bodyParser
 
       override protected def executionContext: ExecutionContext = ec
 
       override def invokeBlock[A](request: Request[A],
-                                  block: Request[A] => Future[Result]): Future[Result] = {
+                                  block: BasicAuthRequest[A] => Future[Result]): Future[Result] = {
         request.headers.get("Authorization") match {
           case Some(authHeader) =>
-            if (userIsAuthenticated(request, authHeader, credentials)) block(request)
+            if (userIsAuthenticated(request, authHeader, credentials))
+              block(new BasicAuthRequest(request))
             else Future.successful(UNAUTHORIZED_BASIC_AUTH)
           case None => Future.successful(UNAUTHORIZED_BASIC_AUTH)
         }
@@ -124,6 +124,24 @@ object AuthActions {
       requestUri = request.uri,
       request = request
     )
+  }
+
+  class BasicAuthRequest[A](request: Request[A])
+      extends WrappedRequest[A](request)
+      with LoggingContext {
+    val businessDebug = Helper.isBusinessDebug(request)
+    val flowId        = Helper.getOrCreateFlowId(request)
+    val ipAddress = request.headers
+      .get(HeaderNames.X_FORWARDED_FOR)
+      .getOrElse(request.remoteAddress)
+    val userAgent = request.headers.get(HeaderNames.USER_AGENT)
+
+    override def contextValues: Seq[(String, String)] =
+      Seq("flow_id"     -> flowId,
+          "request_uri" -> request.uri,
+          "ip"          -> ipAddress,
+          "userAgent"   -> userAgent.getOrElse("?"))
+    override def enableBusinessDebug: Boolean = businessDebug
   }
 
   class GenericAuthRequest[A, +Sub <: Subject, +Org <: Organization](
