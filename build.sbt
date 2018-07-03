@@ -63,8 +63,9 @@ libraryDependencies ++= Seq(
   "com.chuusai"       %% "shapeless"           % "2.3.2",
   // if you change this make sure to update the actual dependencies too
   // rediscala is provided so that every user of play-micro-tools does not need to depend on it
-  "com.github.etaty"         %% "rediscala"                   % "1.8.0" % Provided,
+  "redis.clients" % "jedis" % "2.9.0" % Provided,
   "io.dropwizard.metrics"    % "metrics-core"                 % metricsVersion,
+   "com.jsuereth" %% "scala-arm" % "2.0",
   "io.dropwizard.metrics"    % "metrics-jvm"                  % metricsVersion,
   "io.dropwizard.metrics"    % "metrics-json"                 % metricsVersion,
   "io.dropwizard.metrics"    % "metrics-logback"              % metricsVersion,
