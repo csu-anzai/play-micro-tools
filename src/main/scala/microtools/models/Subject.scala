@@ -24,13 +24,13 @@ object CustomerSubject {
     Subject.jsonFormat[CustomerSubject]
 }
 
-case class CompanySubject(companyId: String) extends AnyVal with Subject {
-  override def toString: String = s"company/$companyId"
+case class ApiSubject(apiTokenLabel: String) extends AnyVal with Subject {
+  override def toString: String = s"api/$apiTokenLabel"
 }
 
-object CompanySubject {
-  implicit val customerSubjectFormat: Format[CompanySubject] =
-    Subject.jsonFormat[CompanySubject]
+object ApiSubject {
+  implicit val apiSubjectFormat: Format[ApiSubject] =
+    Subject.jsonFormat[ApiSubject]
 }
 
 case class ServiceSubject(serviceName: String) extends AnyVal with Subject {
@@ -51,7 +51,7 @@ object Subject {
     case subject if subject.startsWith("customer/") => CustomerSubject(subject.drop(9))
     case subject if subject.startsWith("service/")  => ServiceSubject(subject.drop(8))
     case subject if subject.startsWith("admin/")    => AdminSubject(subject.drop(6))
-    case subject if subject.startsWith("company/")  => CompanySubject(subject.drop(8))
+    case subject if subject.startsWith("api/")      => ApiSubject(subject.drop(4))
     case subject                                    => GenericSubject(subject)
   }
 

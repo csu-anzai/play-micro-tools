@@ -12,7 +12,7 @@ object Arbitraries {
       Gen.oneOf(
         arbitrary[String].map(AdminSubject.apply),
         arbitrary[String].map(CustomerSubject.apply),
-        arbitrary[String].map(CompanySubject.apply),
+        arbitrary[String].map(ApiSubject.apply),
         arbitrary[String].map(AdminSubject.apply),
         arbitrary[String].map(GenericSubject.apply)
       ))
