@@ -1,0 +1,7 @@
+-J-XX:MaxMetaspaceSize=512M
+-J-XX:+CMSClassUnloadingEnabled
+-J-XX:MaxMetaspaceSize=512M
+-J-XX:MetaspaceSize=256M
+-J-Xms512M
+-J-Xmx2G
+-J-XX:+UseG1GC
