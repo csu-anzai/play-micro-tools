@@ -18,6 +18,14 @@ class JsonPointerSpec extends WordSpec with MustMatchers {
       JsString("/demo~10/t~0lde").as[JsPath] mustBe (JsPath \ "demo/0" \ "t~lde")
     }
 
+    "prefix number" in {
+      JsString("/10a/a").as[JsPath] mustBe (JsPath \ "10a" \ "a")
+    }
+
+    "index number" in {
+      JsString("/10/a").as[JsPath] mustBe (JsPath \ 10 \ "a")
+    }
+
     "Support array index" in {
       JsString("/demo/12").as[JsPath] mustBe (JsPath \ "demo" \ 12)
     }

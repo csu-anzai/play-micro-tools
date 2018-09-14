@@ -27,7 +27,7 @@ object JsonPointer {
         chs => KeyPathNode(chs.mkString)
     )
 
-    private val part: Parser[PathNode] = '/' ~> (number | string)
+    private val part: Parser[PathNode] = '/' ~> (string ||| number)
 
     private val pointer: Parser[JsPath] = part.* ^^ { parts =>
       JsPath(parts)
