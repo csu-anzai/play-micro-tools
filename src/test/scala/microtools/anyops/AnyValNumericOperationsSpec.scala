@@ -5,8 +5,8 @@ import microtools.anyops.AutoAnyValNumeric._
 import scala.math.Numeric.Implicits._
 import scala.math.Fractional.Implicits._
 
-case class Bauer(value: Int)   extends AnyVal
-case class Fuog(value: Double) extends AnyVal
+case class Bauer(value: Int)    extends AnyVal
+case class Ralph(value: Double) extends AnyVal
 
 class AnuValNumericOperationsSpec extends WordSpec with MustMatchers {
   "AnyVal operations spec" should {
@@ -14,7 +14,7 @@ class AnuValNumericOperationsSpec extends WordSpec with MustMatchers {
       Bauer(2) + Bauer(3) must equal(Bauer(5))
       Bauer(2) - Bauer(3) must equal(Bauer(-1))
       Bauer(2) * Bauer(3) must equal(Bauer(6))
-      Fuog(10.0) / Fuog(2.0d) must equal(Fuog(5.0d))
+      Ralph(10.0) / Ralph(2.0d) must equal(Ralph(5.0d))
 
       Bauer(2).toInt must equal(2)
       Bauer(2).toDouble must equal(2.0d)
