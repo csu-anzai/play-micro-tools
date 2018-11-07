@@ -26,7 +26,7 @@ shellPrompt := { _ ⇒
 
 val playVersion = "2.6.12"
 
-val metricsVersion = "3.1.2"
+val metricsVersion = "4.0.0"
 
 licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
 
