@@ -4,4 +4,3 @@
 -J-XX:MetaspaceSize=256M
 -J-Xms512M
 -J-Xmx2G
--J-XX:+UseG1GC
