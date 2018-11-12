@@ -15,6 +15,10 @@ object AdminSubject {
     Subject.jsonFormat[AdminSubject]
 }
 
+case class EmployeeSubject(employeeId: String) extends AnyVal with Subject {
+  override def toString: String = s"employee/$employeeId"
+}
+
 case class CustomerSubject(customerId: String) extends AnyVal with Subject {
   override def toString: String = s"customer/$customerId"
 }
@@ -48,6 +52,7 @@ case class GenericSubject(subject: String) extends AnyVal with Subject {
 
 object Subject {
   def apply(str: String): Subject = str match {
+    case subject if subject.startsWith("employee/") => EmployeeSubject(subject.drop(9))
     case subject if subject.startsWith("customer/") => CustomerSubject(subject.drop(9))
     case subject if subject.startsWith("service/")  => ServiceSubject(subject.drop(8))
     case subject if subject.startsWith("admin/")    => AdminSubject(subject.drop(6))
