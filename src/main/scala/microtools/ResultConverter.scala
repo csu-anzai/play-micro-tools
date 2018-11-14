@@ -1,7 +1,7 @@
 package microtools
 
 import microtools.hateoas.BusinessResult
-import microtools.logging.LoggingContext
+import microtools.logging.{LoggingContext, WithContextAwareLogger}
 import microtools.models.{Problem, Problems}
 import play.api.libs.json.{Json, Writes}
 import play.api.mvc.Results.Status
@@ -15,15 +15,17 @@ trait ResultConverter[-R] {
   def onFailure(cause: Throwable)(implicit loggingContext: LoggingContext): Result
 }
 
-object ResultConverter {
+object ResultConverter extends WithContextAwareLogger {
   implicit def resultResultConverter[R <: Result]: ResultConverter[R] = new ResultConverter[R] {
     override def onSuccess(result: R): Result = result
 
     override def onProblem(problem: Problem)(implicit loggingContext: LoggingContext): Result =
       problem.asResult
 
-    override def onFailure(cause: Throwable)(implicit loggingContext: LoggingContext): Result =
+    override def onFailure(cause: Throwable)(implicit loggingContext: LoggingContext): Result = {
+      log.error("internal error: ", cause)
       Problems.INTERNAL_SERVER_ERROR.withDetails(cause.getMessage).asResult
+    }
   }
 
   implicit def businessResultConverter[R <: BusinessResult]: ResultConverter[R] =
@@ -33,8 +35,10 @@ object ResultConverter {
       override def onProblem(problem: Problem)(implicit loggingContext: LoggingContext): Result =
         problem.asResult
 
-      override def onFailure(cause: Throwable)(implicit loggingContext: LoggingContext): Result =
+      override def onFailure(cause: Throwable)(implicit loggingContext: LoggingContext): Result = {
+        log.error("internal error: ", cause)
         Problems.INTERNAL_SERVER_ERROR.withDetails(cause.getMessage).asResult
+      }
     }
 
   implicit def defaultConverter[R](implicit writes: Writes[R]): ResultConverter[R] =
@@ -45,8 +49,10 @@ object ResultConverter {
       override def onProblem(problem: Problem)(implicit loggingContext: LoggingContext): Result =
         problem.asResult
 
-      override def onFailure(cause: Throwable)(implicit loggingContext: LoggingContext): Result =
+      override def onFailure(cause: Throwable)(implicit loggingContext: LoggingContext): Result = {
+        log.error("internal error: ", cause)
         Problems.INTERNAL_SERVER_ERROR.withDetails(cause.getMessage).asResult
+      }
     }
 
   def successResultConverter[R](success: R => Result): ResultConverter[R] =
@@ -58,6 +64,7 @@ object ResultConverter {
         problem.asResult
 
       override def onFailure(cause: Throwable)(implicit loggingContext: LoggingContext): Result = {
+        log.error("internal error: ", cause)
         Results.InternalServerError
       }
     }
