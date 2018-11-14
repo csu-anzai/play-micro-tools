@@ -1,5 +1,7 @@
 package microtools
 
+import java.io.Serializable
+
 import akka.util.Timeout
 import microtools.logging.LoggingContext
 import microtools.models.{Problem, Problems}
@@ -190,8 +192,10 @@ object BusinessTry {
   /**
     * Signal completion but there is no actual value completed. More clearly signals intent
     * than `Unit` and works around type safety issues related to Unit (value discard)
+    * Inspired by Akka Done.
     */
-  case object Done
+  sealed abstract class Done extends Serializable
+  case object Done           extends Done
 
 }
 
