@@ -186,6 +186,13 @@ object BusinessTry {
       case Failure(e) => BusinessTry.failure(errorHandler(e))
     }
   }
+
+  /**
+    * Signal completion but there is no actual value completed. More clearly signals intent
+    * than `Unit` and works around type safety issues related to Unit (value discard)
+    */
+  case object Done
+
 }
 
 case class BusinessSuccess[R](result: R) extends DecidedBusinessTry[R] {
