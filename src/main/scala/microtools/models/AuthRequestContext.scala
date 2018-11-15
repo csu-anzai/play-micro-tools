@@ -41,6 +41,8 @@ trait AuthRequestContext extends RequestContext {
   def scopes: ScopesByService
 
   def token: Token
+
+  def language: String
 }
 
 trait GenericAuthRequestContext[+Sub <: Subject, +Org <: Organization] extends AuthRequestContext {

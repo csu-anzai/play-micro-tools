@@ -33,6 +33,10 @@ trait AuthActions extends WithContextAwareLogger { self: AbstractController =>
           .get(HeaderNames.X_FORWARDED_FOR)
           .getOrElse(request.remoteAddress)
         val userAgent = request.headers.get(HeaderNames.USER_AGENT)
+        val language = request.cookies
+          .get(CookieNames.LANGUAGE)
+          .map(_.value.toLowerCase)
+          .getOrElse("de")
 
         (for {
           subject <- request.headers.get(ExtraHeaders.AUTH_SUBJECT_HEADER)
@@ -50,7 +54,8 @@ trait AuthActions extends WithContextAwareLogger { self: AbstractController =>
               ipAddress = ipAddress,
               userAgent = userAgent,
               requestUri = request.uri,
-              request = request
+              request = request,
+              language = language
             )
 
           block(authRequest).map(_.withHeaders(ExtraHeaders.FLOW_ID_HEADER -> flowId))
@@ -121,6 +126,7 @@ object AuthActions {
       token = request.token,
       ipAddress = request.ipAddress,
       userAgent = request.userAgent,
+      language = request.language,
       requestUri = request.uri,
       request = request
     )
@@ -135,12 +141,17 @@ object AuthActions {
       .get(HeaderNames.X_FORWARDED_FOR)
       .getOrElse(request.remoteAddress)
     val userAgent = request.headers.get(HeaderNames.USER_AGENT)
+    val language = request.cookies
+      .get(CookieNames.LANGUAGE)
+      .map(_.value.toLowerCase)
+      .getOrElse("de")
 
     override def contextValues: Seq[(String, String)] =
       Seq("flow_id"     -> flowId,
           "request_uri" -> request.uri,
           "ip"          -> ipAddress,
-          "userAgent"   -> userAgent.getOrElse("?"))
+          "userAgent"   -> userAgent.getOrElse("?"),
+          "language"    -> language)
     override def enableBusinessDebug: Boolean = businessDebug
   }
 
@@ -153,6 +164,7 @@ object AuthActions {
       override val token: Token,
       override val ipAddress: String,
       override val userAgent: Option[String],
+      override val language: String,
       requestUri: String,
       request: Request[A]
   ) extends WrappedRequest[A](request)
