@@ -60,6 +60,7 @@ libraryDependencies ++= Seq(
   "com.typesafe.play" %% "play-ws"             % playVersion % Provided,
   "com.typesafe.play" %% "filters-helpers"     % playVersion % Provided,
   "com.typesafe.play" %% "play-ahc-ws"         % playVersion % Provided,
+  "com.typesafe.play" %% "play-jdbc-evolutions"         % playVersion % Provided,
   "com.chuusai"       %% "shapeless"           % "2.3.2",
   // if you change this make sure to update the actual dependencies too
   // rediscala is provided so that every user of play-micro-tools does not need to depend on it
