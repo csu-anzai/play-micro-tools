@@ -6,7 +6,9 @@ import microtools.models.{Problem, Problems}
 import play.api.libs.json.{JsValue, Reads}
 import play.api.mvc.Result
 
+import scala.collection.generic.CanBuildFrom
 import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.language.higherKinds
 import scala.util.{Failure, Success, Try}
 
 class BusinessTryFailedException(problem: Problem) extends RuntimeException(problem.toString)
@@ -150,6 +152,21 @@ object BusinessTry {
     tries.foldLeft[BusinessTry[Seq[U]]](success(Seq.empty)) { (results, aTry) =>
       results.flatMap(rs => aTry.map(result => rs :+ result))
     }
+
+  def serialize[A, B, C[A] <: Iterable[A]](collection: C[A])(fn: A ⇒ BusinessTry[B])(
+      implicit ec: ExecutionContext,
+      cbf: CanBuildFrom[C[B], B, C[B]]): BusinessTry[C[B]] = {
+    val builder = cbf()
+    builder.sizeHint(collection.size)
+    collection.foldLeft(BusinessTry.success(builder)) { (previousBusinessTry, next) ⇒
+      for {
+        previousResults ← previousBusinessTry
+        next            ← fn(next)
+      } yield previousResults += next
+    } map { builder ⇒
+      builder.result
+    }
+  }
 
   @deprecated("Use the more common name `sequence` of this operation", since = "0.1-128")
   def forAll[U](tries: TraversableOnce[BusinessTry[U]])(

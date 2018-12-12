@@ -250,6 +250,12 @@ class BusinessTrySpec extends WordSpec with MockFactory with MustMatchers with S
         loggingContext
       )
     }
+
+    "serialize" in {
+      def someFutureOp(i: Int): BusinessTry[Int] = BusinessTry.wrap(Future.successful(i + 4))
+      val result                                 = BusinessTry.serialize(List(1, 2, 3))(someFutureOp).asFutureSuccess.futureValue
+      result mustBe List(5, 6, 7)
+    }
   }
 
   "BusinessTry" should {
