@@ -37,6 +37,7 @@ trait AuthActions extends WithContextAwareLogger { self: AbstractController =>
           .get(CookieNames.LANGUAGE)
           .map(_.value.toLowerCase)
           .getOrElse("de")
+        val forwardedHost = ForwardedHost(request.headers.get(HeaderNames.X_FORWARDED_HOST))
 
         (for {
           subject <- request.headers.get(ExtraHeaders.AUTH_SUBJECT_HEADER)
@@ -55,7 +56,8 @@ trait AuthActions extends WithContextAwareLogger { self: AbstractController =>
               userAgent = userAgent,
               requestUri = request.uri,
               request = request,
-              language = language
+              language = language,
+              forwardedHost = forwardedHost
             )
 
           block(authRequest).map(_.withHeaders(ExtraHeaders.FLOW_ID_HEADER -> flowId))
@@ -127,6 +129,7 @@ object AuthActions {
       ipAddress = request.ipAddress,
       userAgent = request.userAgent,
       language = request.language,
+      forwardedHost = request.forwardedHost,
       requestUri = request.uri,
       request = request
     )
@@ -165,6 +168,7 @@ object AuthActions {
       override val ipAddress: String,
       override val userAgent: Option[String],
       override val language: String,
+      override val forwardedHost: ForwardedHost,
       requestUri: String,
       request: Request[A]
   ) extends WrappedRequest[A](request)

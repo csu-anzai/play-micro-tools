@@ -18,6 +18,8 @@ trait RequestContext extends LoggingContext {
   def organization: Organization
 
   def maybeSubject: Option[Subject]
+
+  def forwardedHost: ForwardedHost
 }
 
 object RequestContext {
@@ -37,6 +39,8 @@ object RequestContext {
     override def organization = NoOrganization
 
     override def maybeSubject = None
+
+    override def forwardedHost = ForwardedHost(value = None)
   }
 
   def forRequest(request: RequestHeader): RequestContext = new RequestContext {
@@ -76,5 +80,8 @@ object RequestContext {
       request.headers.get(ExtraHeaders.AUTH_SUBJECT_HEADER).map(Subject.apply)
 
     override def userAgent: Option[String] = request.headers.get(HeaderNames.USER_AGENT)
+
+    override def forwardedHost: ForwardedHost =
+      ForwardedHost(request.headers.get(HeaderNames.X_FORWARDED_HOST))
   }
 }
