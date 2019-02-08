@@ -17,6 +17,9 @@ object Problems {
 
   val NOT_FOUND: Problem = Problem.forStatus(Status.NOT_FOUND, "Not found")
 
+  val METHOD_NOT_ALLOWED: Problem =
+    Problem.forStatus(Status.METHOD_NOT_ALLOWED, "Method not allowed")
+
   val GONE: Problem = Problem.forStatus(Status.GONE, "Gone")
 
   val NOT_ACCEPTABLE: Problem = Problem.forStatus(Status.NOT_ACCEPTABLE, "Not acceptable")
