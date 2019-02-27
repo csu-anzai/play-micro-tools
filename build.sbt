@@ -6,8 +6,8 @@ version := {
   "0.6-" + sys.props.get("BUILD_NUMBER").orElse(sys.env.get("BUILD_NUMBER")).getOrElse("SNAPSHOT")
 }
 
-scalaVersion := "2.12.6"
-scalaVersion in ThisBuild := "2.12.6"
+scalaVersion := "2.12.8"
+scalaVersion in ThisBuild := "2.12.8"
 
 crossScalaVersions := Seq("2.12.3")
 
