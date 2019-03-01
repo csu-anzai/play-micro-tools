@@ -3,13 +3,13 @@ name := "play-micro-tools"
 organization := "de.21re"
 
 version := {
-  "0.6-" + sys.props.get("BUILD_NUMBER").orElse(sys.env.get("BUILD_NUMBER")).getOrElse("SNAPSHOT")
+  "0.7-" + sys.props.get("BUILD_NUMBER").orElse(sys.env.get("BUILD_NUMBER")).getOrElse("SNAPSHOT")
 }
 
 scalaVersion := "2.12.8"
 scalaVersion in ThisBuild := "2.12.8"
 
-crossScalaVersions := Seq("2.12.3")
+crossScalaVersions := Seq("2.12.8")
 
 scalacOptions ++= Seq(
   "-deprecation",
@@ -24,7 +24,7 @@ shellPrompt := { _ ⇒
   scala.Console.CYAN + "play-µ-tools > " + scala.Console.RESET
 }
 
-val playVersion = "2.6.12"
+val playVersion = "2.7.0"
 
 val metricsVersion = "4.0.3"
 
@@ -74,10 +74,10 @@ libraryDependencies ++= Seq(
   "com.softwaremill.macwire" %% "util"                        % macWireVersion,
   "com.softwaremill.macwire" %% "proxy"                       % macWireVersion,
   "ch.qos.logback"           % "logback-classic"              % "1.1.7",
-  "org.scalatest"            %% "scalatest"                   % "3.0.3" % Test,
+  "org.scalatest"            %% "scalatest"                   % "3.0.5" % Test,
   "org.scalacheck"           %% "scalacheck"                  % "1.13.5" % Test,
   "org.scalamock"            %% "scalamock-scalatest-support" % "3.6.0" % Test,
-  "org.scalatestplus.play"   %% "scalatestplus-play"          % "3.1.1" % Test,
+  "org.scalatestplus.play"   %% "scalatestplus-play"          % "4.0.0" % Test,
   "org.mockito"              % "mockito-core"                 % "1.10.19" % Test
 )
 

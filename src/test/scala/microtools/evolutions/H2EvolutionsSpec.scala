@@ -96,5 +96,7 @@ object H2EvolutionsSpec {
     override def withConnection[A](autocommit: Boolean)(block: Connection => A): A = ???
     override def withTransaction[A](block: Connection => A): A                     = ???
     override def shutdown(): Unit                                                  = ???
+    override def withTransaction[A](isolationLevel: play.api.db.TransactionIsolationLevel)(
+        block: java.sql.Connection => A): A = ???
   }
 }

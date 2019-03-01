@@ -7,7 +7,6 @@ import microtools.logging.{ContextAwareLogger, LoggingContext}
 import microtools.models.Problems
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.concurrent.duration.FiniteDuration
 
 trait CircuitBreakers {
   def log: ContextAwareLogger
@@ -15,8 +14,8 @@ trait CircuitBreakers {
   def circuitBreakFuture[T](
       callId: String,
       maxFailures: Int,
-      callTimeout: FiniteDuration,
-      resetTimeout: FiniteDuration
+      callTimeout: java.time.Duration,
+      resetTimeout: java.time.Duration
   )(implicit ctx: LoggingContext, s: Scheduler): FutureDecorator[T] = {
     val circuitBreaker =
       CircuitBreaker.create(s, maxFailures, callTimeout, resetTimeout)
@@ -38,8 +37,8 @@ trait CircuitBreakers {
   def circuitBreakTry[T](
       callId: String,
       maxFailures: Int,
-      callTimeout: FiniteDuration,
-      resetTimeout: FiniteDuration
+      callTimeout: java.time.Duration,
+      resetTimeout: java.time.Duration
   )(implicit ec: ExecutionContext, ctx: LoggingContext, s: Scheduler): TryDecorator[T] = {
     val circuitBreaker =
       CircuitBreaker.create(s, maxFailures, callTimeout, resetTimeout)

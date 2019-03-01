@@ -30,7 +30,7 @@ object BusinessCondition {
     new BusinessCondition[T] {
       override def apply[R <: T](value: R): BusinessTry[R] =
         for {
-          l <- left(value)
+          _ <- left(value)
           r <- right(value)
         } yield r
     }
@@ -38,7 +38,7 @@ object BusinessCondition {
   def or[T](left: BusinessCondition[T], right: BusinessCondition[T]): BusinessCondition[T] =
     new BusinessCondition[T] {
       override def apply[R <: T](value: R): BusinessTry[R] =
-        left(value).fold(l => BusinessTry.success(l), p => right(value))
+        left(value).fold(l => BusinessTry.success(l), _ => right(value))
     }
 
   def all[T](conditions: Seq[BusinessCondition[T]]): BusinessCondition[T] =

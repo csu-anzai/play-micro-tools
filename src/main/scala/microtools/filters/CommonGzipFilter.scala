@@ -21,7 +21,7 @@ object CommonGzipFilter {
       capturedByMask(outgoing.mediaType, mask.mediaType) && capturedByMask(outgoing.mediaSubType,
                                                                            mask.mediaSubType)
     }
-    new GzipFilter(shouldGzip = (request, response) =>
+    new GzipFilter(shouldGzip = (_, response) =>
       response.body.contentType match {
         case Some(MediaType.parse(outgoing)) =>
           gzipWhiteList.exists(matches(outgoing, _))
