@@ -57,7 +57,7 @@ val macWireVersion    = "2.3.1"
 
 libraryDependencies ++= Seq(
   "com.typesafe.play" %% "play"                % playVersion % Provided,
-  "com.typesafe.play" %% "play-json"                % playVersion % Provided,
+  "com.typesafe.play" %% "play-json"                % "2.7.1" % Provided,
   "com.typesafe.play" %% "play-ws"             % playVersion % Provided,
   "com.typesafe.play" %% "filters-helpers"     % playVersion % Provided,
   "com.typesafe.play" %% "play-ahc-ws"         % playVersion % Provided,
