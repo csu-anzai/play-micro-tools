@@ -57,12 +57,12 @@ val macWireVersion    = "2.3.1"
 
 libraryDependencies ++= Seq(
   "com.typesafe.play" %% "play"                % playVersion % Provided,
+  "com.typesafe.play" %% "play-json"                % playVersion % Provided,
   "com.typesafe.play" %% "play-ws"             % playVersion % Provided,
   "com.typesafe.play" %% "filters-helpers"     % playVersion % Provided,
   "com.typesafe.play" %% "play-ahc-ws"         % playVersion % Provided,
   "com.typesafe.play" %% "play-jdbc-evolutions"         % playVersion % Provided,
   "com.chuusai"       %% "shapeless"           % "2.3.3",
-  "org.scala-lang.modules" %% "scala-collection-compat" % "0.2.2",
   // if you change this make sure to update the actual dependencies too
   // rediscala is provided so that every user of play-micro-tools does not need to depend on it
   "redis.clients" % "jedis" % "2.9.0" % Provided,
