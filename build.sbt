@@ -53,7 +53,7 @@ mainSourcesScalaStyle := org.scalastyle.sbt.ScalastylePlugin.autoImport.scalasty
   .value
 (test in Test) := { (test in Test) dependsOn mainSourcesScalaStyle }.value
 
-val macWireVersion = "2.2.5"
+val macWireVersion    = "2.3.1"
 
 libraryDependencies ++= Seq(
   "com.typesafe.play" %% "play"                % playVersion % Provided,
