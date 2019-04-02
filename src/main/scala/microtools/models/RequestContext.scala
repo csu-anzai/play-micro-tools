@@ -23,25 +23,26 @@ trait RequestContext extends LoggingContext {
 }
 
 object RequestContext {
-  def static(staticFlowId: String): RequestContext = new RequestContext {
-    override def flowId: String = staticFlowId
+  def static(staticFlowId: String, _contextValues: (String, String)*): RequestContext =
+    new RequestContext {
+      override def flowId: String = staticFlowId
 
-    override lazy val contextValues: Seq[(String, String)] = Seq(
-      "flow_id" -> flowId
-    )
+      override lazy val contextValues: Seq[(String, String)] = Seq(
+        "flow_id" -> flowId
+      ) ++ _contextValues
 
-    override def enableBusinessDebug: Boolean = false
+      override def enableBusinessDebug: Boolean = false
 
-    override def ipAddress = ""
+      override def ipAddress = ""
 
-    override def userAgent = None
+      override def userAgent = None
 
-    override def organization = NoOrganization
+      override def organization = NoOrganization
 
-    override def maybeSubject = None
+      override def maybeSubject = None
 
-    override def forwardedHost = ForwardedHost(value = None)
-  }
+      override def forwardedHost = ForwardedHost(value = None)
+    }
 
   def forRequest(request: RequestHeader): RequestContext = new RequestContext {
     override def flowId: String =
