@@ -3,16 +3,13 @@ package microtools.files
 import java.io.IOException
 import java.nio.file.attribute.BasicFileAttributes
 import java.nio.file.{FileVisitResult, Files, Path, SimpleFileVisitor}
-
-import javax.inject.{Inject, Singleton}
 import play.api.inject.ApplicationLifecycle
 import play.api.libs.Files.TemporaryFileReaper
 
 import scala.concurrent.Future
 
-@Singleton
-class BetterTemporaryFileCreator @Inject()(temporaryFileReaper: TemporaryFileReaper,
-                                           applicationLifecycle: ApplicationLifecycle) {
+class BetterTemporaryFileCreator(applicationLifecycle: ApplicationLifecycle,
+                                 temporaryFileReaper: TemporaryFileReaper) {
   private val tempDirectory = {
     val tempDir = Files.createTempDirectory("betterTempDir")
     temporaryFileReaper.updateTempFolder(tempDir)
