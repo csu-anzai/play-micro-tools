@@ -89,15 +89,31 @@ sealed trait BusinessTry[+R] {
     }
   }
 
+  @deprecated(message = "Use recoverProblemWith", since = "0.1.188")
   def recoverWith[U >: R](f: PartialFunction[Problem, BusinessTry[U]])(
+      implicit ec: ExecutionContext
+  ): BusinessTry[U] = recoverProblemWith(f)
+
+  def recoverProblemWith[U >: R](f: PartialFunction[Problem, BusinessTry[U]])(
       implicit ec: ExecutionContext
   ): BusinessTry[U]
 
+  def recoverFailureWith[U >: R](f: PartialFunction[Throwable, BusinessTry[U]])(
+      implicit ec: ExecutionContext
+  ): BusinessTry[U]
+
+  @deprecated(message = "Use recoverProblem", since = "0.1.188")
   def recover[U >: R](f: PartialFunction[Problem, U])(
       implicit ec: ExecutionContext
-  ): BusinessTry[U] = {
-    recoverWith(f.andThen(BusinessTry.success))
-  }
+  ): BusinessTry[U] = recoverProblem(f)
+
+  def recoverProblem[U >: R](f: PartialFunction[Problem, U])(
+      implicit ec: ExecutionContext
+  ): BusinessTry[U] = recoverProblemWith(f.andThen(BusinessTry.success))
+
+  def recoverFailure[U >: R](f: PartialFunction[Throwable, U])(
+      implicit ec: ExecutionContext
+  ): BusinessTry[U] = recoverFailureWith(f.andThen(BusinessTry.success))
 }
 
 /**
@@ -225,10 +241,12 @@ case class BusinessSuccess[R](result: R) extends DecidedBusinessTry[R] {
   override def mapProblem(f: Problem => Problem)(implicit ec: ExecutionContext): BusinessTry[R] =
     this
 
-  override def map[U](f: (R) => U)(implicit ec: ExecutionContext): BusinessTry[U] =
-    BusinessSuccess(f(result))
+  override def map[U](f: R => U)(implicit ec: ExecutionContext): BusinessTry[U] =
+    FutureBusinessTry(Future {
+      BusinessSuccess(f(result))
+    })
 
-  override def flatMap[U](f: (R) => BusinessTry[U])(
+  override def flatMap[U](f: R => BusinessTry[U])(
       implicit ec: ExecutionContext
   ): BusinessTry[U] = f(result)
 
@@ -236,7 +254,7 @@ case class BusinessSuccess[R](result: R) extends DecidedBusinessTry[R] {
       implicit ec: ExecutionContext
   ): BusinessTry[R] = condition(result)
 
-  override def fold[U](onSuccess: (R) => BusinessTry[U], onFailure: (Problem) => BusinessTry[U])(
+  override def fold[U](onSuccess: R => BusinessTry[U], onFailure: Problem => BusinessTry[U])(
       implicit ec: ExecutionContext
   ): BusinessTry[U] =
     onSuccess(result)
@@ -244,10 +262,13 @@ case class BusinessSuccess[R](result: R) extends DecidedBusinessTry[R] {
   override def awaitResult(implicit timeout: Timeout): DecidedBusinessTry[R] =
     this
 
-  override def recoverWith[U >: R](f: PartialFunction[Problem, BusinessTry[U]])(
+  override def recoverProblemWith[U >: R](f: PartialFunction[Problem, BusinessTry[U]])(
       implicit ec: ExecutionContext
   ): BusinessTry[U] =
     this
+
+  override def recoverFailureWith[U >: R](f: PartialFunction[Throwable, BusinessTry[U]])(
+      implicit ec: ExecutionContext): BusinessTry[U] = this
 }
 
 case class BusinessFailure(problem: Problem) extends DecidedBusinessTry[Nothing] {
@@ -270,10 +291,10 @@ case class BusinessFailure(problem: Problem) extends DecidedBusinessTry[Nothing]
       implicit ec: ExecutionContext): BusinessTry[Nothing] =
     BusinessFailure(f(problem))
 
-  override def map[U](f: (Nothing) => U)(implicit ec: ExecutionContext): BusinessTry[U] =
+  override def map[U](f: Nothing => U)(implicit ec: ExecutionContext): BusinessTry[U] =
     this
 
-  override def flatMap[U](f: (Nothing) => BusinessTry[U])(
+  override def flatMap[U](f: Nothing => BusinessTry[U])(
       implicit ec: ExecutionContext
   ): BusinessTry[U] =
     this
@@ -282,8 +303,7 @@ case class BusinessFailure(problem: Problem) extends DecidedBusinessTry[Nothing]
       implicit ec: ExecutionContext
   ): BusinessTry[Nothing] = this
 
-  override def fold[U](onSuccess: (Nothing) => BusinessTry[U],
-                       onFailure: (Problem) => BusinessTry[U])(
+  override def fold[U](onSuccess: Nothing => BusinessTry[U], onFailure: Problem => BusinessTry[U])(
       implicit ec: ExecutionContext
   ): BusinessTry[U] =
     onFailure(problem)
@@ -291,11 +311,13 @@ case class BusinessFailure(problem: Problem) extends DecidedBusinessTry[Nothing]
   override def awaitResult(implicit timeout: Timeout): DecidedBusinessTry[Nothing] =
     this
 
-  override def recoverWith[U >: Nothing](f: PartialFunction[Problem, BusinessTry[U]])(
+  override def recoverProblemWith[U >: Nothing](f: PartialFunction[Problem, BusinessTry[U]])(
       implicit ec: ExecutionContext
   ): BusinessTry[U] =
     if (f isDefinedAt problem) f(problem) else this
 
+  override def recoverFailureWith[U >: Nothing](f: PartialFunction[Throwable, BusinessTry[U]])(
+      implicit ec: ExecutionContext): BusinessTry[U] = this
 }
 
 case class FutureBusinessTry[R](futureTry: Future[BusinessTry[R]]) extends BusinessTry[R] {
@@ -313,10 +335,10 @@ case class FutureBusinessTry[R](futureTry: Future[BusinessTry[R]]) extends Busin
   override def mapProblem(f: Problem => Problem)(implicit ec: ExecutionContext): BusinessTry[R] =
     FutureBusinessTry[R](futureTry.map(_.mapProblem(f)))
 
-  override def map[U](f: (R) => U)(implicit ec: ExecutionContext): BusinessTry[U] =
+  override def map[U](f: R => U)(implicit ec: ExecutionContext): BusinessTry[U] =
     FutureBusinessTry[U](futureTry.map(_.map(f)))
 
-  override def flatMap[U](f: (R) => BusinessTry[U])(
+  override def flatMap[U](f: R => BusinessTry[U])(
       implicit ec: ExecutionContext
   ): BusinessTry[U] =
     FutureBusinessTry[U](futureTry.map(_.flatMap(f)))
@@ -326,7 +348,7 @@ case class FutureBusinessTry[R](futureTry: Future[BusinessTry[R]]) extends Busin
   ): BusinessTry[R] =
     FutureBusinessTry[R](futureTry.map(_.withCondition(condition)))
 
-  override def fold[U](onSuccess: (R) => BusinessTry[U], onFailure: (Problem) => BusinessTry[U])(
+  override def fold[U](onSuccess: R => BusinessTry[U], onFailure: Problem => BusinessTry[U])(
       implicit ec: ExecutionContext
   ): BusinessTry[U] =
     FutureBusinessTry(futureTry.map(_.fold(onSuccess, onFailure)))
@@ -344,9 +366,15 @@ case class FutureBusinessTry[R](futureTry: Future[BusinessTry[R]]) extends Busin
     this
   }
 
-  override def recoverWith[U >: R](f: PartialFunction[Problem, BusinessTry[U]])(
+  override def recoverProblemWith[U >: R](f: PartialFunction[Problem, BusinessTry[U]])(
       implicit ec: ExecutionContext
   ): BusinessTry[U] =
-    FutureBusinessTry(futureTry.map(_.recoverWith(f)))
+    FutureBusinessTry(futureTry.map(_.recoverProblemWith(f)))
 
+  override def recoverFailureWith[U >: R](f: PartialFunction[Throwable, BusinessTry[U]])(
+      implicit ec: ExecutionContext): BusinessTry[U] =
+    FutureBusinessTry[U](asFuture.recoverWith(f.andThen(_.asFuture)).map {
+      case Left(result)   => BusinessTry.success(result)
+      case Right(problem) => BusinessTry.failure(problem)
+    })
 }

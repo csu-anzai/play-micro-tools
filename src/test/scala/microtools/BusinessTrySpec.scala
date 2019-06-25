@@ -293,7 +293,7 @@ class BusinessTrySpec extends WordSpec with MockFactory with MustMatchers with S
     "be recoverable" in {
       val BusinessSuccess(result) = BusinessTry
         .failure(Problem.forStatus(100, "test"))
-        .recover {
+        .recoverProblem {
           case Problem(100, _, _, _) => "success"
         }
         .awaitResult
@@ -304,12 +304,30 @@ class BusinessTrySpec extends WordSpec with MockFactory with MustMatchers with S
     "should not recover if partial function doesn't match" in {
       val BusinessFailure(result) = BusinessTry
         .failure(Problem.forStatus(100, "test"))
-        .recover {
+        .recoverProblem {
           case Problem(101, _, _, _) => "success"
         }
         .awaitResult
 
       result.code must equal(100)
+    }
+
+    "recover failures" in {
+      def spookyCode(msg: String): String = {
+        throw new RuntimeException("Crawoom")
+      }
+
+      val BusinessSuccess(result) =
+        BusinessTry
+          .success("initial")
+          .map(spookyCode)
+          .recoverFailure {
+            case e: RuntimeException if e.getMessage == "Crawoom" =>
+              "recovered"
+          }
+          .awaitResult
+
+      result must equal("recovered")
     }
   }
 
