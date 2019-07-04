@@ -8,7 +8,7 @@ import microtools.actions.RateCounter
 import play.api.inject.ApplicationLifecycle
 import redis.clients.jedis.{JedisSentinelPool, Response}
 import scala.collection.JavaConverters._
-import resource._
+import scala.util.Using
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -34,13 +34,13 @@ class RedisSentinelRateCounter(sentinels: String, master: String, lifecycle: App
 
   override def incrementAndGet(key: String, storeFor: Duration): Future[Int] = {
     Future {
-      managed(jedisClient.getResource()).acquireAndGet { jedis =>
+      Using(jedisClient.getResource()) { jedis =>
         val transaction                             = jedis.multi()
         val countResponse: Response[java.lang.Long] = transaction.incr(key)
         transaction.expire(key, storeFor.getSeconds.toInt)
         transaction.exec()
         countResponse.get.toInt
-      }
+      }.get
     }
   }
 }
