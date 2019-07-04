@@ -32,11 +32,22 @@ class WSTrySpec extends WordSpec with MockFactory with MustMatchers with ScalaFu
     }
 
     "return a failing BusinessTry and log the response content (also for non json content)" in {
-      val failedResponse = mock[WSResponse]
-      (failedResponse.status _).expects.returning(500).anyNumberOfTimes()
-      (failedResponse.json _).expects.throwing(new Exception("")).anyNumberOfTimes()
-      (failedResponse.body _).expects.returning("Some error").anyNumberOfTimes()
+      val failedResponse = new WSResponse {
+        def allHeaders: Map[String, scala.collection.Seq[String]]                       = ???
+        override def body: String                                                       = "Some error"
+        override def bodyAsBytes: akka.util.ByteString                                  = ???
+        override def bodyAsSource: akka.stream.scaladsl.Source[akka.util.ByteString, _] = ???
+        override def cookie(name: String): Option[play.api.libs.ws.WSCookie]            = ???
+        override def cookies: scala.collection.Seq[play.api.libs.ws.WSCookie]           = ???
+        override def headers: Map[String, scala.collection.Seq[String]]                 = ???
+        def json: play.api.libs.json.JsValue                                            = throw new Exception("")
+        override def status: Int                                                        = 500
+        override def statusText: String                                                 = ???
+        override def underlying[T]: T                                                   = ???
+        def xml: scala.xml.Elem                                                         = ???
+        def uri: java.net.URI                                                           = ???
 
+      }
       noException must be thrownBy WSTry.expectSuccess(Future.successful(failedResponse))
 
       val errorMessage: String = WSTry
@@ -47,12 +58,22 @@ class WSTrySpec extends WordSpec with MockFactory with MustMatchers with ScalaFu
     }
 
     "return a failing BusinessTry and log the response content (also for non json content) when server lies" in {
-      val failedResponse = mock[WSResponse]
-      (failedResponse.status _).expects.returning(200).anyNumberOfTimes()
-      (failedResponse.json _).expects.throwing(new Exception("parse error")).anyNumberOfTimes()
-      (failedResponse.body _).expects
-        .returning("{{{raw body that's not json because the server lies")
-        .anyNumberOfTimes()
+      val failedResponse = new WSResponse {
+        def allHeaders: Map[String, scala.collection.Seq[String]]                       = ???
+        override def body: String                                                       = "{{{raw body that's not json because the server lies"
+        override def bodyAsBytes: akka.util.ByteString                                  = ???
+        override def bodyAsSource: akka.stream.scaladsl.Source[akka.util.ByteString, _] = ???
+        override def cookie(name: String): Option[play.api.libs.ws.WSCookie]            = ???
+        override def cookies: scala.collection.Seq[play.api.libs.ws.WSCookie]           = ???
+        override def headers: Map[String, scala.collection.Seq[String]]                 = ???
+        def json: play.api.libs.json.JsValue                                            = throw new Exception("parse error")
+        override def status: Int                                                        = 200
+        override def statusText: String                                                 = ???
+        override def underlying[T]: T                                                   = ???
+        def xml: scala.xml.Elem                                                         = ???
+        def uri: java.net.URI                                                           = ???
+
+      }
 
       noException must be thrownBy WSTry.expectOkJson[JsValue](Future.successful(failedResponse))
 

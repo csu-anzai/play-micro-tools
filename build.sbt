@@ -77,6 +77,7 @@ libraryDependencies ++= Seq(
   "org.scalatest"            %% "scalatest"                   % "3.0.8" % Test,
   "org.scalacheck"           %% "scalacheck"                  % "1.14.0" % Test,
   "org.scalatestplus.play"   %% "scalatestplus-play"          % "4.0.3" % Test,
+  "org.scalamock" %% "scalamock" % "4.3.0" % Test,
   "org.mockito"              % "mockito-core"                 % "1.10.19" % Test
 )
 

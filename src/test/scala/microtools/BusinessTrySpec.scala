@@ -219,7 +219,7 @@ class BusinessTrySpec extends WordSpec with MockFactory with MustMatchers with S
     "wrap and handle Problems" in {
 
       val promise = Promise[String]
-      val pf = PartialFunction[Throwable, Problem] {
+      val pf: PartialFunction[Throwable, Problem] = {
         case e: Exception => Problems.CONFLICT
       }
 
