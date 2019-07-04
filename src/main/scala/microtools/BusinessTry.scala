@@ -6,7 +6,7 @@ import microtools.models.{Problem, Problems}
 import play.api.libs.json.{JsValue, Reads}
 import play.api.mvc.Result
 
-import scala.collection.generic.CanBuildFrom
+import scala.collection.Factory
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.language.higherKinds
 import scala.util.{Failure, Success, Try}
@@ -109,11 +109,11 @@ sealed trait BusinessTry[+R] {
 
   def recoverProblem[U >: R](f: PartialFunction[Problem, U])(
       implicit ec: ExecutionContext
-  ): BusinessTry[U] = recoverProblemWith(f.andThen(BusinessTry.success))
+  ): BusinessTry[U] = recoverProblemWith(f.andThen(BusinessTry.success _))
 
   def recoverFailure[U >: R](f: PartialFunction[Throwable, U])(
       implicit ec: ExecutionContext
-  ): BusinessTry[U] = recoverFailureWith(f.andThen(BusinessTry.success))
+  ): BusinessTry[U] = recoverFailureWith(f.andThen(BusinessTry.success _))
 }
 
 /**
@@ -160,7 +160,7 @@ object BusinessTry {
   )(
       implicit ec: ExecutionContext
   ): BusinessTry[R] =
-    FutureBusinessTry(futureResult.map(success).recover(handleProblem.andThen(failure)))
+    FutureBusinessTry(futureResult.map(success).recover(handleProblem.andThen(failure _)))
 
   def sequence[U](tries: TraversableOnce[BusinessTry[U]])(
       implicit ec: ExecutionContext
@@ -171,8 +171,8 @@ object BusinessTry {
 
   def serialize[A, B, C[A] <: Iterable[A]](collection: C[A])(fn: A ⇒ BusinessTry[B])(
       implicit ec: ExecutionContext,
-      cbf: CanBuildFrom[C[B], B, C[B]]): BusinessTry[C[B]] = {
-    val builder = cbf()
+      f: Factory[B, C[B]]): BusinessTry[C[B]] = {
+    val builder = f.newBuilder
     builder.sizeHint(collection.size)
     collection.foldLeft(BusinessTry.success(builder)) { (previousBusinessTry, next) ⇒
       for {

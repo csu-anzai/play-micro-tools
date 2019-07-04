@@ -32,7 +32,9 @@ object Problems {
   val SERVICE_UNAVAILABLE: Problem =
     Problem.forStatus(Status.SERVICE_UNAVAILABLE, "Service unavailable")
 
-  def jsonValidationErrors(jsonErrors: Seq[(JsPath, Seq[JsonValidationError])]): Problem =
+  def jsonValidationErrors(
+      jsonErrors: scala.collection.Seq[(JsPath, scala.collection.Seq[JsonValidationError])])
+    : Problem =
     BAD_REQUEST.copy(details = Some(Json.arr(jsonErrors.map {
       case (path, errors) =>
         Json.obj(
@@ -41,7 +43,9 @@ object Problems {
         )
     })))
 
-  def jsonTransformErrors(jsonErrors: Seq[(JsPath, Seq[JsonValidationError])]): Problem =
+  def jsonTransformErrors(
+      jsonErrors: scala.collection.Seq[(JsPath, scala.collection.Seq[JsonValidationError])])
+    : Problem =
     NOT_ACCEPTABLE.copy(details = Some(Json.arr(jsonErrors.map {
       case (path, errors) =>
         Json.obj(

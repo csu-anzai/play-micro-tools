@@ -24,7 +24,7 @@ object H2Evolutions {
   }
 
   def patchEvolutions(database: Database, evolutionsReader: EvolutionsReader): Seq[Evolution] = {
-    evolutionsReader.evolutions(database.name).map { evolution =>
+    evolutionsReader.evolutions(database.name).toSeq.map { evolution =>
       val upMatches   = matches(evolution.sql_up)
       val downMatches = matches(evolution.sql_down)
 

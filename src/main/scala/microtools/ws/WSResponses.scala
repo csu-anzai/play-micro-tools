@@ -70,7 +70,7 @@ object WSResponseAccepted {
             Some(response.json)
           else
             None
-        (URI.create(locationUrl), response.headers.getOrElse("link", Seq.empty), json)
+        (URI.create(locationUrl), response.headers.getOrElse("link", Seq.empty).toSeq, json)
       } else
       None
   }

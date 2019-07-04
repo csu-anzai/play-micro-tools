@@ -24,16 +24,17 @@ object AutoAnyValNumeric {
       anyValApply(op(anyValUnapply(a)))
     }
 
-    override def fromInt(x: Int): T       = anyValApply(numeric.fromInt(x))
-    override def minus(x: T, y: T): T     = applyTwoArgs(x, y, numeric.minus)
-    override def negate(x: T): T          = applyOneArg(x, numeric.negate)
-    override def plus(x: T, y: T): T      = applyTwoArgs(x, y, numeric.plus)
-    override def times(x: T, y: T): T     = applyTwoArgs(x, y, numeric.times)
-    override def toDouble(x: T): Double   = numeric.toDouble(anyValUnapply(x))
-    override def toFloat(x: T): Float     = numeric.toFloat(anyValUnapply(x))
-    override def toInt(x: T): Int         = numeric.toInt(anyValUnapply(x))
-    override def toLong(x: T): Long       = numeric.toLong(anyValUnapply(x))
-    override def compare(x: T, y: T): Int = numeric.compare(anyValUnapply(x), anyValUnapply(y))
+    override def fromInt(x: Int): T                  = anyValApply(numeric.fromInt(x))
+    override def minus(x: T, y: T): T                = applyTwoArgs(x, y, numeric.minus)
+    override def negate(x: T): T                     = applyOneArg(x, numeric.negate)
+    override def plus(x: T, y: T): T                 = applyTwoArgs(x, y, numeric.plus)
+    override def times(x: T, y: T): T                = applyTwoArgs(x, y, numeric.times)
+    override def toDouble(x: T): Double              = numeric.toDouble(anyValUnapply(x))
+    override def toFloat(x: T): Float                = numeric.toFloat(anyValUnapply(x))
+    override def toInt(x: T): Int                    = numeric.toInt(anyValUnapply(x))
+    override def toLong(x: T): Long                  = numeric.toLong(anyValUnapply(x))
+    override def compare(x: T, y: T): Int            = numeric.compare(anyValUnapply(x), anyValUnapply(y))
+    override def parseString(str: String): Option[T] = numeric.parseString(str).map(anyValApply)
 
   }
 
