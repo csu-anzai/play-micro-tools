@@ -10,7 +10,7 @@ import com.codahale.metrics.jvm.{
 }
 import javax.inject.{Provider, Singleton}
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 @Singleton
 class MetricRegistryProvider extends Provider[MetricRegistry] {

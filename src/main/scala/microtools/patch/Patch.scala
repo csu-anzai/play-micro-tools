@@ -88,9 +88,9 @@ object Patch extends JsonFormats {
 
   implicit val patchFormat: OFormat[Patch] = OFormat(patchRead, patchWrite)
 
-  def applyPatches[T: Format](patches: TraversableOnce[Patch], whiteList: PatchWhitelist)(
+  def applyPatches[T: Format](patches: IterableOnce[Patch], whiteList: PatchWhitelist)(
       entity: T): DecidedBusinessTry[T] = {
-    patches.foldLeft[DecidedBusinessTry[JsValue]](BusinessSuccess(Json.toJson(entity))) {
+    patches.iterator.foldLeft[DecidedBusinessTry[JsValue]](BusinessSuccess(Json.toJson(entity))) {
       case (fail: BusinessFailure, _)     => fail
       case (BusinessSuccess(json), patch) => patch(json, whiteList)
     } match {

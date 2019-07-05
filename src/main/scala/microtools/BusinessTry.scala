@@ -162,30 +162,30 @@ object BusinessTry {
   ): BusinessTry[R] =
     FutureBusinessTry(futureResult.map(success).recover(handleProblem.andThen(failure _)))
 
-  def sequence[U](tries: TraversableOnce[BusinessTry[U]])(
+  def sequence[U](tries: IterableOnce[BusinessTry[U]])(
       implicit ec: ExecutionContext
   ): BusinessTry[Seq[U]] =
-    tries.foldLeft[BusinessTry[Seq[U]]](success(Seq.empty)) { (results, aTry) =>
+    tries.iterator.foldLeft[BusinessTry[Seq[U]]](success(Seq.empty)) { (results, aTry) =>
       results.flatMap(rs => aTry.map(result => rs :+ result))
     }
 
-  def serialize[A, B, C[A] <: Iterable[A]](collection: C[A])(fn: A ⇒ BusinessTry[B])(
+  def serialize[A, B, C[A] <: Iterable[A]](collection: C[A])(fn: A => BusinessTry[B])(
       implicit ec: ExecutionContext,
       f: Factory[B, C[B]]): BusinessTry[C[B]] = {
     val builder = f.newBuilder
     builder.sizeHint(collection.size)
-    collection.foldLeft(BusinessTry.success(builder)) { (previousBusinessTry, next) ⇒
+    collection.foldLeft(BusinessTry.success(builder)) { (previousBusinessTry, next) =>
       for {
-        previousResults ← previousBusinessTry
-        next            ← fn(next)
+        previousResults <- previousBusinessTry
+        next            <- fn(next)
       } yield previousResults += next
-    } map { builder ⇒
+    } map { builder =>
       builder.result
     }
   }
 
   @deprecated("Use the more common name `sequence` of this operation", since = "0.1-128")
-  def forAll[U](tries: TraversableOnce[BusinessTry[U]])(
+  def forAll[U](tries: IterableOnce[BusinessTry[U]])(
       implicit ec: ExecutionContext): BusinessTry[Seq[U]] = sequence(tries)
 
   def validateJson[T](json: JsValue)(implicit reads: Reads[T]): DecidedBusinessTry[T] = {

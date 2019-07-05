@@ -7,7 +7,7 @@ import java.util.concurrent.Executors
 import microtools.actions.RateCounter
 import play.api.inject.ApplicationLifecycle
 import redis.clients.jedis.{JedisSentinelPool, Response}
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.util.Using
 
 import scala.concurrent.{ExecutionContext, Future}
