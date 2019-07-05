@@ -1,7 +1,7 @@
 package microtools
 
 import microtools.models.{Subject, Token}
-import org.scalatest.prop.GeneratorDrivenPropertyChecks
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import org.scalatest.{MustMatchers, WordSpec}
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
@@ -41,7 +41,7 @@ object Location extends JsonFormats with AutoJsonFormats {
     (__ \ "lng").read[Longitude].orElse((__ \ "lon").read[Longitude]))(Location.apply _)
 }
 
-class JsonFormatsSpec extends WordSpec with MustMatchers with GeneratorDrivenPropertyChecks {
+class JsonFormatsSpec extends WordSpec with MustMatchers with ScalaCheckDrivenPropertyChecks {
   case class SomeDto(token: Token, subject: Subject, loc: Location)
 
   object SomeDto extends JsonFormats with AutoJsonFormats {

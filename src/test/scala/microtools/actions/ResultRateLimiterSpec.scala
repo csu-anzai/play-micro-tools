@@ -9,7 +9,7 @@ import org.mockito.Matchers._
 import org.mockito.Mockito._
 import org.scalatest.{BeforeAndAfterAll}
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.http.Status
 import play.api.mvc._
@@ -26,7 +26,7 @@ class ResultRateLimiterSpec
 
   implicit val system: ActorSystem = ActorSystem()
 
-  override def afterAll {
+  override def afterAll: Unit = {
     system.terminate()
   }
 

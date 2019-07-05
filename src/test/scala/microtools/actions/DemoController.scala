@@ -49,12 +49,12 @@ class DemoController(controllerComponents: ControllerComponents)(implicit ec: Ex
       StandardScopeRequirements.checkedSelf(isOwnerOf(resourceId))
 
   def getProtectedResource(id: String): Action[AnyContent] =
-    (AuthAction andThen ScopedAction(readRequirements(id))).async { implicit request =>
+    (AuthAction andThen ScopedAction(readRequirements(id))).async { _ =>
       Future.successful(Ok("Got it"))
     }
 
   def updateProtectedResource(id: String): Action[AnyContent] =
-    (AuthAction andThen ScopedAction(updateRequirements(id))).async { implicit request =>
+    (AuthAction andThen ScopedAction(updateRequirements(id))).async { _ =>
       Future.successful(Accepted("Updated it"))
     }
 }

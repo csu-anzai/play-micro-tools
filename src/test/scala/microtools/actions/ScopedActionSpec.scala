@@ -4,7 +4,7 @@ import microtools.models.{CustomerSubject, ExtraHeaders, ServiceName}
 import microtools.{BusinessCondition, BusinessTry}
 import org.scalatest.OptionValues
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.components.OneAppPerSuiteWithComponents
 import play.api.BuiltInComponentsFromContext

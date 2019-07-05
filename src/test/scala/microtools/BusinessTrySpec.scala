@@ -313,7 +313,7 @@ class BusinessTrySpec extends WordSpec with MockFactory with MustMatchers with S
     }
 
     "recover failures" in {
-      def spookyCode(msg: String): String = {
+      def spookyCode: (String) => String = { _ =>
         throw new RuntimeException("Crawoom")
       }
 

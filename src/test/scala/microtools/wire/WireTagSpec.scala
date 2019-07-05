@@ -11,13 +11,17 @@ class WireTagSpec extends WordSpec with MustMatchers {
     import microtools.wire.WireTag._
 
     "resolvable with explicit tagging" in {
-      class Te(test: String @@ Test.type)
+      class Te(test: String @@ Test.type) {
+        override def toString: String = test
+      }
 
       wire[Te]
     }
 
     "resolvable with Value type" in {
-      class Te(test: Test.Value)
+      class Te(test: Test.Value) {
+        override def toString: String = test
+      }
 
       wire[Te]
     }

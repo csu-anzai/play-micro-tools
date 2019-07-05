@@ -3,7 +3,7 @@ import akka.actor.ActorSystem
 import microtools.logging.LoggingContext
 import org.mockito.Mockito._
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.mockito.MockitoSugar
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 import play.api.libs.ws.WSResponse
@@ -26,7 +26,7 @@ class RetryRateLimitedSpec
   implicit val ec        = as.dispatcher
   implicit val scheduler = as.scheduler
 
-  override def afterAll() {
+  override def afterAll(): Unit = {
     as.terminate().futureValue
   }
 

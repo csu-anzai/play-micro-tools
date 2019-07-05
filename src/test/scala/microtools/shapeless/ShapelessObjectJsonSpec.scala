@@ -22,7 +22,8 @@ class ShapelessObjectJsonSpec extends PlaySpec with MustMatchers {
       import ShapelessObjectJson._
 
       val json =
-        Json.toJson(('someInt ->> 1234) :: ('someStr ->> "string") :: ('someBool ->> true) :: HNil)
+        Json.toJson((Symbol("someInt") ->> 1234) :: (Symbol("someStr") ->> "string") :: (Symbol(
+          "someBool") ->> true) :: HNil)
 
       (json \ "someInt").as[Int] mustBe 1234
       (json \ "someStr").as[String] mustBe "string"
@@ -42,14 +43,15 @@ class ShapelessObjectJsonSpec extends PlaySpec with MustMatchers {
     "deserialize json object to labeled HList" in {
       import ShapelessObjectJson._
 
-      type record = Record.`'someInt -> Int, 'someString -> String, 'someBool -> Boolean`.T
+      type record =
+        Record.`Symbol("someInt") -> Int, Symbol("someString") -> String, Symbol("someBool") -> Boolean`.T
       val result = Json
         .obj("someString" -> "string", "someInt" -> 1234, "someBool" -> true)
         .as[record]
 
-      result('someInt) mustBe 1234
-      result('someString) mustBe "string"
-      result('someBool) mustBe true
+      result(Symbol("someInt")) mustBe 1234
+      result(Symbol("someString")) mustBe "string"
+      result(Symbol("someBool")) mustBe true
     }
   }
 }
