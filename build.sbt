@@ -3,7 +3,7 @@ name := "play-micro-tools"
 organization := "de.21re"
 
 version := {
-  "0.7-" + sys.props.get("BUILD_NUMBER").orElse(sys.env.get("BUILD_NUMBER")).getOrElse("SNAPSHOT")
+  "0.8-" + sys.props.get("BUILD_NUMBER").orElse(sys.env.get("BUILD_NUMBER")).getOrElse("SNAPSHOT")
 }
 
 scalaVersion := "2.13.0"
